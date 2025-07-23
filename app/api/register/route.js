@@ -1,61 +1,68 @@
 import { NextResponse } from "next/server";
-import prisma from "../lib/prisma";
-import { checkRateLimit } from "../lib/rate";
-import { sanitizeInput } from "../lib/sanitize";
-import bcrypt from 'bcryptjs'
-
+import prisma from "@/lib/prisma"; 
+import { checkRateLimit } from "@/lib/rate";
+import { sanitizeInput } from "@/lib/sanitize";
+import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
-  const ip = req.headers.get('x-forwarded-for') || 'unknown'
+  try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
 
-  if (!checkRateLimit(ip)) {
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { message: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' },
+        { status: 429 }
+      );
+    }
+
+    const body = sanitizeInput(await req.json());
+
+    const { password, confirmPassword, email, phone, user_type, firstName, lastName, agreeTerms } = body;
+
+    if (!agreeTerms) {
+      return NextResponse.json({ message: "Kullanıcı onay metnini onaylayın" }, { status: 400 });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ message: "Yanlış E-mail Formatı" }, { status: 400 });
+    }
+
+    if (password !== confirmPassword || password.length < 6) {
+      return NextResponse.json(
+        { message: "Şifreler uyuşmalı ve en az 6 karakter olmalı" },
+        { status: 400 }
+      );
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return NextResponse.json({ message: "Bu kullanıcı zaten kayıtlı" }, { status: 400 });
+    }
+
+    if (user_type !== "ARTIST" && user_type !== "PROVIDER") {
+      return NextResponse.json({ message: "Geçersiz kullanıcı tipi" }, { status: 400 });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.create({
+      data: {
+        name: `${firstName} ${lastName}`,
+        email,
+        phone,
+        password: hashedPassword,
+        role: user_type,
+      },
+    });
+
+    return NextResponse.json({ message: "Kayıt başarılı." }, { status: 200 });
+
+  } catch (error) {
+    console.error("REGISTER API ERROR:", error);
     return NextResponse.json(
-      { message: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' },
-      { status: 429 }
-    )
-  }
-  
-  const body = sanitizeInput(await req.json());
-  
-  
-  const password = body.password;
-  const confirmPassword = body.confirmPassword;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-
-  if(body.agreeTerms === false) return NextResponse.json({message: "Kullanıcı onay metnini onaylayın"}, {status: 405})
-  
-  const existingUser = await prisma.user.findUnique({ where: { email: body.email } })
-
-  if(existingUser) return NextResponse.json({message: "Bu kullanıcı zaten kayıtlı"}, {status: 400})
-
-  if(!emailRegex.test(body.email))  return NextResponse.json({message: "Yanlış E-mail Formatı"}, {status: 400})
-
-  if (password !== confirmPassword && password.length < 6) {
-    return NextResponse.json(
-      { message: "Lütfen şifreleri aynı yazınız ve 6 karakterden düşük şifre belirlemeyiniz" },
-      { status: 405 }
+      { message: "Sunucu hatası oluştu" },
+      { status: 500 }
     );
   }
-
-  if(body.user_type === "ARTIST" || body.user_type === "PROVIDER"){
-    const hashedPassword = await bcrypt.hash(password, 10)
-    
-    const createUser = await prisma.user.create({
-      data : {
-        name: `${body.firstName} ${body.lastName}`,
-        email: body.email,
-        phone: body.phone,
-        password: hashedPassword,
-        role: body.user_type
-      }
-    })
-  }else{
-    return NextResponse.json({message: "Geçersiz kullanıcı tipi"}, {status:429})
-  }
-
-  return NextResponse.json(
-    { message: "Kayıt başarılı." },
-    { status: 200 }
-  );
 }
