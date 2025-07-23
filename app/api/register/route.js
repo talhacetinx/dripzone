@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma"; 
-import { checkRateLimit } from "@/lib/rate";
-import { sanitizeInput } from "@/lib/sanitize";
+import { prisma } from "../lib/prisma";
+import { checkRateLimit } from "../lib/rate";
+import { sanitizeInput } from "../lib/sanitize";
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
