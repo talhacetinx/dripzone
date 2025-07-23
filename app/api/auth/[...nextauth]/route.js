@@ -1,5 +1,3 @@
-// pages/api/auth/[...nextauth].js
-
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -7,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export default NextAuth({
+const handler = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -16,29 +14,31 @@ export default NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("E-posta ve şifre gerekli");
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
+
+          if (!user || !user.password) {
+            throw new Error("Kullanıcı bulunamadı");
+          }
+
+          const isValid = await bcrypt.compare(credentials.password, user.password);
+
+          if (!isValid) {
+            throw new Error("Şifre hatalı");
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (err) {
+          console.error("AUTH ERROR:", err);
+          return null;
         }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-
-        if (!user || !user.password) {
-          throw new Error("Kullanıcı bulunamadı");
-        }
-
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-
-        if (!isValid) {
-          throw new Error("Şifre hatalı");
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        };
       },
     }),
   ],
@@ -51,6 +51,7 @@ export default NextAuth({
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
+        token.role = user.role;
       }
       return token;
     },
@@ -59,9 +60,13 @@ export default NextAuth({
         id: token?.id || null,
         name: token?.name || null,
         email: token?.email || null,
+        role: token?.role || null,
       };
       return session;
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
 });
+
+export const GET = handler;
+export const POST = handler;
