@@ -22,7 +22,6 @@ export async function POST(req) {
   const confirmPassword = body.confirmPassword;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  console.log(body);
 
   if(body.agreeTerms === false) return NextResponse.json({message: "Kullanıcı onay metnini onaylayın"}, {status: 405})
   

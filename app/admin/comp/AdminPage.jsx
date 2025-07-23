@@ -202,11 +202,9 @@ export const AdminDashboard = () => {
               className="flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 bg-gray-900/50 backdrop-blur-xl border border-primary-500/30 rounded-xl hover:border-primary-500/50 transition-all duration-300"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={signOut({ callbackUrl: '/' })}
             >
-            <motion.button>
-              <div onClick={{signOut() => "callback"}}>
-
-              </div>
+              Sign Out
             </motion.button>
           </div>
         </motion.div>
