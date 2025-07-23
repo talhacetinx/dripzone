@@ -68,10 +68,15 @@ export const RegisterComponents = () => {
     })
 
     const response = await request.json()
-    toast.info(response.message)
+    if(response.ok){
+      toast.info(response.message)
+      e.target.reset();
+      setIsLoading(false);
+    }else{
+      alert("Başarıyla kayıt olundu")
+    }
     
     
-    setIsLoading(false);
   };
 
   return (
