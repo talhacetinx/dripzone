@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "../../lib/prisma";
 
-export const authLoginOptions = {
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -70,5 +70,5 @@ callbacks: {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-export const GET = NextAuth(authLoginOptions);
-export const POST = NextAuth(authLoginOptions);
+export const GET = NextAuth(authOptions);
+export const POST = NextAuth(authOptions);
