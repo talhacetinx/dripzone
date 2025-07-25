@@ -1,13 +1,13 @@
 "use client"
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { 
   BarChart3, TrendingUp, TrendingDown, DollarSign, Users, 
   Download, CreditCard, Activity, ArrowUpRight, ArrowDownRight,
   Eye, MoreHorizontal, CheckCircle, Clock, AlertCircle
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+import { motion } from 'framer-motion'
+import {FiLogOut } from "react-icons/fi";
 
 
 
@@ -154,9 +154,13 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    await fetch("/api/logout", { method: "POST" });
+    window.location.href = "/";
+  };
+
   return (
     <div className="p-4 sm:p-8 min-h-screen bg-black">
-      {/* Header - Mobile optimized */}
       <div className="mb-8 sm:mb-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -190,21 +194,15 @@ export const AdminDashboard = () => {
               ))}
             </div>
             
-            <motion.button 
-              className="flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 bg-gray-900/50 backdrop-blur-xl border border-primary-500/30 rounded-xl hover:border-primary-500/50 transition-all duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Download className="w-4 h-4" />
-              <span className="text-sm font-medium">Export</span>
-            </motion.button>
             <motion.button
-              className="flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 bg-gray-900/50 backdrop-blur-xl border border-primary-500/30 rounded-xl hover:border-primary-500/50 transition-all duration-300"
+              className="flex items-center justify-center space-x-2 px-4 text-white gap-4 
+              sm:px-6 py-2 sm:py-3 bg-red-950 backdrop-blur-xl border border-primary-500/30 rounded-xl hover:border-primary-500/50 transition-all duration-300"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => signOut({ callbackUrl: '/' })} 
+              onClick={handleSignOut} 
             >
               Sign Out
+              <FiLogOut size={20} />
             </motion.button>
           </div>
         </motion.div>

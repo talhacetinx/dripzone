@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import {
   DollarSign, Package, MessageCircle, Plus, Clock
@@ -13,7 +12,6 @@ import { ServicesTab } from './ProviderComponent/ServicesTab'
 import { RevenueTab } from './ProviderComponent/Revenue'
 import { OrdersTab } from './ProviderComponent/Orders'
 
-// MOCK DATA
 const mockServices = [
   {
     id: '1',
@@ -78,8 +76,7 @@ const mockConversations = [
   { id: 'c3', unread_count: 1 }
 ]
 
-export const ProviderDashboard = () => {
-  const { data: session, status } = useSession()
+export const ProviderDashboard = ({AuthUser}) => {
   const [activeTab, setActiveTab] = useState('overview')
   const [showServiceModal, setShowServiceModal] = useState(false)
   const [editingService, setEditingService] = useState(null)
@@ -97,15 +94,15 @@ export const ProviderDashboard = () => {
     return () => clearTimeout(timeout)
   }, [])
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
+  // if (status === 'loading') {
+  //   return (
+  //     <div className="min-h-screen bg-black flex items-center justify-center">
+  //       <LoadingSpinner size="lg" />
+  //     </div>
+  //   )
+  // }
 
-  if (!session) {
+  if (!AuthUser) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
         <p>Lütfen giriş yapın</p>
@@ -157,7 +154,7 @@ export const ProviderDashboard = () => {
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Hoş geldin, {session?.user?.name}!</h1>
+          <h1 className="text-2xl font-bold">Hoş geldin, {AuthUser?.user?.name}!</h1>
           <button
             onClick={() => setShowServiceModal(true)}
             className="flex items-center space-x-2 bg-primary-600 text-black px-4 py-2 rounded-md hover:bg-primary-700 transition"

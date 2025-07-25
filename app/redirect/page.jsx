@@ -1,34 +1,25 @@
-"use client";
+import { redirect } from 'next/navigation';
+import { getAuthUser } from '../api/lib/auth';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { getSession } from 'next-auth/react';
+export default async function RedirectPage() {
+  const session = await getAuthUser();
+  const role = session?.role;
 
-export default function RedirectPage() {
-  const router = useRouter();
+  if (!session) {
+    redirect('/login'); 
+  }
 
-  useEffect(() => {
-    const checkSessionAndRedirect = async () => {
-      const session = await getSession();
-      const role = session?.user?.role;
+  if (role === 'ADMIN') {
+    redirect('/admin');
+  }
 
-      if (role === 'ADMIN') {
-        router.push('/admin');
-      } else if (role === 'PROVIDER') {
-        router.push('/provider');
-      } else if (role === 'ARTIST') {
-        router.push('/artist');
-      } else {
-        router.push('/dashboard');
-      }
-    };
+  if (role === 'PROVIDER') {
+    redirect('/provider');
+  }
 
-    checkSessionAndRedirect();
-  }, [router]);
+  if (role === 'ARTIST') {
+    redirect('/artist');
+  }
 
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <p>Yönlendiriliyorsunuz...</p>
-    </div>
-  );
+  redirect('/dashboard');
 }

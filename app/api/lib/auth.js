@@ -1,52 +1,23 @@
-import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 
-const prisma = new PrismaClient();
+const SECRET = process.env.AUTH_SECRET || "dripzome-secret";
 
-export const authOptions = {
-  providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+export function signToken(payload) {
+  return jwt.sign(payload, SECRET, { expiresIn: "7d" });
+}
 
-        if (!user || !user.password) throw new Error("Geçersiz giriş");
+export function verifyToken(token) {
+  try {
+    return jwt.verify(token, SECRET);
+  } catch (err) {
+    return null;
+  }
+}
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) throw new Error("Geçersiz şifre");
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
-      },
-    }),
-  ],
-  session: {
-    strategy: "jwt",
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.role = token.role;
-      return session;
-    },
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-};
+export async function getAuthUser() {
+  const cookieStore = cookies();
+  const token = cookieStore.get("token")?.value;
+  if (!token) return null;
+  return verifyToken(token); 
+}

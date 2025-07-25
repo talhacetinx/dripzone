@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
-import { FiMail, FiLock } from 'react-icons/fi';
-import { motion } from 'framer-motion';
-import Link from 'next/link'; 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { FiMail, FiLock } from "react-icons/fi";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function LoginPageComponent() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,31 +21,37 @@ export default function LoginPageComponent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
-    const result = await signIn("credentials", {
-      redirect: false,
-      email: formData.email,
-      password: formData.password,
-    });
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-    if (result?.ok) {
-      router.refresh();
+      const data = await res.json();
 
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const session = await getSession();
-      const role = session?.user?.role;
+      if (res.ok) {
+        toast.success("Giriş başarılı!");
 
-      toast.success("Giriş başarılı!");
+        await new Promise((r) => setTimeout(r, 1500));
 
-      if (role === 'ADMIN') {
-        router.push('/admin');
+        if (data?.user?.role === "ADMIN") {
+          window.location.href = "/admin";
+        } else {
+          window.location.href = "/dashboard";
+        }
+
+
       } else {
-        router.push('/dashboard');
+        setError(data?.error || "Giriş başarısız");
+        toast.error(data?.error || "Hatalı giriş");
       }
-    } else {
-      setError("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
-      toast.error("Hatalı giriş.");
+
+    } catch (err) {
+      setError("Sunucu hatası");
+      toast.error("Sunucu hatası");
     }
 
     setIsLoading(false);
@@ -61,23 +66,18 @@ export default function LoginPageComponent() {
           transition={{ duration: 0.8 }}
           className="bg-gray-900/50 backdrop-blur-xl border border-primary-500/30 rounded-2xl p-8 shadow-yellow-glow"
         >
-          {/* Logo & Title */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center justify-center mb-6">
-              <img 
-                src="/TpazLayer 2-topaz-enhance-min.png" 
-                alt="Dripzone Logo" 
+              <img
+                src="/TpazLayer 2-topaz-enhance-min.png"
+                alt="Dripzone Logo"
                 className="h-12 w-auto object-contain filter drop-shadow-lg"
               />
             </Link>
             <h1 className="text-3xl font-bold mb-2 text-white">Welcome Back!</h1>
           </div>
 
-          {/* Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-md rounded-lg p-0"
-          >
+          <form onSubmit={handleSubmit} className="w-full max-w-md rounded-lg p-0">
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1 text-white">Email</label>
               <div className="relative">
@@ -122,20 +122,27 @@ export default function LoginPageComponent() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-yellow-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
+              className={`w-full py-3 text-black font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-yellow-glow ${
                 isLoading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-yellow-500 hover:bg-yellow-600'
-              } text-black font-semibold`}
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-yellow-500 hover:bg-yellow-600"
+              }`}
             >
-              {isLoading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+              {isLoading ? "Giriş Yapılıyor..." : "Giriş Yap"}
             </button>
 
             <div className="text-center mt-3">
-              <Link href="/forgot-password" className="text-sm text-primary-400 hover:text-primary-300" >Forgot Password?</Link>
+              <Link href="/forgot-password" className="text-sm text-primary-400 hover:text-primary-300">
+                Forgot Password?
+              </Link>
             </div>
             <div className="mt-8 text-center">
-              <p className="text-gray-300">Don't have an account? <Link href="/register" className="text-primary-400 hover:text-primary-300 font-semibold">Sign Up</Link></p>
+              <p className="text-gray-300">
+                Don't have an account?{" "}
+                <Link href="/register" className="text-primary-400 hover:text-primary-300 font-semibold">
+                  Sign Up
+                </Link>
+              </p>
             </div>
           </form>
         </motion.div>

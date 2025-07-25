@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import prisma from "../lib/prisma";
 import { checkRateLimit } from "../lib/rate";
 import { sanitizeInput } from "../lib/sanitize";
 import bcrypt from 'bcryptjs'
-
+import prisma from '../lib/prisma'
 
 export async function POST(req) {
   try {
@@ -57,7 +56,7 @@ export async function POST(req) {
       },
     });
 
-    return NextResponse.json({ message: "Kayıt başarılı." }, { status: 200 });
+    return NextResponse.json({ success: true ,message: "Kayıt başarılı." }, { status: 200 });
 
   } catch (error) {
     console.error("REGISTER API ERROR:", error);

@@ -68,14 +68,14 @@ export const RegisterComponents = () => {
     })
 
     const response = await request.json()
-    if(response.ok){
+
+    if(response.success){
       toast.info(response.message)
       e.target.reset();
       setIsLoading(false);
     }else{
-      alert("Başarıyla kayıt olundu")
+      alert("Hata var!!")
     }
-    
     
   };
 
