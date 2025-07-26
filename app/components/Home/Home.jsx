@@ -24,7 +24,7 @@ export const HomePage = () => {
     {
       name: 'Album Cover Artists',
       slug: 'album-cover-artists',
-      image: 'https://images.pexels.com/photos/1183992/pexels-photo-1183992.jpeg?auto=compress&cs=tinysrgb&w=500'
+      image: '/album_cover_artist.png'
     },
     {
       name: 'Music Video Directors',

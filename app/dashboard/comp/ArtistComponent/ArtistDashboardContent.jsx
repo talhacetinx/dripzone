@@ -48,13 +48,14 @@ const mockConversations = [
   { id: 'a2', unread_count: 0 }
 ]
 
-export const ArtistDashboardContent = ({ session }) => {
+export const ArtistDashboardContent = ({ user }) => {
   const [activeTab, setActiveTab] = useState('overview')
   const [services, setServices] = useState([])
   const [orders, setOrders] = useState([])
   const [conversations, setConversations] = useState([])
   const [showServiceModal, setShowServiceModal] = useState(false)
 
+  console.log(user)
   useEffect(() => {
     // Mock verileri yükle
     const timeout = setTimeout(() => {
@@ -77,7 +78,7 @@ export const ArtistDashboardContent = ({ session }) => {
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Hoş geldin, {session?.user?.name}!</h1>
+          <h1 className="text-2xl font-bold">Hoş geldin, {user.name}!</h1>
           <button
             onClick={() => setShowServiceModal(true)}
             className="flex items-center space-x-2 bg-primary-600 text-black px-4 py-2 rounded-md hover:bg-primary-700 transition"

@@ -14,5 +14,5 @@ export const ArtistDashboard = ({AuthUser}) => {
     )
   }
 
-  return <ArtistDashboardContent user={session.user} />
+  return <ArtistDashboardContent user={AuthUser} />
 }
