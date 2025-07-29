@@ -17,6 +17,7 @@ model User {
   role        Role?
   userPending Boolean  @default(false)
   createdAt   DateTime @default(now())
+  newPasswordAuth String?
 
   artist   Artist?
   provider Provider?
