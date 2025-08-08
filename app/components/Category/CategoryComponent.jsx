@@ -17,26 +17,26 @@ export const CategoryComponent = () => {
 
   const categoryInfo = {
     'recording-studios': {
-      title: 'Recording Studios',
-      description: 'World-class recording facilities with legendary acoustics and cutting-edge technology',
+      title: 'Kayıt Stüdyoları',
+      description: 'Efsanevi akustiğe ve en son teknolojiye sahip dünya standartlarında kayıt tesisleri',
       icon: '🎙️',
       totalProviders: musicProviders.filter(p => p.category === 'recording-studios').length
     },
     'producers': {
-      title: 'Music Producers',
-      description: 'Grammy-winning producers and hitmakers who shape the sound of modern music',
+      title: 'Müzik Yapımcıları',
+      description: 'Modern müziğin sesini şekillendiren Grammy ödüllü yapımcılar ve hit yaratıcıları',
       icon: '🎵',
       totalProviders: musicProviders.filter(p => p.category === 'producers').length
     },
     'album-cover-artists': {
-      title: 'Album Cover Artists',
-      description: 'Visionary designers creating iconic album artwork that defines musical eras',
+      title: 'Albüm Kapağı Sanatçıları',
+      description: 'Müzikal dönemleri tanımlayan ikonik albüm sanat eserleri yaratan vizyoner tasarımcılar',
       icon: '🎨',
       totalProviders: musicProviders.filter(p => p.category === 'album-cover-artists').length
     },
     'videographers': {
-      title: 'Music Video Directors',
-      description: 'Award-winning directors bringing musical visions to life through cinematic storytelling',
+      title: 'Müzik Video Yönetmenleri',
+      description: 'Sinematik hikaye anlatımıyla müzikal vizyonları hayata geçiren ödüllü yönetmenler',
       icon: '🎬',
       totalProviders: musicProviders.filter(p => p.category === 'videographers').length
     }
@@ -48,15 +48,15 @@ export const CategoryComponent = () => {
   const categoryProviders = musicProviders.filter(provider => provider.category === categorySlug);
 
   const sortOptions = [
-    { value: 'popular', label: 'Most Popular' },
-    { value: 'rating', label: 'Highest Rated' },
-    { value: 'experience', label: 'Most Experienced' },
-    { value: 'price-low', label: 'Price (Low → High)' },
-    { value: 'price-high', label: 'Price (High → Low)' }
+    { value: 'popular', label: 'En Popüler' },
+    { value: 'rating', label: 'En Yüksek Puanlı' },
+    { value: 'experience', label: 'En Deneyimli' },
+    { value: 'price-low', label: 'Fiyat (Düşük → Yüksek)' },
+    { value: 'price-high', label: 'Fiyat (Yüksek → Düşük)' }
   ];
 
   const priceRanges = [
-    { value: 'all', label: 'All Budgets' },
+    { value: 'all', label: 'Tüm Bütçeler' },
     { value: '0-5000', label: '$0 - $5,000' },
     { value: '5000-25000', label: '$5,000 - $25,000' },
     { value: '25000-100000', label: '$25,000 - $100,000' },
@@ -120,15 +120,15 @@ export const CategoryComponent = () => {
             <div className="flex items-center justify-center space-x-12 text-sm text-gray-400">
               <div className="flex items-center space-x-2">
                 <Award className="w-5 h-5 text-primary-500" />
-                <span>{category.totalProviders} elite professionals</span>
+                <span>{category.totalProviders} elit profesyonel</span>
               </div>
               <span>•</span>
               <div className="flex items-center space-x-2">
                 <Star className="w-5 h-5 text-primary-500 fill-current" />
-                <span>Average 4.8 rating</span>
+                <span>Ortalama 4.8 puan</span>
               </div>
               <span>•</span>
-              <span>Industry legends & rising stars</span>
+              <span>Endüstri efsaneleri ve yükselen yıldızlar</span>
             </div>
           </motion.div>
         </div>
@@ -143,7 +143,7 @@ export const CategoryComponent = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search professionals..."
+                placeholder="Profesyoneller ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-6 py-4 bg-black/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 text-white placeholder-gray-400 backdrop-blur-sm"
@@ -181,7 +181,7 @@ export const CategoryComponent = () => {
                 className="flex items-center space-x-2 px-6 py-4 bg-black/50 border border-gray-700/50 rounded-xl hover:border-primary-500/50 transition-all duration-300 text-white backdrop-blur-sm"
               >
                 <Filter className="w-4 h-4" />
-                <span>Advanced</span>
+                <span>Gelişmiş</span>
               </button>
             </div>
           </div>
@@ -196,34 +196,34 @@ export const CategoryComponent = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                  <label className="block text-sm font-semibold mb-3 text-primary-400">Location</label>
+                  <label className="block text-sm font-semibold mb-3 text-primary-400">Konum</label>
                   <select className="w-full px-4 py-3 bg-black/50 border border-gray-700/50 rounded-xl text-white backdrop-blur-sm">
-                    <option>All Locations</option>
+                    <option>Tüm Konumlar</option>
                     <option>Los Angeles</option>
                     <option>New York</option>
-                    <option>London</option>
+                    <option>Londra</option>
                     <option>Nashville</option>
                   </select>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold mb-3 text-primary-400">Experience</label>
+                  <label className="block text-sm font-semibold mb-3 text-primary-400">Deneyim</label>
                   <select className="w-full px-4 py-3 bg-black/50 border border-gray-700/50 rounded-xl text-white backdrop-blur-sm">
-                    <option>Any Experience</option>
-                    <option>10+ years</option>
-                    <option>20+ years</option>
-                    <option>30+ years</option>
+                    <option>Herhangi Bir Deneyim</option>
+                    <option>10+ yıl</option>
+                    <option>20+ yıl</option>
+                    <option>30+ yıl</option>
                   </select>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold mb-3 text-primary-400">Specialties</label>
+                  <label className="block text-sm font-semibold mb-3 text-primary-400">Uzmanlık Alanları</label>
                   <select className="w-full px-4 py-3 bg-black/50 border border-gray-700/50 rounded-xl text-white backdrop-blur-sm">
-                    <option>All Specialties</option>
+                    <option>Tüm Uzmanlık Alanları</option>
                     <option>Pop</option>
                     <option>Hip-Hop</option>
                     <option>Rock</option>
-                    <option>Electronic</option>
+                    <option>Elektronik</option>
                   </select>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export const CategoryComponent = () => {
         <div className="container mx-auto px-6">
           <div className="mb-12">
             <p className="text-gray-400 text-lg">
-              <span className="font-semibold text-white text-xl">{filteredProviders.length}</span> world-class professionals found
+              <span className="font-semibold text-white text-xl">{filteredProviders.length}</span> dünya standartlarında profesyonel bulundu
             </p>
           </div>
 
@@ -256,8 +256,8 @@ export const CategoryComponent = () => {
 
           {filteredProviders.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-gray-400 text-xl mb-4">No professionals found matching your criteria.</p>
-              <p className="text-gray-500">Try adjusting your search or filters to discover more talent.</p>
+              <p className="text-gray-400 text-xl mb-4">Kriterlerinize uygun profesyonel bulunamadı.</p>
+              <p className="text-gray-500">Daha fazla yetenek keşfetmek için aramanızı veya filtrelerinizi ayarlamayı deneyin.</p>
             </div>
           )}
         </div>
@@ -283,7 +283,7 @@ const ProviderCard = ({ provider }) => {
         <div className="absolute top-4 left-4 flex space-x-2">
           {provider.featured && (
             <span className="px-2 py-1 bg-gradient-to-r from-primary-500 to-primary-400 text-xs font-bold rounded-full text-black shadow-lg">
-              FEATURED
+              ÖNE ÇIKAN
             </span>
           )}
           {provider.verified && (
@@ -295,7 +295,7 @@ const ProviderCard = ({ provider }) => {
 
         {/* Price */}
         <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/80 backdrop-blur-sm rounded-full text-sm font-bold text-white border border-gray-700/50">
-          From ${provider.startingPrice.toLocaleString()}
+          ${provider.startingPrice.toLocaleString()} Başlayan
         </div>
       </div>
 
@@ -332,15 +332,15 @@ const ProviderCard = ({ provider }) => {
         <div className="grid grid-cols-3 gap-3 mb-4 p-4 bg-gray-900/30 rounded-xl border border-gray-800/50">
           <div className="text-center">
             <div className="text-lg font-bold text-primary-400 mb-1">{provider.yearsExperience}</div>
-            <div className="text-xs text-gray-400 uppercase tracking-wide">Years</div>
+            <div className="text-xs text-gray-400 uppercase tracking-wide">Yıl</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold text-primary-400 mb-1">{provider.completedProjects > 1000 ? `${Math.floor(provider.completedProjects/1000)}k` : provider.completedProjects}</div>
-            <div className="text-xs text-gray-400 uppercase tracking-wide">Projects</div>
+            <div className="text-xs text-gray-400 uppercase tracking-wide">Proje</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold text-primary-400 mb-1">{provider.responseTime}</div>
-            <div className="text-xs text-gray-400 uppercase tracking-wide">Response</div>
+            <div className="text-xs text-gray-400 uppercase tracking-wide">Yanıt</div>
           </div>
         </div>
 
@@ -369,7 +369,7 @@ const ProviderCard = ({ provider }) => {
           to={`/provider/${provider.id}`}
           className="flex items-center justify-center space-x-2 w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-primary-500/25 text-black text-sm"
         >
-          <span>View Profile</span>
+          <span>Profili Görüntüle</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>

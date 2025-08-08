@@ -12,32 +12,32 @@ import Link from 'next/link';
 export const HomePage = () => {
   const categories = [
     {
-      name: 'Recording Studios',
+      name: 'Kayıt Stüdyoları',
       slug: 'recording-studios',
       image: '/Untitled-1-min copy copy copy copy.png'
     },
     {
-      name: 'Music Producers',
+      name: 'Müzik Yapımcıları',
       slug: 'producers',
       image: '/site-images/dripzone_producer.webp'
     },
     {
-      name: 'Album Cover Artists',
+      name: 'Albüm Kapağı Sanatçıları',
       slug: 'album-cover-artists',
       image: '/album_cover_artist.png'
     },
     {
-      name: 'Music Video Directors',
+      name: 'Müzik Video Yönetmenleri',
       slug: 'videographers',
       image: '/site-images/music_directors.webp'
     }
   ];
 
   const stats = [
-    { label: 'Creative Professionals', value: '10,000+', icon: Users },
-    { label: 'Projects Completed', value: '50,000+', icon: CheckCircle },
-    { label: 'Countries Served', value: '120+', icon: Globe },
-    { label: 'Average Rating', value: '4.9/5', icon: Star }
+    { label: 'Yaratıcı Profesyoneller', value: '10,000+', icon: Users },
+    { label: 'Tamamlanan Projeler', value: '50,000+', icon: CheckCircle },
+    { label: 'Hizmet Verilen Ülkeler', value: '120+', icon: Globe },
+    { label: 'Ortalama Puan', value: '4.9/5', icon: Star }
   ];
 
   return (
@@ -67,20 +67,20 @@ export const HomePage = () => {
                 className="inline-flex items-center space-x-3 px-6 py-3 bg-black/50 backdrop-blur-xl border border-primary-500/30 rounded-full mb-8 shadow-lg"
               >
                 <Sparkles className="w-4 h-4 text-primary-500" />
-                <span className="text-primary-400 font-semibold text-sm tracking-wide">Trusted by 10,000+ creators worldwide</span>
+                <span className="text-primary-400 font-semibold text-sm tracking-wide">Dünya çapında 10,000+ yaratıcı tarafından güvenilir</span>
               </motion.div>
 
               {/* Main Heading - Optimized Typography Scale */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-[1.1] tracking-tight">
-                Find Your{' '}
+                Yaratıcı{' '}
                 <span className="bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 bg-clip-text text-transparent">
-                  Creative Space
+                  Alanınızı Bulun
                 </span>
               </h1>
               
               {/* Description - Improved Readability */}
               <p className="text-lg sm:text-xl md:text-2xl text-gray-200 mb-12 leading-relaxed max-w-4xl mx-auto font-light">
-                Discover the perfect creative professionals for your music projects. Connect with studios, producers, and artists worldwide.
+                Müzik projeleriniz için mükemmel yaratıcı profesyonelleri keşfedin. Dünya çapında stüdyolar, yapımcılar ve sanatçılarla bağlantı kurun.
               </p>
             </motion.div>
 
@@ -176,15 +176,15 @@ export const HomePage = () => {
           >
             {/* Heading - Optimized Scale */}
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              Ready to Create Something{' '}
+              Harika Bir Şey Yaratmaya{' '}
               <span className="bg-gradient-to-r from-primary-400 to-primary-500 bg-clip-text text-transparent">
-                Amazing?
+                Hazır mısınız?
               </span>
             </h2>
             
             {/* Description - Enhanced Readability */}
             <p className="text-lg sm:text-xl text-gray-200 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
-              Join thousands of artists and professionals who trust Dripzone for their creative projects
+              Yaratıcı projeleri için Dripzone'a güvenen binlerce sanatçı ve profesyonel arasına katılın
             </p>
             
             {/* Buttons - Improved Spacing and Hierarchy */}
@@ -194,7 +194,7 @@ export const HomePage = () => {
                   href="/auth/register"
                   className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl text-base transition-all duration-300 shadow-lg hover:shadow-primary-500/25 min-w-[200px] justify-center"
                 >
-                  <span>Get Started Free</span>
+                  <span>Ücretsiz Başlayın</span>
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </motion.div>
@@ -204,7 +204,7 @@ export const HomePage = () => {
                   href="/category/recording-studios"
                   className="inline-flex items-center space-x-3 px-8 py-4 border-2 border-primary-500/50 hover:border-primary-500 text-white rounded-xl font-bold text-base transition-all duration-300 backdrop-blur-xl hover:bg-primary-500/10 min-w-[200px] justify-center"
                 >
-                  <span>Explore Services</span>
+                  <span>Hizmetleri Keşfedin</span>
                   <Zap className="w-5 h-5" />
                 </Link>
               </motion.div>

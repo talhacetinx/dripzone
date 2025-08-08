@@ -20,8 +20,8 @@ export const ProviderDetaiComponent = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Provider Not Found</h1>
-          <p className="text-gray-400">The requested provider could not be found.</p>
+          <h1 className="text-4xl font-bold text-white mb-4">Hizmet Sağlayıcı Bulunamadı</h1>
+          <p className="text-gray-400">İstenen hizmet sağlayıcı bulunamadı.</p>
         </div>
       </div>
     );
@@ -38,10 +38,10 @@ export const ProviderDetaiComponent = () => {
   };
 
   const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'packages', label: 'Packages' },
-    { id: 'portfolio', label: 'Portfolio' },
-    { id: 'reviews', label: 'Reviews' }
+    { id: 'overview', label: 'Genel Bakış' },
+    { id: 'packages', label: 'Paketler' },
+    { id: 'portfolio', label: 'Portföy' },
+    { id: 'reviews', label: 'Yorumlar' }
   ];
 
   return (
@@ -87,7 +87,7 @@ export const ProviderDetaiComponent = () => {
                       <div className="flex items-center space-x-2">
                         <Star className="w-4 h-4 text-primary-500 fill-current" />
                         <span className="font-bold text-white">{provider.rating}</span>
-                        <span className="text-gray-400">({provider.reviewCount} reviews)</span>
+                        <span className="text-gray-400">({provider.reviewCount} yorum)</span>
                       </div>
                       <div className="flex items-center space-x-2 text-gray-400">
                         <MapPin className="w-4 h-4" />
@@ -95,7 +95,7 @@ export const ProviderDetaiComponent = () => {
                       </div>
                       <div className="flex items-center space-x-2 text-gray-400">
                         <Award className="w-4 h-4" />
-                        <span>{provider.yearsExperience} years</span>
+                        <span>{provider.yearsExperience} yıl</span>
                       </div>
                     </div>
                   </div>
@@ -106,11 +106,11 @@ export const ProviderDetaiComponent = () => {
                   <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                     <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
                       <MessageCircle className="w-4 h-4" />
-                      <span>Contact</span>
+                      <span>İletişim</span>
                     </button>
                     <button className="flex items-center justify-center space-x-2 px-6 py-3 border-2 border-gray-700 hover:border-primary-500 text-white rounded-xl font-bold transition-all duration-300 backdrop-blur-sm">
                       <Heart className="w-4 h-4" />
-                      <span>Save</span>
+                      <span>Kaydet</span>
                     </button>
                   </div>
                 </div>
@@ -120,19 +120,19 @@ export const ProviderDetaiComponent = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-8 border-t border-gray-800/50">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary-500 mb-1">{provider.completedProjects.toLocaleString()}</div>
-                  <div className="text-xs text-gray-400 uppercase tracking-wide">Projects</div>
+                  <div className="text-xs text-gray-400 uppercase tracking-wide">Projeler</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary-500 mb-1">{provider.responseTime}</div>
-                  <div className="text-xs text-gray-400 uppercase tracking-wide">Response</div>
+                  <div className="text-xs text-gray-400 uppercase tracking-wide">Yanıt</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary-500 mb-1">{provider.yearsExperience}</div>
-                  <div className="text-xs text-gray-400 uppercase tracking-wide">Experience</div>
+                  <div className="text-xs text-gray-400 uppercase tracking-wide">Deneyim</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary-500 mb-1">98%</div>
-                  <div className="text-xs text-gray-400 uppercase tracking-wide">Satisfaction</div>
+                  <div className="text-xs text-gray-400 uppercase tracking-wide">Memnuniyet</div>
                 </div>
               </div>
             </div>
@@ -173,13 +173,13 @@ export const ProviderDetaiComponent = () => {
                   >
                     {/* Bio */}
                     <div>
-                      <h3 className="text-xl font-bold mb-4 text-white">About</h3>
+                      <h3 className="text-xl font-bold mb-4 text-white">Hakkında</h3>
                       <p className="text-gray-300 leading-relaxed">{provider.bio}</p>
                     </div>
 
                     {/* Specialties */}
                     <div>
-                      <h3 className="text-xl font-bold mb-4 text-white">Specialties</h3>
+                      <h3 className="text-xl font-bold mb-4 text-white">Uzmanlık Alanları</h3>
                       <div className="flex flex-wrap gap-3">
                         {provider.specialties.map((specialty) => (
                           <span
@@ -194,7 +194,7 @@ export const ProviderDetaiComponent = () => {
 
                     {/* Notable Clients */}
                     <div>
-                      <h3 className="text-xl font-bold mb-4 text-white">Notable Clients</h3>
+                      <h3 className="text-xl font-bold mb-4 text-white">Önemli Müşteriler</h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {provider.notableClients.map((client) => (
                           <div
@@ -225,7 +225,7 @@ export const ProviderDetaiComponent = () => {
                         {pkg.popular && (
                           <div className="absolute -top-3 left-6">
                             <span className="px-3 py-1 bg-gradient-to-r from-primary-500 to-primary-400 text-xs font-bold rounded-full text-black shadow-lg">
-                              MOST POPULAR
+                              EN POPÜLER
                             </span>
                           </div>
                         )}
@@ -237,7 +237,7 @@ export const ProviderDetaiComponent = () => {
                           </div>
                           <div className="text-right mt-4 md:mt-0">
                             <div className="text-3xl font-bold text-primary-500 mb-1">${pkg.price.toLocaleString()}</div>
-                            <div className="text-sm text-gray-400">{pkg.deliveryTime} delivery</div>
+                            <div className="text-sm text-gray-400">{pkg.deliveryTime} teslimat</div>
                           </div>
                         </div>
 
@@ -251,7 +251,7 @@ export const ProviderDetaiComponent = () => {
                         </div>
 
                         <button className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg text-black">
-                          Order Now - ${pkg.price.toLocaleString()}
+                          Şimdi Sipariş Ver - ${pkg.price.toLocaleString()}
                         </button>
                       </div>
                     ))}
@@ -292,10 +292,10 @@ export const ProviderDetaiComponent = () => {
                           <p className="text-primary-400 font-semibold mb-2">{item.client}</p>
                           <p className="text-gray-400 mb-3 text-sm">{item.description}</p>
                           <div className="flex justify-between text-sm text-gray-500 mb-3">
-                            <span>Duration: {item.duration}</span>
+                            <span>Süre: {item.duration}</span>
                           </div>
                           <div className="p-3 bg-gray-900/50 rounded-lg">
-                            <span className="text-emerald-400 font-semibold text-sm">Outcome: </span>
+                            <span className="text-emerald-400 font-semibold text-sm">Sonuç: </span>
                             <span className="text-gray-300 text-sm">{item.outcome}</span>
                           </div>
                         </div>
@@ -353,29 +353,29 @@ export const ProviderDetaiComponent = () => {
             <div className="space-y-6">
               {/* Contact Card */}
               <div className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6">
-                <h3 className="text-lg font-bold mb-4 text-white">Contact Information</h3>
+                <h3 className="text-lg font-bold mb-4 text-white">İletişim Bilgileri</h3>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-300 text-sm">Responds within {provider.responseTime}</span>
+                    <span className="text-gray-300 text-sm">{provider.responseTime} içinde yanıt verir</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-300 text-sm">Available for new projects</span>
+                    <span className="text-gray-300 text-sm">Yeni projeler için müsait</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Users className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-300 text-sm">{provider.completedProjects}+ satisfied clients</span>
+                    <span className="text-gray-300 text-sm">{provider.completedProjects}+ memnun müşteri</span>
                   </div>
                 </div>
               </div>
 
               {/* Quick Order */}
               <div className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6">
-                <h3 className="text-lg font-bold mb-4 text-white">Quick Order</h3>
+                <h3 className="text-lg font-bold mb-4 text-white">Hızlı Sipariş</h3>
                 <div className="space-y-4">
                   <select className="w-full px-3 py-2 bg-black/50 border border-gray-700/50 rounded-lg text-white text-sm">
-                    <option>Select a package</option>
+                    <option>Bir paket seçin</option>
                     {provider.packages.map(pkg => (
                       <option key={pkg.id} value={pkg.id}>
                         {pkg.name} - ${pkg.price.toLocaleString()}
@@ -383,32 +383,32 @@ export const ProviderDetaiComponent = () => {
                     ))}
                   </select>
                   <button className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg text-black text-sm">
-                    Order Now
+                    Şimdi Sipariş Ver
                   </button>
                   <button className="w-full py-3 border-2 border-gray-700 hover:border-primary-500 rounded-lg font-bold transition-all duration-300 text-white text-sm">
-                    Request Custom Quote
+                    Özel Teklif İste
                   </button>
                 </div>
               </div>
 
               {/* Stats */}
               <div className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6">
-                <h3 className="text-lg font-bold mb-4 text-white">Performance Stats</h3>
+                <h3 className="text-lg font-bold mb-4 text-white">Performans İstatistikleri</h3>
                 <div className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-400 text-sm">Total Projects</span>
+                    <span className="text-gray-400 text-sm">Toplam Projeler</span>
                     <span className="font-bold text-white text-sm">{provider.completedProjects.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400 text-sm">Client Rating</span>
+                    <span className="text-gray-400 text-sm">Müşteri Puanı</span>
                     <span className="font-bold text-primary-500 text-sm">{provider.rating}/5.0</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400 text-sm">Repeat Clients</span>
+                    <span className="text-gray-400 text-sm">Tekrar Eden Müşteriler</span>
                     <span className="font-bold text-white text-sm">89%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400 text-sm">On-Time Delivery</span>
+                    <span className="text-gray-400 text-sm">Zamanında Teslimat</span>
                     <span className="font-bold text-emerald-400 text-sm">98%</span>
                   </div>
                 </div>

@@ -34,10 +34,8 @@ export async function POST(req) {
     });
 
 
-    const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? process.env.PROD_URL 
-        : process.env.LOCAL_URL;
+    const baseUrl =  process.env.NODE_ENV === "production" ? process.env.PROD_URL : process.env.LOCAL_URL;
+    
     const transporter = nodemailer.createTransport({
       host: "mail.crabsmedia.com",
       port: 465,

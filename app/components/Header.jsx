@@ -1,26 +1,139 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
-import { Menu, X, User, LogOut, Settings } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Menu, X, User, LogOut, Settings, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
-export const Header = ({ AuthUser }) => {
+// Google Translate initialization
+const initializeGoogleTranslate = () => {
+  if (typeof window !== 'undefined' && window.google && window.google.translate) {
+    new window.google.translate.TranslateElement({
+      pageLanguage: 'tr',
+      includedLanguages: 'tr,en',
+      layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+};
+
+const changeLanguage = (lang) => {
+  if (typeof window !== 'undefined') {
+    const selectElement = document.querySelector('#google_translate_element select');
+    if (selectElement) {
+      selectElement.value = lang;
+      selectElement.dispatchEvent(new Event('change'));
+    } else {
+      setTimeout(() => changeLanguage(lang), 1000);
+    }
+  }
+};
+
+export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  
+  const { user: AuthUser, logout, loading } = useAuth();
 
-const isLoggedIn = !!AuthUser;
+  // Google Translate fonksiyonları
+  useEffect(() => {
+    // Google Translate script'ini yükle
+    const addGoogleTranslateScript = () => {
+      if (!window.google || !window.google.translate) {
+        const script = document.createElement('script');
+        script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+        script.async = true;
+        document.head.appendChild(script);
+
+        window.googleTranslateElementInit = () => {
+          new window.google.translate.TranslateElement({
+            pageLanguage: 'tr',
+            includedLanguages: 'tr,en',
+            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+          }, 'google_translate_element');
+        };
+      }
+    };
+
+    addGoogleTranslateScript();
+    
+    // Mevcut dil durumunu kontrol et
+    const checkCurrentLanguage = () => {
+      const hash = window.location.hash;
+      const cookies = document.cookie;
+      
+      if (hash.includes('googtrans') || cookies.includes('googtrans')) {
+        if (hash.includes('|en') || cookies.includes('/tr/en')) {
+          setCurrentLanguage('en');
+        } else if (hash.includes('|tr') || cookies.includes('/en/tr')) {
+          setCurrentLanguage('tr');
+        }
+      }
+      
+      // URL'deki Google Translate hash'lerini temizle
+      if (hash.includes('googtrans')) {
+        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+      }
+    };
+    
+    checkCurrentLanguage();
+    
+    // Hash değişikliklerini dinle ve temizle
+    const handleHashChange = () => {
+      if (window.location.hash.includes('googtrans')) {
+        setTimeout(() => {
+          window.history.replaceState(null, null, window.location.pathname + window.location.search);
+        }, 100);
+      }
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  const changeLanguage = (langCode) => {
+    setCurrentLanguage(langCode);
+    setShowLanguageMenu(false);
+    
+    if (langCode === 'en') {
+      document.cookie = "googtrans=/tr/en; path=/; domain=" + window.location.hostname;
+    } else {
+      // Türkçeye dön
+      document.cookie = "googtrans=/en/tr; path=/; domain=" + window.location.hostname;
+    }
+    
+    if (window.location.hash) {
+      window.history.replaceState(null, null, window.location.pathname + window.location.search);
+    }
+    
+    window.location.reload();
+  };
+
+  const languages = [
+    { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+    { code: 'en', name: 'English', flag: '🇺🇸' }
+  ];
+
+const isLoggedIn = !!AuthUser && !loading;
 
 const profile = {
-  avatar_url: AuthUser?.image || null,
-  full_name: AuthUser?.name || "Kullanıcı",
+  avatar_url: AuthUser?.user_photo || AuthUser?.image || AuthUser?.avatarUrl || null,
+  full_name: AuthUser?.user_name || AuthUser?.name || AuthUser?.full_name || "Kullanıcı",
   user_type: AuthUser?.role?.toLowerCase() || "artist",
 };
 
+const isAdmin = AuthUser?.role === 'admin';
+
   const handleSignOut = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/";
+    await logout();
   };
 
   return (
@@ -47,11 +160,50 @@ const profile = {
             <div className="hidden lg:flex items-center space-x-6">
               {isLoggedIn ? (
                 <>
-                  <Link href="/dashboard" className="text-white hover:text-primary-400">Dashboard</Link>
-                  <Link href="/messages" className="text-white hover:text-primary-400">Messages</Link>
+                  <Link href="/dashboard" className="text-white hover:text-primary-400">Kontrol Paneli</Link>
+                  <Link href="/messages" className="text-white hover:text-primary-400">Mesajlar</Link>
                   {profile.user_type === "artist" && (
-                    <Link href="/orders" className="text-white hover:text-primary-400">Orders</Link>
+                    <Link href="/orders" className="text-white hover:text-primary-400">Siparişler</Link>
                   )}
+
+                  {/* Language Selector */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                      className="flex items-center space-x-2 p-2 hover:bg-primary-500/10 rounded-xl transition"
+                    >
+                      <Globe className="w-5 h-5 text-white" />
+                      <span className="text-2xl">{languages.find(lang => lang.code === currentLanguage)?.flag}</span>
+                    </button>
+
+                    <AnimatePresence>
+                      {showLanguageMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl py-2 z-50"
+                        >
+                          {languages.map((language) => (
+                            <button
+                              key={language.code}
+                              onClick={() => changeLanguage(language.code)}
+                              className={`flex items-center space-x-3 px-4 py-2 w-full text-left hover:bg-gray-800 transition ${
+                                currentLanguage === language.code ? 'bg-gray-800 text-primary-400' : 'text-white'
+                              }`}
+                            >
+                              <span className="text-xl">{language.flag}</span>
+                              <span>{language.name}</span>
+                              {currentLanguage === language.code && (
+                                <span className="ml-auto text-primary-400">✓</span>
+                              )}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
 
                   {/* User Menu */}
                   <div className="relative">
@@ -84,7 +236,7 @@ const profile = {
                             onClick={() => setShowUserMenu(false)}
                           >
                             <User className="w-4 h-4" />
-                            <span>Profile</span>
+                            <span>Profil</span>
                           </Link>
                           <Link
                             href="/settings"
@@ -92,7 +244,7 @@ const profile = {
                             onClick={() => setShowUserMenu(false)}
                           >
                             <Settings className="w-4 h-4" />
-                            <span>Settings</span>
+                            <span>Ayarlar</span>
                           </Link>
                           <hr className="my-2 border-gray-700" />
                           <button
@@ -100,7 +252,7 @@ const profile = {
                             className="flex items-center space-x-2 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-gray-800 w-full text-left"
                           >
                             <LogOut className="w-4 h-4" />
-                            <span>Sign Out</span>
+                            <span>Çıkış Yap</span>
                           </button>
                         </motion.div>
                       )}
@@ -109,10 +261,49 @@ const profile = {
                 </>
               ) : (
                 <>
+                  {/* Language Selector for non-logged users */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                      className="flex items-center space-x-2 p-2 hover:bg-primary-500/10 rounded-xl transition mr-4"
+                    >
+                      <Globe className="w-5 h-5 text-white" />
+                      <span className="text-2xl ml-2 text-white">{languages.find(lang => lang.code === currentLanguage)?.flag}</span>
+                    </button>
+
+                    <AnimatePresence>
+                      {showLanguageMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl py-2 z-50"
+                        >
+                          {languages.map((language) => (
+                            <button
+                              key={language.code}
+                              onClick={() => changeLanguage(language.code)}
+                              className={`flex items-center space-x-3 px-4 py-2 w-full text-left hover:bg-gray-800 transition ${
+                                currentLanguage === language.code ? 'bg-gray-800 text-primary-400' : 'text-white'
+                              }`}
+                            >
+                              <span className="text-xl">{language.flag}</span>
+                              <span>{language.name}</span>
+                              {currentLanguage === language.code && (
+                                <span className="ml-auto text-primary-400">✓</span>
+                              )}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
                   <Link href="/register" className="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-400 text-black font-semibold rounded-xl border-2 border-primary-500 shadow-yellow-glow">
-                    Sign up
+                    Kayıt Ol
                   </Link>
-                  <Link href="/login" className="px-6 py-3 text-white font-semibold hover:text-primary-400">Login</Link>
+                  <Link href="/login" className="px-6 py-3 text-white font-semibold hover:text-primary-400">Giriş Yap</Link>
                 </>
               )}
             </div>
@@ -156,35 +347,84 @@ const profile = {
                     </div>
 
                     <Link href="/dashboard" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
-                      Dashboard
+                      Kontrol Paneli
                     </Link>
                     <Link href="/messages" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
-                      Messages
+                      Mesajlar
                     </Link>
                     {profile.user_type === "artist" && (
                       <Link href="/orders" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
-                        Orders
+                        Siparişler
                       </Link>
                     )}
                     <Link href="/profile" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
-                      Profile
+                      Profil
                     </Link>
                     {isAdmin && (
                       <Link href="/admin" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
-                        Admin Panel
+                        Admin Paneli
                       </Link>
                     )}
+                    
+                    {/* Mobile Language Selector */}
+                    <div className="px-4 py-3">
+                      <div className="text-gray-400 text-sm mb-2">Dil Seçin</div>
+                      <div className="flex space-x-2">
+                        {languages.map((language) => (
+                          <button
+                            key={language.code}
+                            onClick={() => {
+                              changeLanguage(language.code);
+                              setIsMenuOpen(false);
+                            }}
+                            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition ${
+                              currentLanguage === language.code 
+                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
+                                : 'bg-gray-800 text-white hover:bg-gray-700'
+                            }`}
+                          >
+                            <span className="text-lg">{language.flag}</span>
+                            <span className="text-sm">{language.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
                     <button onClick={handleSignOut} className="block w-full text-left px-4 py-3 text-red-400 hover:text-red-300">
-                      Sign Out
+                      Çıkış Yap
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Mobile Language Selector for non-logged users */}
+                    <div className="px-4 py-3">
+                      <div className="text-gray-400 text-sm mb-2">Dil Seçin</div>
+                      <div className="flex space-x-2">
+                        {languages.map((language) => (
+                          <button
+                            key={language.code}
+                            onClick={() => {
+                              changeLanguage(language.code);
+                              setIsMenuOpen(false);
+                            }}
+                            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition ${
+                              currentLanguage === language.code 
+                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
+                                : 'bg-gray-800 text-white hover:bg-gray-700'
+                            }`}
+                          >
+                            <span className="text-lg">{language.flag}</span>
+                            <span className="text-sm">{language.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
                     <Link href="/register" className="block w-full px-6 py-4 text-center bg-gradient-to-r from-primary-500 to-primary-400 text-black font-semibold rounded-xl border-2 border-primary-500 shadow-yellow-glow" onClick={() => setIsMenuOpen(false)}>
-                      Sign up
+                      Kayıt Ol
                     </Link>
                     <Link href="/login" className="block w-full px-6 py-4 text-center text-white font-semibold hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
-                      Login
+                      Giriş Yap
                     </Link>
                   </div>
                 )}
@@ -192,6 +432,9 @@ const profile = {
             )}
           </AnimatePresence>
         </div>
+        
+        {/* Google Translate Element (Hidden) */}
+        <div id="google_translate_element" style={{ display: 'none' }}></div>
       </header>
     </>
   );

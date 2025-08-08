@@ -9,32 +9,32 @@ import {
 
 export const AboutComponent = () => {
   const stats = [
-    { label: 'Creative Professionals', value: '10,000+', icon: Users },
-    { label: 'Projects Completed', value: '50,000+', icon: CheckCircle },
-    { label: 'Countries Served', value: '120+', icon: Globe },
-    { label: 'Average Rating', value: '4.9/5', icon: Star }
+    { label: 'Yaratıcı Profesyoneller', value: '10,000+', icon: Users },
+    { label: 'Tamamlanan Projeler', value: '50,000+', icon: CheckCircle },
+    { label: 'Hizmet Verilen Ülkeler', value: '120+', icon: Globe },
+    { label: 'Ortalama Puan', value: '4.9/5', icon: Star }
   ];
 
   const values = [
     {
       icon: Music,
-      title: 'Creative Excellence',
-      description: 'We believe in the power of music to transform lives and connect people across cultures.'
+      title: 'Yaratıcı Mükemmellik',
+      description: 'Müziğin yaşamları dönüştürme ve kültürler arası insanları birleştirme gücüne inanıyoruz.'
     },
     {
       icon: Users,
-      title: 'Community First',
-      description: 'Building a supportive ecosystem where artists and professionals can thrive together.'
+      title: 'Topluluk Önceliği',
+      description: 'Sanatçıların ve profesyonellerin birlikte gelişebileceği destekleyici bir ekosistem inşa ediyoruz.'
     },
     {
       icon: Shield,
-      title: 'Trust & Security',
-      description: 'Providing a safe, secure platform with verified professionals and protected transactions.'
+      title: 'Güven ve Güvenlik',
+      description: 'Doğrulanmış profesyoneller ve korumalı işlemlerle güvenli, güvenilir bir platform sağlıyoruz.'
     },
     {
       icon: Target,
-      title: 'Innovation',
-      description: 'Continuously evolving to meet the changing needs of the music industry.'
+      title: 'İnovasyon',
+      description: 'Müzik endüstrisinin değişen ihtiyaçlarını karşılamak için sürekli gelişiyoruz.'
     }
   ];
 
@@ -55,13 +55,13 @@ export const AboutComponent = () => {
             className="text-center max-w-4xl mx-auto"
           >
             <h1 className="text-5xl md:text-6xl font-bold mb-8 leading-tight">
-              About{' '}
+              Hakkımızda{' '}
               <span className="bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 bg-clip-text text-transparent">
                 Dripzone
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-200 mb-12 leading-relaxed">
-              Connecting the world's most talented music professionals with artists who need their expertise
+              Dünyanın en yetenekli müzik profesyonellerini uzmanlıklarına ihtiyaç duyan sanatçılarla buluşturuyoruz
             </p>
           </motion.div>
         </div>
@@ -78,16 +78,16 @@ export const AboutComponent = () => {
               viewport={{ once: true }}
             >
               <h2 className="text-4xl font-bold mb-6">
-                Our{' '}
+                Misyonumuz{' '}
                 <span className="bg-gradient-to-r from-primary-400 to-primary-500 bg-clip-text text-transparent">
-                  Mission
+                  
                 </span>
               </h2>
               <p className="text-lg text-gray-300 leading-relaxed mb-6">
-                Dripzone was created to bridge the gap between talented artists and the industry professionals they need to bring their musical visions to life. We believe that great music should have no boundaries, and every artist deserves access to world-class production, design, and promotional services.
+                Dripzone, yetenekli sanatçılar ile müzikal vizyonlarını hayata geçirmek için ihtiyaç duydukları sektör profesyonelleri arasındaki boşluğu doldurmak için oluşturuldu. Harika müziğin sınırları olmaması gerektiğine ve her sanatçının dünya standartlarında üretim, tasarım ve promosyon hizmetlerine erişim hakkı olduğuna inanıyoruz.
               </p>
               <p className="text-lg text-gray-300 leading-relaxed">
-                Founded by <strong className="text-primary-400">Talha Çetin</strong>, our platform has grown from a simple idea into a global marketplace that serves thousands of artists and professionals worldwide. We're committed to fostering creativity, collaboration, and success in the music industry.
+                <strong className="text-primary-400">Talha Çetin</strong> tarafından kurulan platformumuz, basit bir fikirden dünya çapında binlerce sanatçı ve profesyonel hizmet veren küresel bir pazaryerine dönüştü. Müzik endüstrisinde yaratıcılığı, işbirliğini ve başarıyı teşvik etmeye kararlıyız.
               </p>
             </motion.div>
             
@@ -127,13 +127,13 @@ export const AboutComponent = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold mb-6">
-              Our{' '}
+              Değerlerimiz{' '}
               <span className="bg-gradient-to-r from-primary-400 to-primary-500 bg-clip-text text-transparent">
-                Values
+                
               </span>
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              The principles that guide everything we do at Dripzone
+              Dripzone'da yaptığımız her şeyi yönlendiren ilkeler
             </p>
           </motion.div>
 
@@ -169,9 +169,9 @@ export const AboutComponent = () => {
             className="text-center max-w-4xl mx-auto"
           >
             <h2 className="text-4xl font-bold mb-8">
-              Meet Our{' '}
+              Kurucumuzla{' '}
               <span className="bg-gradient-to-r from-primary-400 to-primary-500 bg-clip-text text-transparent">
-                Founder
+                Tanışın
               </span>
             </h2>
             
@@ -181,14 +181,14 @@ export const AboutComponent = () => {
               </div>
               
               <h3 className="text-3xl font-bold text-white mb-4">Talha Çetin</h3>
-              <p className="text-xl text-primary-400 mb-6">Founder & CEO</p>
+              <p className="text-xl text-primary-400 mb-6">Kurucu & CEO</p>
               
               <p className="text-lg text-gray-300 leading-relaxed mb-6">
-                "I founded Dripzone with a simple belief: every artist deserves access to the best professionals in the music industry, regardless of their location or budget. Music is a universal language, and our platform helps break down the barriers that have traditionally separated artists from the resources they need to succeed."
+                "Dripzone'u basit bir inançla kurdum: Her sanatçı, konumları veya bütçeleri ne olursa olsun, müzik endüstrisindeki en iyi profesyonellere erişim hakkına sahiptir. Müzik evrensel bir dildir ve platformumuz, geleneksel olarak sanatçıları başarılı olmak için ihtiyaç duydukları kaynaklardan ayıran engelleri kırmaya yardımcı olur."
               </p>
               
               <p className="text-lg text-gray-300 leading-relaxed">
-                With a background in both technology and music, Talha saw an opportunity to create a platform that would democratize access to music industry services while maintaining the highest standards of quality and professionalism.
+                Hem teknoloji hem de müzik geçmişine sahip olan Talha, müzik endüstrisi hizmetlerine erişimi demokratikleştirirken en yüksek kalite ve profesyonellik standartlarını koruyan bir platform oluşturma fırsatını gördü.
               </p>
             </div>
           </motion.div>
@@ -206,13 +206,13 @@ export const AboutComponent = () => {
             className="text-center max-w-4xl mx-auto"
           >
             <h2 className="text-4xl font-bold mb-6">
-              Join the{' '}
+              Dripzone{' '}
               <span className="bg-gradient-to-r from-primary-400 to-primary-500 bg-clip-text text-transparent">
-                Dripzone Community
+                Topluluğuna Katılın
               </span>
             </h2>
             <p className="text-xl text-gray-300 mb-12 leading-relaxed">
-              Whether you're an artist looking for professional services or a professional ready to showcase your talents, Dripzone is your gateway to the music industry.
+              İster profesyonel hizmet arayan bir sanatçı olun, ister yeteneklerinizi sergilemeye hazır bir profesyonel olun, Dripzone müzik endüstrisine açılan kapınızdır.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -221,7 +221,7 @@ export const AboutComponent = () => {
                   href="/auth/register"
                   className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl transition-all duration-300 shadow-lg"
                 >
-                  <span>Get Started Today</span>
+                  <span>Bugün Başlayın</span>
                   <Zap className="w-5 h-5" />
                 </a>
               </motion.div>
@@ -231,7 +231,7 @@ export const AboutComponent = () => {
                   href="/category/producers"
                   className="inline-flex items-center space-x-3 px-8 py-4 border-2 border-primary-500/50 hover:border-primary-500 text-white rounded-xl font-bold transition-all duration-300 backdrop-blur-xl hover:bg-primary-500/10"
                 >
-                  <span>Explore Services</span>
+                  <span>Hizmetleri Keşfedin</span>
                   <Heart className="w-5 h-5" />
                 </a>
               </motion.div>

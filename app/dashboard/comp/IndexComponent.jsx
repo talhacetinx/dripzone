@@ -22,7 +22,7 @@ export async function DashboardRouter({user}) {
 
   return (
     <>
-      <Header AuthUser={user} />
+      <Header />
       {isProvider && <ProviderDashboard AuthUser={user} />}
       {isArtist && <ArtistDashboard AuthUser={user} />}
       <Footer />

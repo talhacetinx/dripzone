@@ -2,10 +2,11 @@
 
 import React from 'react'
 import { TrendingUp } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export const OverviewTab = ({ orders }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-4">
         <h3 className="text-lg font-bold mb-4">Son Siparişler</h3>
         <ul className="space-y-3">
@@ -25,6 +26,6 @@ export const OverviewTab = ({ orders }) => {
         <TrendingUp className="w-10 h-10 text-gray-500 mb-2" />
         <p className="text-gray-400">Gelir grafiği yakında eklenecek</p>
       </div>
-    </div>
+    </motion.div>
   )
 }

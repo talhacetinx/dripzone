@@ -2,10 +2,11 @@
 
 import React from 'react'
 import { Edit, Trash2 } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export const ServicesTab = ({ services, onEdit, onDelete }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {services.map((service) => (
         <div key={service.id} className="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
           <div
@@ -29,6 +30,6 @@ export const ServicesTab = ({ services, onEdit, onDelete }) => {
           </div>
         </div>
       ))}
-    </div>
+    </motion.div>
   )
 }  

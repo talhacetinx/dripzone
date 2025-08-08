@@ -2,10 +2,13 @@
 
 import React from 'react'
 import { Eye, MoreHorizontal } from 'lucide-react'
+import { motion } from 'framer-motion'
+
+
 
 export const OrdersTab = ({ orders }) => {
   return (
-    <div className="overflow-x-auto bg-gray-900 border border-gray-700 rounded-xl">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="overflow-x-auto bg-gray-900 border border-gray-700 rounded-xl">
       <table className="w-full text-sm">
         <thead className="bg-gray-800 text-gray-400">
           <tr>
@@ -35,6 +38,6 @@ export const OrdersTab = ({ orders }) => {
           ))}
         </tbody>
       </table>
-    </div>
+    </motion.div>
   )
 }

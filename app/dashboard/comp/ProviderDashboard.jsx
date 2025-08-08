@@ -7,10 +7,11 @@ import {
 } from 'lucide-react'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { Modal } from '../../components/ui/Modal'
-import { OverviewTab } from './ProviderComponent/Overview'
-import { ServicesTab } from './ProviderComponent/ServicesTab'
-import { RevenueTab } from './ProviderComponent/Revenue'
-import { OrdersTab } from './ProviderComponent/Orders'
+import { OverviewTab } from './ProviderComponent/Tabs/Overview'
+import { ServicesTab } from './ProviderComponent/Tabs/ServicesTab'
+import { RevenueTab } from './ProviderComponent/Tabs/Revenue'
+import { OrdersTab } from './ProviderComponent/Tabs/Orders'
+import {ProfileProviderTab} from './ProviderComponent/Tabs/Profile'
 
 const mockServices = [
   {
@@ -83,24 +84,26 @@ export const ProviderDashboard = ({AuthUser}) => {
   const [services, setServices] = useState([])
   const [orders, setOrders] = useState([])
   const [conversations, setConversations] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       setServices(mockServices)
       setOrders(mockOrders)
       setConversations(mockConversations)
+      setIsLoading(false)
     }, 1000)
 
     return () => clearTimeout(timeout)
   }, [])
 
-  // if (status === 'loading') {
-  //   return (
-  //     <div className="min-h-screen bg-black flex items-center justify-center">
-  //       <LoadingSpinner size="lg" />
-  //     </div>
-  //   )
-  // }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    )
+  }
 
   if (!AuthUser) {
     return (
@@ -154,7 +157,7 @@ export const ProviderDashboard = ({AuthUser}) => {
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Hoş geldin, {AuthUser?.user?.name}!</h1>
+          <h1 className="text-2xl font-bold">Hoş geldin, {AuthUser?.name}!</h1>
           <button
             onClick={() => setShowServiceModal(true)}
             className="flex items-center space-x-2 bg-primary-600 text-black px-4 py-2 rounded-md hover:bg-primary-700 transition"
@@ -187,11 +190,11 @@ export const ProviderDashboard = ({AuthUser}) => {
 
         {/* Tab Buttons */}
         <div className="flex space-x-4 border-b border-gray-700 mb-6">
-          {['overview', 'services', 'orders', 'revenue'].map((tab) => (
+          {['overview', 'services', 'orders', 'revenue' , 'profile'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-2 text-sm font-semibold ${
+              className={`pb-2 text-md   font-semibold ${
                 activeTab === tab ? 'text-primary-500 border-b-2 border-primary-500' : 'text-gray-400'
               }`}
             >
@@ -217,6 +220,7 @@ export const ProviderDashboard = ({AuthUser}) => {
           )}
           {activeTab === 'orders' && <OrdersTab orders={orders} />}
           {activeTab === 'revenue' && <RevenueTab totalRevenue={totalRevenue} />}
+          {activeTab === 'profile' && <ProfileProviderTab userInfo={AuthUser} />}
         </div>
       </div>
 

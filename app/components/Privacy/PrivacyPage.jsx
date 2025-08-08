@@ -8,73 +8,73 @@ export const PrivacyComponent = () => {
   const sections = [
     {
       icon: Database,
-      title: 'Information We Collect',
+      title: 'Topladığımız Bilgiler',
       content: [
-        'Personal information you provide when creating an account (name, email, phone number)',
-        'Profile information including bio, location, and professional details',
-        'Payment information processed securely through our payment partners',
-        'Communication data from messages sent through our platform',
-        'Usage data including how you interact with our services',
-        'Device information such as IP address, browser type, and operating system'
+        'Hesap oluştururken sağladığınız kişisel bilgiler (ad, e-posta, telefon numarası)',
+        'Biyografi, konum ve profesyonel detayları içeren profil bilgileri',
+        'Ödeme ortaklarımız aracılığıyla güvenli şekilde işlenen ödeme bilgileri',
+        'Platformumuz üzerinden gönderilen mesajlardan iletişim verileri',
+        'Hizmetlerimizle nasıl etkileşim kurduğunuzu içeren kullanım verileri',
+        'IP adresi, tarayıcı türü ve işletim sistemi gibi cihaz bilgileri'
       ]
     },
     {
       icon: Eye,
-      title: 'How We Use Your Information',
+      title: 'Bilgilerinizi Nasıl Kullanıyoruz',
       content: [
-        'To provide and maintain our marketplace services',
-        'To process transactions and facilitate payments',
-        'To communicate with you about your account and services',
-        'To improve our platform and develop new features',
-        'To ensure platform security and prevent fraud',
-        'To comply with legal obligations and resolve disputes'
+        'Pazaryeri hizmetlerimizi sağlamak ve sürdürmek için',
+        'İşlemleri işlemek ve ödemeleri kolaylaştırmak için',
+        'Hesabınız ve hizmetler hakkında sizinle iletişim kurmak için',
+        'Platformumuzu iyileştirmek ve yeni özellikler geliştirmek için',
+        'Platform güvenliğini sağlamak ve dolandırıcılığı önlemek için',
+        'Yasal yükümlülüklere uymak ve anlaşmazlıkları çözmek için'
       ]
     },
     {
       icon: Users,
-      title: 'Information Sharing',
+      title: 'Bilgi Paylaşımı',
       content: [
-        'We do not sell your personal information to third parties',
-        'Service providers may see relevant information to complete projects',
-        'Payment processors receive necessary transaction information',
-        'We may share data with law enforcement when legally required',
-        'Anonymous, aggregated data may be used for analytics',
-        'Business transfers may include user data with proper notice'
+        'Kişisel bilgilerinizi üçüncü taraflara satmıyoruz',
+        'Hizmet sağlayıcıları projeleri tamamlamak için ilgili bilgileri görebilir',
+        'Ödeme işlemcileri gerekli işlem bilgilerini alır',
+        'Yasal olarak gerekli olduğunda kolluk kuvvetleriyle veri paylaşabiliriz',
+        'Anonim, toplanmış veriler analitik için kullanılabilir',
+        'İş transferleri uygun bildirimle kullanıcı verilerini içerebilir'
       ]
     },
     {
       icon: Lock,
-      title: 'Data Security',
+      title: 'Veri Güvenliği',
       content: [
-        'Industry-standard encryption for data transmission and storage',
-        'Regular security audits and vulnerability assessments',
-        'Secure payment processing through certified partners',
-        'Access controls limiting who can view your information',
-        'Regular backups to prevent data loss',
-        'Incident response procedures for any security breaches'
+        'Veri iletimi ve depolama için endüstri standardı şifreleme',
+        'Düzenli güvenlik denetimleri ve güvenlik açığı değerlendirmeleri',
+        'Sertifikalı ortaklar aracılığıyla güvenli ödeme işleme',
+        'Bilgilerinizi kimlerin görebileceğini sınırlayan erişim kontrolleri',
+        'Veri kaybını önlemek için düzenli yedeklemeler',
+        'Güvenlik ihlalleri için olay müdahale prosedürleri'
       ]
     },
     {
       icon: Shield,
-      title: 'Your Rights',
+      title: 'Haklarınız',
       content: [
-        'Access and review your personal information',
-        'Request corrections to inaccurate data',
-        'Delete your account and associated data',
-        'Export your data in a portable format',
-        'Opt out of marketing communications',
-        'File complaints with data protection authorities'
+        'Kişisel bilgilerinize erişim ve inceleme',
+        'Yanlış verilerin düzeltilmesini talep etme',
+        'Hesabınızı ve ilişkili verileri silme',
+        'Verilerinizi taşınabilir formatta dışa aktırma',
+        'Pazarlama iletişimlerinden çıkma',
+        'Veri koruma yetkililerine şikayet başvurusu'
       ]
     },
     {
       icon: Globe,
-      title: 'International Transfers',
+      title: 'Uluslararası Transferler',
       content: [
-        'Data may be processed in countries outside your residence',
-        'We ensure adequate protection through legal mechanisms',
-        'EU users benefit from GDPR protections',
-        'We comply with applicable international data transfer laws',
-        'Safeguards are in place for cross-border data transfers'
+        'Veriler ikamet ettiğiniz ülke dışındaki ülkelerde işlenebilir',
+        'Yasal mekanizmalar aracılığıyla yeterli koruma sağlıyoruz',
+        'AB kullanıcıları GDPR korumalarından yararlanır',
+        'Geçerli uluslararası veri transfer yasalarına uyuyoruz',
+        'Sınır ötesi veri transferleri için güvenlik önlemleri mevcuttur'
       ]
     }
   ];
@@ -96,16 +96,16 @@ export const PrivacyComponent = () => {
             className="text-center max-w-4xl mx-auto"
           >
             <h1 className="text-5xl md:text-6xl font-bold mb-8 leading-tight">
-              Privacy{' '}
+              Gizlilik{' '}
               <span className="bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 bg-clip-text text-transparent">
-                Policy
+                Politikası
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed">
-              Your privacy is important to us. This policy explains how we collect, use, and protect your information.
+              Gizliliğiniz bizim için önemlidir. Bu politika, bilgilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu açıklar.
             </p>
             <p className="text-sm text-gray-400">
-              Last updated: January 1, 2025
+              Son güncelleme: 1 Ocak 2025
             </p>
           </motion.div>
         </div>
@@ -122,12 +122,12 @@ export const PrivacyComponent = () => {
               viewport={{ once: true }}
               className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8 mb-12"
             >
-              <h2 className="text-2xl font-bold mb-4 text-primary-400">Introduction</h2>
+              <h2 className="text-2xl font-bold mb-4 text-primary-400">Giriş</h2>
               <p className="text-gray-300 leading-relaxed mb-4">
-                Dripzone ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our music marketplace platform.
+                Dripzone ("biz," "bizim," veya "biz") gizliliğinizi korumaya kararlıdır. Bu Gizlilik Politikası, müzik pazaryeri platformumuzu kullandığınızda bilgilerinizi nasıl topladığımızı, kullandığımızı, açıkladığımızı ve koruduğumuzu açıklar.
               </p>
               <p className="text-gray-300 leading-relaxed">
-                By using our services, you agree to the collection and use of information in accordance with this policy. We will not use or share your information with anyone except as described in this Privacy Policy.
+                Hizmetlerimizi kullanarak, bu politika uyarınca bilgilerin toplanması ve kullanılmasını kabul edersiniz. Bilgilerinizi bu Gizlilik Politikasında açıklandığı şekilde kullanmayacağız veya kimseyle paylaşmayacağız.
               </p>
             </motion.div>
           </div>
@@ -179,23 +179,23 @@ export const PrivacyComponent = () => {
             className="text-center max-w-4xl mx-auto"
           >
             <h2 className="text-3xl font-bold mb-6">
-              Questions About Your{' '}
+              Gizliliğiniz Hakkında{' '}
               <span className="bg-gradient-to-r from-primary-400 to-primary-500 bg-clip-text text-transparent">
-                Privacy?
+                Sorularınız mı Var?
               </span>
             </h2>
             <p className="text-lg text-gray-300 mb-8 leading-relaxed">
-              If you have any questions about this Privacy Policy or our data practices, please contact us.
+              Bu Gizlilik Politikası veya veri uygulamalarımız hakkında herhangi bir sorunuz varsa, lütfen bizimle iletişime geçin.
             </p>
             
             <div className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="text-xl font-bold text-primary-400 mb-4">Email Us</h3>
+                  <h3 className="text-xl font-bold text-primary-400 mb-4">Bize E-posta Gönderin</h3>
                   <p className="text-gray-300">privacy@dripzone.com</p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-primary-400 mb-4">Data Protection Officer</h3>
+                  <h3 className="text-xl font-bold text-primary-400 mb-4">Veri Koruma Görevlisi</h3>
                   <p className="text-gray-300">dpo@dripzone.com</p>
                 </div>
               </div>

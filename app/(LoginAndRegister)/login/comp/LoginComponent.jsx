@@ -74,12 +74,12 @@ export default function LoginPageComponent() {
                 className="h-12 w-auto object-contain filter drop-shadow-lg"
               />
             </Link>
-            <h1 className="text-3xl font-bold mb-2 text-white">Welcome Back!</h1>
+            <h1 className="text-3xl font-bold mb-2 text-white">Tekrar Hoş Geldiniz!</h1>
           </div>
 
           <form onSubmit={handleSubmit} className="w-full max-w-md rounded-lg p-0">
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1 text-white">Email</label>
+              <label className="block text-sm font-medium mb-1 text-white">E-posta</label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -88,14 +88,14 @@ export default function LoginPageComponent() {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white"
-                  placeholder="Enter your email"
+                  placeholder="E-posta adresinizi girin"
                   required
                 />
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1 text-white">Password</label>
+              <label className="block text-sm font-medium mb-1 text-white">Şifre</label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -104,7 +104,7 @@ export default function LoginPageComponent() {
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white"
-                  placeholder="Enter your password"
+                  placeholder="Şifrenizi girin"
                   required
                 />
                 <button
@@ -112,7 +112,7 @@ export default function LoginPageComponent() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-400"
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? "Gizle" : "Göster"}
                 </button>
               </div>
             </div>
@@ -133,14 +133,14 @@ export default function LoginPageComponent() {
 
             <div className="text-center mt-3">
               <Link href="/forgot-password" className="text-sm text-primary-400 hover:text-primary-300">
-                Forgot Password?
+                Şifremi Unuttum?
               </Link>
             </div>
             <div className="mt-8 text-center">
               <p className="text-gray-300">
-                Don't have an account?{" "}
+                Hesabınız yok mu?{" "}
                 <Link href="/register" className="text-primary-400 hover:text-primary-300 font-semibold">
-                  Sign Up
+                  Kayıt Ol
                 </Link>
               </p>
             </div>

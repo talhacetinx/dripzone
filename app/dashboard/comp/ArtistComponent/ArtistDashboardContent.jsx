@@ -8,7 +8,7 @@ import { OverviewArtistTab } from './Tabs/Overview'
 import { ServicesArtistTab } from './Tabs/Services'
 import { OrdersArtistTab } from './Tabs/Orders'
 import { RevenueArtistTab } from './Tabs/Revenue'
-
+import { ProfileTab } from './Tabs/Profile'
 
 // Mock Data
 const mockServices = [
@@ -55,7 +55,6 @@ export const ArtistDashboardContent = ({ user }) => {
   const [conversations, setConversations] = useState([])
   const [showServiceModal, setShowServiceModal] = useState(false)
 
-  console.log(user)
   useEffect(() => {
     // Mock verileri yükle
     const timeout = setTimeout(() => {
@@ -71,7 +70,8 @@ export const ArtistDashboardContent = ({ user }) => {
     { id: 'overview', label: 'Genel Bakış' },
     { id: 'services', label: 'Hizmetlerim' },
     { id: 'orders', label: 'Siparişler' },
-    { id: 'revenue', label: 'Gelir' }
+    { id: 'revenue', label: 'Gelir' },
+    { id: 'profile', label: 'Profil' }
   ]
 
   return (
@@ -107,6 +107,7 @@ export const ArtistDashboardContent = ({ user }) => {
       {activeTab === 'services' && <ServicesArtistTab services={services} />}
       {activeTab === 'orders' && <OrdersArtistTab orders={orders} />}
       {activeTab === 'revenue' && <RevenueArtistTab orders={orders} />}
+      {activeTab === 'profile' && <ProfileTab orders={orders} userInfo={user} />}
       </div>
 
       {/* Modal */}

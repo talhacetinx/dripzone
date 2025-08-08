@@ -12,15 +12,20 @@ model User {
   email       String   @unique
   password    String
   name        String
+  user_name   String?
   phone       String?
   country     String?
   role        Role?
   userPending Boolean  @default(false)
+  user_photo  String?
   createdAt   DateTime @default(now())
   newPasswordAuth String?
 
   artist   Artist?
   provider Provider?
+
+  artistProfile   ArtistProfile?
+  providerProfile ProviderProfile?
 }
 
 model Artist {
@@ -37,6 +42,47 @@ model Provider {
   studioLocation String
   studioPhoto    String
 }
+
+model ArtistProfile {
+  id          Int      @id @default(autoincrement())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  title       String?
+  bio         String?
+  avatarUrl   String?
+  genres      String?
+  experiences String[] @default([])
+  experience  Int?
+  slug      String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProviderProfile {
+  id               Int       @id @default(autoincrement())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id])
+
+  studioName       String?
+  studioPhoto      String?
+  about            String?
+  services         String[]  @default([])
+
+  avatarUrl        String?
+  provider_title   String?
+  experience       Int?
+  projectCount     Int?
+  responseTime     Int?
+  specialties      String[]  @default([])
+  importantClients String[]  @default([])
+  studioPhotos     String[]  @default([])
+  genres           String[]  @default([])
+
+  slug             String    @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
 
 enum Role {
   ADMIN

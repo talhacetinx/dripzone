@@ -1,5 +1,6 @@
 import { LRUCache } from "lru-cache"
 
+export const ALLOWED_ORIGINS = ["http://localhost:3000", "https://dripzone-topaz.vercel.app"];
 
 const rateLimitOptions = {
   max: 25,
