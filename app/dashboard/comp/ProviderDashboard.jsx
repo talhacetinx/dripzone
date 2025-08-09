@@ -189,7 +189,7 @@ export const ProviderDashboard = ({AuthUser}) => {
         </div>
 
         {/* Tab Buttons */}
-        <div className="flex space-x-4 border-b border-gray-700 mb-6">
+        <div className="overflow-x-auto flex space-x-4 border-b border-gray-700 mb-6">
           {['overview', 'services', 'orders', 'revenue' , 'profile'].map((tab) => (
             <button
               key={tab}

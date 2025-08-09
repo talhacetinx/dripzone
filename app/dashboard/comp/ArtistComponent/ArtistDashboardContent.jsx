@@ -90,7 +90,7 @@ export const ArtistDashboardContent = ({ user }) => {
         </div>
 
         {/* Tab Menüleri */}
-        <div className="flex space-x-4 border-b border-gray-700 mb-6 overflow-x-auto">
+        <div className="overflow-x-auto flex space-x-4 border-b border-gray-700 mb-6 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
