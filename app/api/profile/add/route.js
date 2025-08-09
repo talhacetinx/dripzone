@@ -66,33 +66,49 @@ export async function POST(req) {
         userPhotoName,
         profile_description,
         profile_experience,
-        experiences = [], // Uzmanlık alanları
+        experiences = [],
         genres = [],
         profile_title,
-        background_image, // Arkaplan fotoğrafı eklendi
+        background_image,
       } = body;
 
       if (!photos) return NextResponse.json({ error: "Fotoğraf eksik" }, { status: 400 });
 
-      const avatarUrl = await saveBase64Image(photos, "profile-page");
+      let avatarUrl;
+      try {
+        if (typeof photos === 'string' && photos.startsWith('/')) {
+          avatarUrl = photos;
+        } else {
+          try {
+            avatarUrl = await saveBase64Image(photos, "profile-page");
+          } catch (saveError) {
+            console.warn("Dosya kaydetme başarısız, base64 olarak kaydediliyor:", saveError.message);
+            avatarUrl = photos;
+          }
+        }
+      } catch (imgError) {
+        console.error("Artist avatar kaydetme hatası:", imgError);
+        return NextResponse.json({ error: "Avatar kaydetme hatası: " + imgError.message }, { status: 500 });
+      }
       
-      // Arkaplan fotoğrafını kaydet
       let backgroundUrl = null;
       if (background_image) {
         try {
-          // Eğer background_image zaten bir URL ise (güncelleme durumu), doğrudan kullan
           if (typeof background_image === 'string' && background_image.startsWith('/')) {
             backgroundUrl = background_image;
           } else {
-            backgroundUrl = await saveBase64Image(background_image, "profile-backgrounds");
+            try {
+              backgroundUrl = await saveBase64Image(background_image, "profile-backgrounds");
+            } catch (saveError) {
+              console.warn("Background dosya kaydetme başarısız, base64 olarak kaydediliyor:", saveError.message);
+              backgroundUrl = background_image;
+            }
           }
         } catch (bgError) {
           console.error("Arkaplan fotoğrafı kaydetme hatası:", bgError);
-          // Arkaplan fotoğrafı hatalı olursa devam et ama logla
         }
       }
 
-      // Önce mevcut profil var mı kontrol edelim
       const existingProfile = await prisma.artistProfile.findUnique({
         where: { userId }
       });
@@ -102,7 +118,7 @@ export async function POST(req) {
         update: {
           bio: profile_description,
           avatarUrl,
-          backgroundUrl, // Arkaplan URL'i eklendi
+          backgroundUrl,
           experience: parseInt(profile_experience),
           experiences: Array.isArray(experiences) ? experiences : [],
           genres: Array.isArray(genres) ? genres.join(",") : String(genres || ""),
@@ -113,7 +129,7 @@ export async function POST(req) {
           userId,
           bio: profile_description,
           avatarUrl,
-          backgroundUrl, // Arkaplan URL'i eklendi
+          backgroundUrl,
           experience: parseInt(profile_experience),
           experiences: Array.isArray(experiences) ? experiences : [],
           genres: Array.isArray(genres) ? genres.join(",") : String(genres || ""),
@@ -131,7 +147,7 @@ export async function POST(req) {
 
     if (role === "PROVIDER") {
       const {
-        photos, // avatar
+        photos,
         provider_about,
         provider_experience,
         provider_project_count,
@@ -141,9 +157,9 @@ export async function POST(req) {
         provider_services_csv,
         provider_specialties = [],
         provider_important_clients = [],
-        provider_studio_images = [], // [{dataUrl,name}]
+        provider_studio_images = [],
         genres = [],
-        background_image, // Arkaplan fotoğrafı eklendi
+        background_image,
       } = body;
 
       if (!photos) {
@@ -152,30 +168,36 @@ export async function POST(req) {
 
       let avatarUrl;
       try {
-        // Eğer photos zaten bir URL ise (güncelleme durumu), doğrudan kullan
         if (typeof photos === 'string' && photos.startsWith('/')) {
           avatarUrl = photos;
         } else {
-          avatarUrl = await saveBase64Image(photos, "profile-page");
+          try {
+            avatarUrl = await saveBase64Image(photos, "profile-page");
+          } catch (saveError) {
+            console.warn("Dosya kaydetme başarısız, base64 olarak kaydediliyor:", saveError.message);
+            avatarUrl = photos;
+          }
         }
       } catch (imgError) {
         console.error("Avatar kaydetme hatası:", imgError);
         return NextResponse.json({ error: "Avatar kaydetme hatası: " + imgError.message }, { status: 500 });
       }
 
-      // Arkaplan fotoğrafını kaydet
       let backgroundUrl = null;
       if (background_image) {
         try {
-          // Eğer background_image zaten bir URL ise (güncelleme durumu), doğrudan kullan
           if (typeof background_image === 'string' && background_image.startsWith('/')) {
             backgroundUrl = background_image;
           } else {
-            backgroundUrl = await saveBase64Image(background_image, "profile-backgrounds");
+            try {
+              backgroundUrl = await saveBase64Image(background_image, "profile-backgrounds");
+            } catch (saveError) {
+              console.warn("Provider background dosya kaydetme başarısız, base64 olarak kaydediliyor:", saveError.message);
+              backgroundUrl = background_image;
+            }
           }
         } catch (bgError) {
           console.error("Arkaplan fotoğrafı kaydetme hatası:", bgError);
-          // Arkaplan fotoğrafı hatalı olursa devam et ama logla
         }
       }
 
@@ -183,12 +205,16 @@ export async function POST(req) {
       try {
         for (const item of provider_studio_images.slice(0, 3)) {
           if (item?.dataUrl) {
-            // Eğer dataUrl zaten bir URL ise (güncelleme durumu), doğrudan kullan
             if (typeof item.dataUrl === 'string' && item.dataUrl.startsWith('/')) {
               studioPhotos.push(item.dataUrl);
             } else {
-              const url = await saveBase64Image(item.dataUrl, "studio");
-              studioPhotos.push(url);
+              try {
+                const url = await saveBase64Image(item.dataUrl, "studio");
+                studioPhotos.push(url);
+              } catch (saveError) {
+                console.warn("Studio fotoğraf kaydetme başarısız, base64 olarak kaydediliyor:", saveError.message);
+                studioPhotos.push(item.dataUrl);
+              }
             }
           }
         }
@@ -198,7 +224,6 @@ export async function POST(req) {
       }
 
       try {
-        // Önce mevcut profil var mı kontrol edelim
         const existingProfile = await prisma.providerProfile.findUnique({
           where: { userId }
         });
@@ -212,7 +237,7 @@ export async function POST(req) {
             about: provider_about || null,
             services: Array.isArray(provider_services) ? provider_services : [],
             avatarUrl,
-            backgroundUrl, // Arkaplan URL'i eklendi
+            backgroundUrl,
             experience: provider_experience ? parseInt(provider_experience) : null,
             projectCount: provider_project_count ? parseInt(provider_project_count) : null,
             responseTime: provider_response_time ? parseInt(provider_response_time) : null,
@@ -231,7 +256,7 @@ export async function POST(req) {
             about: provider_about || null,
             services: Array.isArray(provider_services) ? provider_services : [],
             avatarUrl,
-            backgroundUrl, // Arkaplan URL'i eklendi
+            backgroundUrl,
             experience: provider_experience ? parseInt(provider_experience) : null,
             projectCount: provider_project_count ? parseInt(provider_project_count) : null,
             responseTime: provider_response_time ? parseInt(provider_response_time) : null,
