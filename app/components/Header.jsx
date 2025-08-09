@@ -1,82 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Menu, X, User, LogOut, Settings, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('tr');
   
   const { user: AuthUser, logout, loading } = useAuth();
+  const { currentLanguage, changeLanguage, languages, isTranslating } = useLanguage();
 
-  // Google Translate fonksiyonları
-  useEffect(() => {
-    // Google Translate script'ini yükle
-    const addGoogleTranslateScript = () => {
-      if (!window.google || !window.google.translate) {
-        const script = document.createElement('script');
-        script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-        script.async = true;
-        document.head.appendChild(script);
-
-        window.googleTranslateElementInit = () => {
-          new window.google.translate.TranslateElement({
-            pageLanguage: 'tr',
-            includedLanguages: 'tr,en',
-            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false
-          }, 'google_translate_element');
-        };
-      }
-    };
-
-    addGoogleTranslateScript();
-  }, []);
-
-  const changeLanguage = (langCode) => {
-    setCurrentLanguage(langCode);
+  const handleLanguageChange = (langCode) => {
+    changeLanguage(langCode);
     setShowLanguageMenu(false);
-    
-    // Google Translate kullanarak dil değiştir
-    const googleTranslateCombo = document.querySelector('.goog-te-combo');
-    if (googleTranslateCombo) {
-      googleTranslateCombo.value = langCode;
-      googleTranslateCombo.dispatchEvent(new Event('change'));
-    } else {
-      // Eğer Google Translate henüz yüklenmediyse, sayfayı yeniden yükle
-      const currentUrl = new URL(window.location.href);
-      if (langCode === 'en') {
-        currentUrl.searchParams.set('hl', 'en');
-      } else {
-        currentUrl.searchParams.delete('hl');
-      }
-      window.location.href = currentUrl.toString();
-    }
   };
 
-  const languages = [
-    { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
-    { code: 'en', name: 'English', flag: '🇺🇸' }
-  ];
+  const isLoggedIn = !!AuthUser && !loading;
 
-const isLoggedIn = !!AuthUser && !loading;
+  const profile = {
+    avatar_url: AuthUser?.user_photo || AuthUser?.image || AuthUser?.avatarUrl || null,
+    full_name: AuthUser?.user_name || AuthUser?.name || AuthUser?.full_name || "Kullanıcı",
+    user_type: AuthUser?.role?.toLowerCase() || "artist",
+  };
 
-// Debug için console.log ekleyelim
-console.log("🔍 Header AuthUser:", AuthUser);
-
-const profile = {
-  avatar_url: AuthUser?.user_photo || AuthUser?.image || AuthUser?.avatarUrl || null,
-  full_name: AuthUser?.user_name || AuthUser?.name || AuthUser?.full_name || "Kullanıcı",
-  user_type: AuthUser?.role?.toLowerCase() || "artist",
-};
-
-const isAdmin = AuthUser?.role === 'admin';
+  const isAdmin = AuthUser?.role === 'admin';
 
   const handleSignOut = async () => {
     await logout();
@@ -134,7 +87,7 @@ const isAdmin = AuthUser?.role === 'admin';
                           {languages.map((language) => (
                             <button
                               key={language.code}
-                              onClick={() => changeLanguage(language.code)}
+                              onClick={() => handleLanguageChange(language.code)}
                               className={`flex items-center space-x-3 px-4 py-2 w-full text-left hover:bg-gray-800 transition ${
                                 currentLanguage === language.code ? 'bg-gray-800 text-primary-400' : 'text-white'
                               }`}
@@ -229,7 +182,7 @@ const isAdmin = AuthUser?.role === 'admin';
                           {languages.map((language) => (
                             <button
                               key={language.code}
-                              onClick={() => changeLanguage(language.code)}
+                              onClick={() => handleLanguageChange(language.code)}
                               className={`flex items-center space-x-3 px-4 py-2 w-full text-left hover:bg-gray-800 transition ${
                                 currentLanguage === language.code ? 'bg-gray-800 text-primary-400' : 'text-white'
                               }`}
@@ -378,9 +331,6 @@ const isAdmin = AuthUser?.role === 'admin';
             )}
           </AnimatePresence>
         </div>
-        
-        {/* Google Translate Element (Hidden) */}
-        <div id="google_translate_element" style={{ display: 'none' }}></div>
       </header>
     </>
   );
