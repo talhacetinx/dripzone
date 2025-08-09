@@ -50,6 +50,7 @@ model ArtistProfile {
   title       String?
   bio         String?
   avatarUrl   String?
+  backgroundUrl String? // Arkaplan fotoğrafı URL'i eklendi
   genres      String?
   experiences String[] @default([])
   experience  Int?
@@ -69,6 +70,7 @@ model ProviderProfile {
   services         String[]  @default([])
 
   avatarUrl        String?
+  backgroundUrl    String?   // Arkaplan fotoğrafı URL'i eklendi
   provider_title   String?
   experience       Int?
   projectCount     Int?

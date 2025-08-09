@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react';
-import { Mail, Lock, User, Phone, Upload } from 'lucide-react';
+import { Mail, Lock, User, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { countries } from 'countries-list';
 import { toast } from 'react-toastify';
@@ -16,8 +16,8 @@ export const RegisterComponents = () => {
     password: '',
     confirmPassword: '',
     agreeTerms: false,
-    country: '', 
-    user_photo: null,
+    country: '',
+    user_type: 'ARTIST', // Default olarak artist
   });
 
   const initialFormData = {
@@ -30,12 +30,10 @@ export const RegisterComponents = () => {
     confirmPassword: '',
     agreeTerms: false,
     country: '',
-    user_type: '',
-    user_photo: null,
+    user_type: 'ARTIST',
   };
 
   const [isLoading, setIsLoading] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState(null);
   const countryList = Object.values(countries).map(countryData => countryData.name);
 
   const [search, setSearch] = useState('');
@@ -48,29 +46,22 @@ export const RegisterComponents = () => {
     }));
   };
 
-  const handlePhotoChange = (e) => {
-    if (e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setFormData((prev) => ({ ...prev, user_photo: file }));
-      
-      // Preview oluştur
-      const reader = new FileReader();
-      reader.onloadend = () => setPhotoPreview(reader.result);
-      reader.readAsDataURL(file);
-    } else {
-      setFormData((prev) => ({ ...prev, user_photo: null }));
-      setPhotoPreview(null);
-    }
-  };
+
 
   const handleCountryChange = (e) => {
     const value = e.target.value;
     setSearch(value);
+    
+    // FormData'yı da güncelle
+    setFormData(prev => ({
+      ...prev,
+      country: value,
+    }));
 
     const filtered = countryList.filter(country =>
       country.toLowerCase().includes(value.toLowerCase())
     );
-    setFilteredList(filtered.slice(0, 100)); // İlk 10 ülke göster
+    setFilteredList(filtered.slice(0, 100)); // İlk 100 ülke göster
   };
 
   const handleSelect = (selectedCountry) => {
@@ -87,25 +78,17 @@ export const RegisterComponents = () => {
     setIsLoading(true);
 
     try {
-      // FormData kullanarak file upload yapalım
-      const formDataToSend = new FormData();
-      
-      // Tüm form verilerini ekle
-      Object.keys(formData).forEach(key => {
-        if (key === 'user_photo' && formData[key]) {
-          formDataToSend.append(key, formData[key]);
-        } else if (key !== 'user_photo') {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
+      // JSON formatında gönder (user_photo artık yok)
+      const requestData = { ...formData };
 
       const request = await fetch("/api/register", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "X-CLIENT-KEY": 123123123123123,
           "X-SECRET-KEY": 234234234234234234,
         },
-        body: formDataToSend, // FormData gönder
+        body: JSON.stringify(requestData),
       });
 
       const response = await request.json();
@@ -115,7 +98,6 @@ export const RegisterComponents = () => {
 
         // ✅ Formu sıfırla
         setFormData(initialFormData);
-        setPhotoPreview(null);
         setSearch("");
         setFilteredList([]);
         e.target.reset();
@@ -228,46 +210,7 @@ export const RegisterComponents = () => {
             </div>
 
             {/* Profil Fotoğrafı */}
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white">Profil Fotoğrafı (İsteğe Bağlı)</label>
-              <div className="flex items-center space-x-4">
-                <input
-                  type="file"
-                  id="user_photo"
-                  onChange={handlePhotoChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <label
-                  htmlFor="user_photo"
-                  className={`relative w-20 h-20 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-gray-500 transition-colors flex items-center justify-center ${
-                    photoPreview ? 'border-primary-500' : ''
-                  }`}
-                >
-                  {photoPreview ? (
-                    <img
-                      src={photoPreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover rounded-xl"
-                    />
-                  ) : (
-                    <Upload className="w-6 h-6 text-gray-400" />
-                  )}
-                </label>
-                <div className="flex-1">
-                  <label
-                    htmlFor="user_photo"
-                    className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-gray-600 rounded-xl text-white cursor-pointer hover:bg-gray-700/50 transition-colors"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Fotoğraf Seç
-                  </label>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {formData.user_photo ? formData.user_photo.name : 'JPG, PNG veya GIF (Max 5MB)'}
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Fotoğraf yükleme özelliği profil sayfalarına taşınmıştır */}
 
             <div>
               <label className="block text-sm font-medium mb-1 text-white">E-posta</label>

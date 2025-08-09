@@ -69,11 +69,28 @@ export async function POST(req) {
         experiences = [], // Uzmanlık alanları
         genres = [],
         profile_title,
+        background_image, // Arkaplan fotoğrafı eklendi
       } = body;
 
       if (!photos) return NextResponse.json({ error: "Fotoğraf eksik" }, { status: 400 });
 
       const avatarUrl = await saveBase64Image(photos, "profile-page");
+      
+      // Arkaplan fotoğrafını kaydet
+      let backgroundUrl = null;
+      if (background_image) {
+        try {
+          // Eğer background_image zaten bir URL ise (güncelleme durumu), doğrudan kullan
+          if (typeof background_image === 'string' && background_image.startsWith('/')) {
+            backgroundUrl = background_image;
+          } else {
+            backgroundUrl = await saveBase64Image(background_image, "profile-backgrounds");
+          }
+        } catch (bgError) {
+          console.error("Arkaplan fotoğrafı kaydetme hatası:", bgError);
+          // Arkaplan fotoğrafı hatalı olursa devam et ama logla
+        }
+      }
 
       // Önce mevcut profil var mı kontrol edelim
       const existingProfile = await prisma.artistProfile.findUnique({
@@ -85,6 +102,7 @@ export async function POST(req) {
         update: {
           bio: profile_description,
           avatarUrl,
+          backgroundUrl, // Arkaplan URL'i eklendi
           experience: parseInt(profile_experience),
           experiences: Array.isArray(experiences) ? experiences : [],
           genres: Array.isArray(genres) ? genres.join(",") : String(genres || ""),
@@ -95,6 +113,7 @@ export async function POST(req) {
           userId,
           bio: profile_description,
           avatarUrl,
+          backgroundUrl, // Arkaplan URL'i eklendi
           experience: parseInt(profile_experience),
           experiences: Array.isArray(experiences) ? experiences : [],
           genres: Array.isArray(genres) ? genres.join(",") : String(genres || ""),
@@ -124,6 +143,7 @@ export async function POST(req) {
         provider_important_clients = [],
         provider_studio_images = [], // [{dataUrl,name}]
         genres = [],
+        background_image, // Arkaplan fotoğrafı eklendi
       } = body;
 
       if (!photos) {
@@ -141,6 +161,22 @@ export async function POST(req) {
       } catch (imgError) {
         console.error("Avatar kaydetme hatası:", imgError);
         return NextResponse.json({ error: "Avatar kaydetme hatası: " + imgError.message }, { status: 500 });
+      }
+
+      // Arkaplan fotoğrafını kaydet
+      let backgroundUrl = null;
+      if (background_image) {
+        try {
+          // Eğer background_image zaten bir URL ise (güncelleme durumu), doğrudan kullan
+          if (typeof background_image === 'string' && background_image.startsWith('/')) {
+            backgroundUrl = background_image;
+          } else {
+            backgroundUrl = await saveBase64Image(background_image, "profile-backgrounds");
+          }
+        } catch (bgError) {
+          console.error("Arkaplan fotoğrafı kaydetme hatası:", bgError);
+          // Arkaplan fotoğrafı hatalı olursa devam et ama logla
+        }
       }
 
       const studioPhotos = [];
@@ -176,6 +212,7 @@ export async function POST(req) {
             about: provider_about || null,
             services: Array.isArray(provider_services) ? provider_services : [],
             avatarUrl,
+            backgroundUrl, // Arkaplan URL'i eklendi
             experience: provider_experience ? parseInt(provider_experience) : null,
             projectCount: provider_project_count ? parseInt(provider_project_count) : null,
             responseTime: provider_response_time ? parseInt(provider_response_time) : null,
@@ -194,6 +231,7 @@ export async function POST(req) {
             about: provider_about || null,
             services: Array.isArray(provider_services) ? provider_services : [],
             avatarUrl,
+            backgroundUrl, // Arkaplan URL'i eklendi
             experience: provider_experience ? parseInt(provider_experience) : null,
             projectCount: provider_project_count ? parseInt(provider_project_count) : null,
             responseTime: provider_response_time ? parseInt(provider_response_time) : null,

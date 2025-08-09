@@ -52,7 +52,6 @@ a {
 
 body {
   top: 0px !important;
-  position: static !important;
 }
 
 .goog-te-gadget {
@@ -78,16 +77,6 @@ body {
   display: none !important;
 }
 
-/* Google Translate menüsünü gizle */
-.goog-te-menu-frame {
-  display: none !important;
-}
-
-/* Google Translate popup'ını gizle */
-.goog-te-ftab {
-  display: none !important;
-}
-
 /* Sayfa üstündeki boşluğu kaldır */
 body.translated-ltr {
   margin-top: 0 !important;
@@ -95,21 +84,4 @@ body.translated-ltr {
 
 body.translated-rtl {
   margin-top: 0 !important;
-}
-
-/* Google Translate highlight efektlerini temizle */
-.goog-text-highlight {
-  background: none !important;
-  box-shadow: none !important;
-}
-
-/* Çeviri hover efektlerini kaldır */
-.goog-text-highlight:hover {
-  background: none !important;
-  box-shadow: none !important;
-}
-
-/* Google logo'yu gizle */
-.goog-logo-link {
-  display: none !important;
 }

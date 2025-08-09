@@ -9,6 +9,12 @@ export const ProfileTab = ({ userInfo }) => {
   const [fileName, setFileName] = useState("Resminizi Yükleyiniz");
   const [preview, setPreview] = useState(null);
   const [formData, setFormData] = useState({ photo: null });
+  
+  // Arkaplan fotoğrafı için ayrı state
+  const [backgroundFileName, setBackgroundFileName] = useState("Arkaplan Fotoğrafınızı Yükleyiniz");
+  const [backgroundPreview, setBackgroundPreview] = useState(null);
+  const [backgroundFormData, setBackgroundFormData] = useState({ backgroundPhoto: null });
+  
   const [inputValue, setInputValue] = useState("");
   const [experiences, setExperiences] = useState([]);
   const [showExperienceDetail, setShowExperienceDetail] = useState(true);
@@ -46,6 +52,12 @@ export const ProfileTab = ({ userInfo }) => {
             if (profile.avatarUrl) {
               setPreview(profile.avatarUrl);
               setFileName("Mevcut profil fotoğrafı");
+            }
+
+            // Background image
+            if (profile.backgroundUrl) {
+              setBackgroundPreview(profile.backgroundUrl);
+              setBackgroundFileName("Mevcut arkaplan fotoğrafı");
             }
 
             // Uzmanlıklar
@@ -86,6 +98,21 @@ export const ProfileTab = ({ userInfo }) => {
     }
   };
 
+  const handleBackgroundPhotoChange = (e) => {
+    if (e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setBackgroundFileName(file.name);
+      setBackgroundFormData((p) => ({ ...p, backgroundPhoto: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => setBackgroundPreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      setBackgroundFileName("Arkaplan Fotoğrafınızı Yükleyiniz");
+      setBackgroundPreview(null);
+      setBackgroundFormData((p) => ({ ...p, backgroundPhoto: null }));
+    }
+  };
+
   const handleAddExperience = () => {
     if (inputValue.trim() !== "") {
       setExperiences((p) => [...p, inputValue.trim()]);
@@ -107,20 +134,19 @@ export const ProfileTab = ({ userInfo }) => {
     );
   };
 
-  // Profil tamamlanmış mı kontrol et
   const isProfileComplete = () => {
     return (
       formData2.profile_description &&
       formData2.profile_experience &&
       formData2.profile_title &&
-      preview && // Avatar fotoğrafı
-      experiences.length > 0 // En az bir uzmanlık
+      preview && 
+      experiences.length > 0
     );
   };
 
   const handleProfilePage = async (e) => {
     e.preventDefault();
-    setIsLoading(true); // Loading başlat
+    setIsLoading(true); 
     
     const values = Object.fromEntries(new FormData(e.currentTarget));
     try {
@@ -131,9 +157,10 @@ export const ProfileTab = ({ userInfo }) => {
           ...values,
           photos: preview,
           userPhotoName: fileName,
-          experiences: experiences, // Uzmanlık alanları eklendi
+          background_image: backgroundPreview, // Arkaplan fotoğrafı eklendi
+          experiences: experiences,
           genres: selectedGenres,
-          userInfo, // { role: "ARTIST", ... }
+          userInfo, 
         }),
       });
       const data = await res.json();
@@ -152,7 +179,7 @@ export const ProfileTab = ({ userInfo }) => {
   return (
     <form onSubmit={handleProfilePage}>
       <div className="flex gap-6">
-        <div className="w-1/2">
+        <div className="w-full md:w-1/2">
           <div className="w-full mb-9">
             <div className="pb-3 text-xl font-bold">Kendinizi Tanıtınız:</div>
             <textarea
@@ -168,47 +195,48 @@ export const ProfileTab = ({ userInfo }) => {
           <div className="w-full mb-9 flex flex-col gap-4 items-start">
             <div className="w-full flex flex-1 flex-col">
               <div className="pb-3 text-xl font-bold">
-                Profil Sayfası Fotoğrafınızı Yükleyiniz (200x200):
+                Profil Sayfası Arkaplan Fotoğrafınızı Yükleyiniz (1920x400):
               </div>
               <input
                 type="file"
-                name="user_image"
-                id="user_image"
+                name="background_image"
+                id="background_image_artist"
                 className="hidden"
-                onChange={handlePhotoChange}
-                required
+                onChange={handleBackgroundPhotoChange}
+                accept="image/*"
               />
               <label
-                htmlFor="user_image"
+                htmlFor="background_image_artist"
                 className={`relative w-full min-h-[200px] max-h-[200px] border border-gray-300 rounded-md overflow-hidden cursor-pointer group transition duration-200 ${
-                  preview
+                  backgroundPreview
                     ? ""
                     : "bg-gray-900/50 text-white flex flex-col justify-center items-center hover:bg-gray-900/80"
                 }`}
               >
-                {preview ? (
+                {backgroundPreview ? (
                   <>
                     <img
-                      src={preview}
-                      alt="Yüklenen Görsel"
+                      src={backgroundPreview}
+                      alt="Yüklenen Arkaplan Görseli"
                       className="w-full h-[200px] object-cover"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity">
                       <Upload className="w-6 h-6 mb-1" />
-                      <span className="text-sm">Resmi Değiştir</span>
+                      <span className="text-sm">Arkaplan Resmini Değiştir</span>
                     </div>
                   </>
                 ) : (
                   <>
                     <Upload className="w-6 h-6" />
                     <span className="text-sm mt-2 truncate max-w-[200px] text-center px-2">
-                      {fileName}
+                      {backgroundFileName}
                     </span>
                   </>
                 )}
               </label>
             </div>
           </div>
+
 
           <div className="w-full mb-9 flex-1">
             <div className="pb-3 text-xl font-bold">Deneyim Yılı:</div>
@@ -310,6 +338,49 @@ export const ProfileTab = ({ userInfo }) => {
               placeholder="Ünvanı Giriniz"
               required
             />
+          </div>
+
+          {/* Profil Fotoğrafı - Register'dan taşınan geliştirilmiş UI */}
+          <div className="w-full mb-6">
+            <label className="block text-xl font-bold mb-3 text-white">Profil Fotoğrafı (200x200)</label>
+            <div className="flex items-center space-x-4">
+              <input
+                type="file"
+                id="user_photo"
+                name="user_photo"
+                onChange={handlePhotoChange}
+                accept="image/*"
+                className="hidden"
+              />
+              <label
+                htmlFor="user_photo"
+                className={`relative w-20 h-20 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-gray-500 transition-colors flex items-center justify-center ${
+                  preview ? 'border-primary-500' : ''
+                }`}
+              >
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                ) : (
+                  <Upload className="w-6 h-6 text-gray-400" />
+                )}
+              </label>
+              <div className="flex-1">
+                <label
+                  htmlFor="user_photo"
+                  className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-gray-600 rounded-xl text-white cursor-pointer hover:bg-gray-700/50 transition-colors"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Fotoğraf Seç
+                </label>
+                <p className="text-xs text-gray-400 mt-1">
+                  {fileName !== "Resminizi Yükleyiniz" ? fileName : 'JPG, PNG veya GIF (Max 5MB)'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

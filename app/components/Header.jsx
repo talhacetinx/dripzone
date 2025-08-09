@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, X, User, LogOut, Settings, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer } from "react-toastify";
@@ -14,11 +14,34 @@ export const Header = () => {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   
   const { user: AuthUser, logout, loading } = useAuth();
-  const { currentLanguage, changeLanguage, languages, isTranslating } = useLanguage();
+
+  const { currentLanguage, changeLanguage, languages, isTranslating, forceUpdate } = useLanguage();
+
+  // Aktif dili en başa al (her yerde aynı mantık)
+  const getSortedLanguages = (langs, activeCode) => {
+    if (!langs) return [];
+    const active = langs.find(l => l.code === activeCode);
+    const rest = langs.filter(l => l.code !== activeCode);
+    return active ? [active, ...rest] : langs;
+  };
+  const sortedLanguages = getSortedLanguages(languages, currentLanguage);
+
+  // Debug log
+  useEffect(() => {
+    // console.log("🌐 Header Language Context:", {
+    //   currentLanguage,
+    //   sortedLanguages,
+    //   isTranslating,
+    //   forceUpdate,
+    //   flag: sortedLanguages[0]?.flag
+    // });
+  }, [currentLanguage, forceUpdate, sortedLanguages]);
 
   const handleLanguageChange = (langCode) => {
+    // console.log("🔄 Changing language to:", langCode);
     changeLanguage(langCode);
     setShowLanguageMenu(false);
+    // sortedLanguages zaten currentLanguage değişince güncellenecek
   };
 
   const isLoggedIn = !!AuthUser && !loading;
@@ -69,12 +92,15 @@ export const Header = () => {
                   <div className="relative">
                     <button
                       onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                      className="flex items-center space-x-2 p-2 hover:bg-primary-500/10 rounded-xl transition"
+                      className={`flex items-center space-x-2 p-2 rounded-xl transition ${
+                        currentLanguage === 'en' 
+                          ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
+                          : 'hover:bg-primary-500/10'
+                      }`}
                     >
                       <Globe className="w-5 h-5 text-white" />
-                      <span className="text-2xl">{languages.find(lang => lang.code === currentLanguage)?.flag}</span>
+                      <span className="text-2xl text-white ml-2">{sortedLanguages[0]?.flag}</span>
                     </button>
-
                     <AnimatePresence>
                       {showLanguageMenu && (
                         <motion.div
@@ -84,18 +110,18 @@ export const Header = () => {
                           transition={{ duration: 0.2 }}
                           className="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl py-2 z-50"
                         >
-                          {languages.map((language) => (
+                          {sortedLanguages.map((language) => (
                             <button
                               key={language.code}
                               onClick={() => handleLanguageChange(language.code)}
                               className={`flex items-center space-x-3 px-4 py-2 w-full text-left hover:bg-gray-800 transition ${
-                                currentLanguage === language.code ? 'bg-gray-800 text-primary-400' : 'text-white'
+                                currentLanguage === language.code ? 'bg-primary-500/20 text-primary-400 border-l-4 border-primary-500' : 'text-white'
                               }`}
                             >
                               <span className="text-xl">{language.flag}</span>
                               <span>{language.name}</span>
                               {currentLanguage === language.code && (
-                                <span className="ml-auto text-primary-400">✓</span>
+                                <span className="ml-auto text-primary-400 font-bold">✓</span>
                               )}
                             </button>
                           ))}
@@ -164,12 +190,15 @@ export const Header = () => {
                   <div className="relative">
                     <button
                       onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                      className="flex items-center space-x-2 p-2 hover:bg-primary-500/10 rounded-xl transition mr-4"
+                      className={`flex items-center space-x-2 p-2 rounded-xl transition mr-4 ${
+                        currentLanguage === 'en' 
+                          ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
+                          : 'hover:bg-primary-500/10'
+                      }`}
                     >
                       <Globe className="w-5 h-5 text-white" />
-                      <span className="text-2xl">{languages.find(lang => lang.code === currentLanguage)?.flag}</span>
+                      <span className="text-2xl text-white ml-2">{sortedLanguages[0]?.flag}</span>
                     </button>
-
                     <AnimatePresence>
                       {showLanguageMenu && (
                         <motion.div
@@ -179,18 +208,18 @@ export const Header = () => {
                           transition={{ duration: 0.2 }}
                           className="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl py-2 z-50"
                         >
-                          {languages.map((language) => (
+                          {sortedLanguages.map((language) => (
                             <button
                               key={language.code}
                               onClick={() => handleLanguageChange(language.code)}
                               className={`flex items-center space-x-3 px-4 py-2 w-full text-left hover:bg-gray-800 transition ${
-                                currentLanguage === language.code ? 'bg-gray-800 text-primary-400' : 'text-white'
+                                currentLanguage === language.code ? 'bg-primary-500/20 text-primary-400 border-l-4 border-primary-500' : 'text-white'
                               }`}
                             >
                               <span className="text-xl">{language.flag}</span>
                               <span>{language.name}</span>
                               {currentLanguage === language.code && (
-                                <span className="ml-auto text-primary-400">✓</span>
+                                <span className="ml-auto text-primary-400 font-bold">✓</span>
                               )}
                             </button>
                           ))}
@@ -198,7 +227,6 @@ export const Header = () => {
                       )}
                     </AnimatePresence>
                   </div>
-
                   <Link href="/register" className="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-400 text-black font-semibold rounded-xl border-2 border-primary-500 shadow-yellow-glow">
                     Kayıt Ol
                   </Link>

@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }) => {
       
       if (response.ok) {
         const userData = await response.json();
+        console.log("🔍 AuthContext - API'den gelen user data:", userData);
         setUser(userData);
       } else {
         setUser(null);

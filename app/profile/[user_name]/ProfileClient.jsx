@@ -52,7 +52,7 @@ export default function ProfileClientPage({ params, initialData }) {
             <div 
             className="h-80 bg-cover bg-center relative" 
             style={{ 
-                backgroundImage: `url(${profile.avatarUrl || "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=800"})` 
+                backgroundImage: `url(${profile.backgroundUrl || "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=800"})` 
             }}
             >
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
@@ -152,7 +152,7 @@ export default function ProfileClientPage({ params, initialData }) {
                         <div className="text-xs text-gray-400 uppercase tracking-wide">Projects</div>
                         </div>
                         <div className="text-center">
-                        <div className="text-2xl font-bold text-primary-500 mb-1">{profile.responseTime || 24}h</div>
+                        <div className="text-2xl font-bold text-primary-500 mb-1">{profile.responseTime || 24}  günde</div>
                         <div className="text-xs text-gray-400 uppercase tracking-wide">Response</div>
                         </div>
                         <div className="text-center">
