@@ -44,6 +44,7 @@ export default function NewPasswordPageComponent() {
       });
 
         const data = await res.json();
+        console.log(data);
       if (data.success) {
         toast.success(data.message);
       } else {

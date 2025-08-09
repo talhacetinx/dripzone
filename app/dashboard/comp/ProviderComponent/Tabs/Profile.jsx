@@ -105,7 +105,10 @@ export const ProfileProviderTab = ({ userInfo }) => {
 
             // Önemli müşteriler
             if (profile.importantClients && Array.isArray(profile.importantClients)) {
+              console.log("📥 API'den önemli müşteriler yükleniyor:", profile.importantClients);
               setImportantClients(profile.importantClients);
+            } else {
+              console.log("⚠️ Önemli müşteriler verisi bulunamadı veya array değil:", profile.importantClients);
             }
 
             // Türler
@@ -197,6 +200,8 @@ export const ProfileProviderTab = ({ userInfo }) => {
   // Önemli Müşteriler
   const addImportantClient = () => {
     if (importantClientValue.trim() !== "") {
+      console.log("➕ Önemli müşteri ekleniyor:", importantClientValue.trim());
+      console.log("Mevcut liste:", importantClients);
       setImportantClients((prev) => [...prev, importantClientValue.trim()]);
       setImportantClientValue("");
     }
@@ -261,6 +266,14 @@ export const ProfileProviderTab = ({ userInfo }) => {
 
       userInfo, // { role: "PROVIDER", ... }
     };
+
+    // Debug - Kontrol edelim
+    console.log("🔍 DEBUG - Form gönderiliyor:");
+    console.log("Form values:", values);
+    console.log("Önemli müşteriler state:", importantClients);
+    console.log("Önemli müşteriler sayısı:", importantClients.length);
+    console.log("provider_important_clients in requestData:", requestData.provider_important_clients);
+    console.log("Gönderilen requestData:", requestData);
 
     try {
       const res = await fetch("/api/profile/add", {

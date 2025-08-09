@@ -7,30 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 
-// Google Translate initialization
-const initializeGoogleTranslate = () => {
-  if (typeof window !== 'undefined' && window.google && window.google.translate) {
-    new window.google.translate.TranslateElement({
-      pageLanguage: 'tr',
-      includedLanguages: 'tr,en',
-      layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-      autoDisplay: false
-    }, 'google_translate_element');
-  }
-};
-
-const changeLanguage = (lang) => {
-  if (typeof window !== 'undefined') {
-    const selectElement = document.querySelector('#google_translate_element select');
-    if (selectElement) {
-      selectElement.value = lang;
-      selectElement.dispatchEvent(new Event('change'));
-    } else {
-      setTimeout(() => changeLanguage(lang), 1000);
-    }
-  }
-};
-
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -61,60 +37,27 @@ export const Header = () => {
     };
 
     addGoogleTranslateScript();
-    
-    // Mevcut dil durumunu kontrol et
-    const checkCurrentLanguage = () => {
-      const hash = window.location.hash;
-      const cookies = document.cookie;
-      
-      if (hash.includes('googtrans') || cookies.includes('googtrans')) {
-        if (hash.includes('|en') || cookies.includes('/tr/en')) {
-          setCurrentLanguage('en');
-        } else if (hash.includes('|tr') || cookies.includes('/en/tr')) {
-          setCurrentLanguage('tr');
-        }
-      }
-      
-      // URL'deki Google Translate hash'lerini temizle
-      if (hash.includes('googtrans')) {
-        window.history.replaceState(null, null, window.location.pathname + window.location.search);
-      }
-    };
-    
-    checkCurrentLanguage();
-    
-    // Hash değişikliklerini dinle ve temizle
-    const handleHashChange = () => {
-      if (window.location.hash.includes('googtrans')) {
-        setTimeout(() => {
-          window.history.replaceState(null, null, window.location.pathname + window.location.search);
-        }, 100);
-      }
-    };
-    
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
   }, []);
 
   const changeLanguage = (langCode) => {
     setCurrentLanguage(langCode);
     setShowLanguageMenu(false);
     
-    if (langCode === 'en') {
-      document.cookie = "googtrans=/tr/en; path=/; domain=" + window.location.hostname;
+    // Google Translate kullanarak dil değiştir
+    const googleTranslateCombo = document.querySelector('.goog-te-combo');
+    if (googleTranslateCombo) {
+      googleTranslateCombo.value = langCode;
+      googleTranslateCombo.dispatchEvent(new Event('change'));
     } else {
-      // Türkçeye dön
-      document.cookie = "googtrans=/en/tr; path=/; domain=" + window.location.hostname;
+      // Eğer Google Translate henüz yüklenmediyse, sayfayı yeniden yükle
+      const currentUrl = new URL(window.location.href);
+      if (langCode === 'en') {
+        currentUrl.searchParams.set('hl', 'en');
+      } else {
+        currentUrl.searchParams.delete('hl');
+      }
+      window.location.href = currentUrl.toString();
     }
-    
-    if (window.location.hash) {
-      window.history.replaceState(null, null, window.location.pathname + window.location.search);
-    }
-    
-    window.location.reload();
   };
 
   const languages = [
@@ -123,6 +66,9 @@ export const Header = () => {
   ];
 
 const isLoggedIn = !!AuthUser && !loading;
+
+// Debug için console.log ekleyelim
+console.log("🔍 Header AuthUser:", AuthUser);
 
 const profile = {
   avatar_url: AuthUser?.user_photo || AuthUser?.image || AuthUser?.avatarUrl || null,
@@ -268,7 +214,7 @@ const isAdmin = AuthUser?.role === 'admin';
                       className="flex items-center space-x-2 p-2 hover:bg-primary-500/10 rounded-xl transition mr-4"
                     >
                       <Globe className="w-5 h-5 text-white" />
-                      <span className="text-2xl ml-2 text-white">{languages.find(lang => lang.code === currentLanguage)?.flag}</span>
+                      <span className="text-2xl">{languages.find(lang => lang.code === currentLanguage)?.flag}</span>
                     </button>
 
                     <AnimatePresence>

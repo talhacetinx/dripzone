@@ -55,6 +55,7 @@ export const ArtistDashboardContent = ({ user }) => {
   const [conversations, setConversations] = useState([])
   const [showServiceModal, setShowServiceModal] = useState(false)
 
+  console.log(user)
   useEffect(() => {
     // Mock verileri yükle
     const timeout = setTimeout(() => {

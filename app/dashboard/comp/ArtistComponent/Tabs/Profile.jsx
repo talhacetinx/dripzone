@@ -21,7 +21,6 @@ export const ProfileTab = ({ userInfo }) => {
   });
   const genres = ["Rock", "Pop", "Jazz", "Rap"];
 
-  // Profil verilerini yükle
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -336,6 +335,7 @@ export const ProfileTab = ({ userInfo }) => {
         )}
       </button>
 
+      {/* Canlı Link - Sadece profil tamamlandığında göster */}
       {userInfo?.user_name && isProfileComplete() && (
         <div className="w-1/2 mt-6 p-4 bg-gradient-to-r from-primary-500/10 to-primary-400/5 border border-primary-500/20 rounded-xl">
           <div className="flex items-center justify-between">
@@ -372,6 +372,7 @@ export const ProfileTab = ({ userInfo }) => {
         </div>
       )}
 
+      {/* Profil tamamlanmadığında bilgi mesajı */}
       {userInfo?.user_name && !isProfileComplete() && (
         <div className="w-1/2 mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
           <div className="flex items-center gap-3">

@@ -12,27 +12,42 @@ const allowedTypes = ["png", "jpeg", "jpg", "webp"];
 async function saveUploadedImage(file, folder = "profile-photos") {
   if (!file) return null;
   
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  
-  // Dosya uzantısını kontrol et
-  const extension = file.name.split('.').pop().toLowerCase();
-  if (!allowedTypes.includes(extension)) {
-    throw new Error("Desteklenmeyen dosya türü");
+  try {
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    
+    // Dosya uzantısını kontrol et
+    const extension = file.name.split('.').pop().toLowerCase();
+    if (!allowedTypes.includes(extension)) {
+      throw new Error("Desteklenmeyen dosya türü");
+    }
+    
+    // Dosya boyutunu kontrol et (5MB)
+    if (buffer.length > 5 * 1024 * 1024) {
+      throw new Error("Dosya çok büyük (Max 5MB)");
+    }
+    
+    // Production'da Vercel gibi serverless platformlarda /tmp kullan
+    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+    
+    if (isProduction) {
+      // Serverless ortamda base64 olarak kaydet
+      const base64 = `data:${file.type};base64,${buffer.toString('base64')}`;
+      return base64;
+    } else {
+      // Local development'da normal dosya sistemini kullan
+      const uniqueName = `${Date.now()}-${randomBytes(6).toString("hex")}.${extension}`;
+      const uploadDir = path.join(process.cwd(), "public", folder);
+      await fs.mkdir(uploadDir, { recursive: true });
+      const filePath = path.join(uploadDir, uniqueName);
+      await fs.writeFile(filePath, buffer);
+      return `/${folder}/${uniqueName}`;
+    }
+    
+  } catch (error) {
+    console.error("Image processing error:", error);
+    throw error;
   }
-  
-  // Dosya boyutunu kontrol et (5MB)
-  if (buffer.length > 5 * 1024 * 1024) {
-    throw new Error("Dosya çok büyük (Max 5MB)");
-  }
-  
-  const uniqueName = `${Date.now()}-${randomBytes(6).toString("hex")}.${extension}`;
-  const uploadDir = path.join(process.cwd(), "public", folder);
-  await fs.mkdir(uploadDir, { recursive: true });
-  const filePath = path.join(uploadDir, uniqueName);
-  await fs.writeFile(filePath, buffer);
-  
-  return `/${folder}/${uniqueName}`;
 }
 
 export async function POST(req) {
@@ -93,13 +108,15 @@ export async function POST(req) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Fotoğrafı kaydet
     let user_photo_url = null;
     if (user_photo && user_photo.size > 0) {
       try {
         user_photo_url = await saveUploadedImage(user_photo, "profile-photos");
       } catch (photoError) {
-        return NextResponse.json({ message: "Fotoğraf yükleme hatası: " + photoError.message }, { status: 400 });
+        console.error("Photo upload error:", photoError.message);
+        return NextResponse.json({ 
+          message: "Fotoğraf yükleme hatası: " + photoError.message 
+        }, { status: 400 });
       }
     }
 
