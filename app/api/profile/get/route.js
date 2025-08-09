@@ -52,6 +52,7 @@ export async function GET(req) {
         profile: {
           bio: artistProfile.bio,
           avatarUrl: artistProfile.avatarUrl,
+          backgroundUrl: artistProfile.backgroundUrl,
           experience: artistProfile.experience,
           genres: artistProfile.genres ? artistProfile.genres.split(",") : [],
           title: artistProfile.title,
@@ -76,6 +77,7 @@ export async function GET(req) {
           about: providerProfile.about,
           services: providerProfile.services || [],
           avatarUrl: providerProfile.avatarUrl,
+          backgroundUrl: providerProfile.backgroundUrl,
           experience: providerProfile.experience,
           projectCount: providerProfile.projectCount,
           responseTime: providerProfile.responseTime,
