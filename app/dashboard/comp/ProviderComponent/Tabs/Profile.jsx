@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Upload, Plus, Minus, Eye, ExternalLink, Loader2 } from "lucide-react";
+import { Upload, Plus, Minus, Eye, ExternalLink, Loader2, Check, X, Edit, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
@@ -24,7 +24,7 @@ export const ProfileProviderTab = ({ userInfo }) => {
   const [services, setServices] = useState([]);
   const [showServices, setShowServices] = useState(true);
 
-  // Önemli Müşteriler - Basit state
+    // Önemli müşteri işlemleri
   const [importantClients, setImportantClients] = useState([]);
   const [importantClientValue, setImportantClientValue] = useState("");
   const [showImportantClients, setShowImportantClients] = useState(true);
@@ -752,16 +752,15 @@ export const ProfileProviderTab = ({ userInfo }) => {
         )}
       </button>
 
-      {/* Canlı Link - Sadece profil tamamlandığında göster */}
       {userInfo?.user_name && isProfileComplete() && (
-        <div className="w-1/2 mt-6 p-4 bg-gradient-to-r from-primary-500/10 to-primary-400/5 border border-primary-500/20 rounded-xl">
+        <div className="w-full mt-6 p-4 bg-gradient-to-r from-primary-500/10 to-primary-400/5 border border-primary-500/20 rounded-xl md:w-1/2">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
                 <ExternalLink className="w-5 h-5 text-primary-400" />
                 Canlı Profil Linkiniz
               </h3>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col items-center gap-3 md:flex-row">
                 <code className="text-primary-400 bg-black/30 px-3 py-2 rounded-lg text-sm font-mono">
                   {`${window.location.origin}/profile/${userInfo.user_name}`}
                 </code>
@@ -792,7 +791,7 @@ export const ProfileProviderTab = ({ userInfo }) => {
       {/* Profil tamamlanmadığında bilgi mesajı */}
       {userInfo?.user_name && !isProfileComplete() && (
         <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-center gap-3 md:flex-row">
             <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
               <span className="text-yellow-500 text-sm">ℹ️</span>
             </div>

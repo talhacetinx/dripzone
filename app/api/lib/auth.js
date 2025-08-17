@@ -3,7 +3,7 @@ import prisma from "./prisma";
 import { unstable_cache } from "next/cache";
 import { cookies } from "next/headers";
 
-const SECRET = process.env.AUTH_SECRET || "dripzome-secret";
+const SECRET = process.env.JWT_SECRET || "default_secret";
 
 export function signToken(payload) {
   return jwt.sign(payload, SECRET, { expiresIn: "7d" });

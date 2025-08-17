@@ -15,6 +15,16 @@ export default function ProfileClientPage({ params, initialData }) {
   const [user] = useState(initialData);
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Komisyon hesaplama fonksiyonları
+  const calculateTotalPrice = (basePrice) => {
+    const commission = basePrice * 0.20;
+    return Math.round(basePrice + commission);
+  };
+
+  const calculateCommission = (basePrice) => {
+    return Math.round(basePrice * 0.20);
+  };
+
   if (!user || (!user.artistProfile && !user.providerProfile)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -41,6 +51,7 @@ export default function ProfileClientPage({ params, initialData }) {
 
   if (!isArtist) {
     tabs.splice(1, 0, { id: 'services', label: 'Services' });
+    tabs.splice(2, 0, { id: 'packages', label: 'Packages' });
   }
 
   return (
@@ -63,7 +74,7 @@ export default function ProfileClientPage({ params, initialData }) {
                 <div className="bg-black/80 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8 shadow-2xl">
                 <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
                     {/* Profile Info */}
-                    <div className="flex items-center space-x-6">
+                    <div className="w-full flex flex-col items-center space-x-6 gap-3 sm:flex-row">
                     <div className="relative">
                         <Image
                         src={profile.avatarUrl || "/default-avatar.png"}
@@ -91,26 +102,26 @@ export default function ProfileClientPage({ params, initialData }) {
                         </div>
                         <p className="text-xl text-gray-300 mb-3">@{user.user_name}</p>
                         
-                        <div className="flex items-center space-x-6 text-sm">
-                        <div className="flex items-center space-x-2">
-                            <Star className="w-4 h-4 text-primary-500 fill-current" />
-                            <span className="font-bold text-white">4.8</span>
-                            <span className="text-gray-400">(127 reviews)</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-gray-400">
-                            <MapPin className="w-4 h-4" />
-                            <span>{user.country || 'Location not specified'}</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-gray-400">
-                            <Award className="w-4 h-4" />
-                            <span>{profile.experience || 0} years</span>
-                        </div>
+                        <div className="flex flex-col items-left space-x-6 text-sm gap-3 sm:flex-row">
+                            <div className="flex items-center space-x-2">
+                                <Star className="w-4 h-4 text-primary-500 fill-current" />
+                                <span className="font-bold text-white">4.8</span>
+                                <span className="text-gray-400">(127 reviews)</span>
+                            </div>
+                            <div className="flex items-center space-x-2 text-gray-400">
+                                <MapPin className="w-4 h-4" />
+                                <span>{user.country || 'Location not specified'}</span>
+                            </div>
+                            <div className="flex items-center space-x-2 text-gray-400">
+                                <Award className="w-4 h-4" />
+                                <span>{profile.experience || 0} years</span>
+                            </div>
                         </div>
                     </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex-1 lg:flex lg:justify-end">
+                    <div className="w-full flex-1 lg:flex lg:justify-end">
                     <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                         <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
                         <MessageCircle className="w-4 h-4" />
@@ -178,7 +189,7 @@ export default function ProfileClientPage({ params, initialData }) {
                 {/* Left Column - Main Content */}
                 <div className="lg:col-span-2">
                 {/* Tabs */}
-                <div className="flex space-x-6 mb-8 border-b border-gray-800/50">
+                <div className="flex space-x-6 mb-8 border-b border-gray-800/50 overflow-x-auto">
                     {tabs.map((tab) => (
                     <button
                         key={tab.id}
@@ -305,6 +316,78 @@ export default function ProfileClientPage({ params, initialData }) {
                             </div>
                             )}
                         </div>
+                        </div>
+                    </motion.div>
+                    )}
+
+                    {activeTab === 'packages' && !isArtist && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-6"
+                    >
+                        <div>
+                        <h3 className="text-xl font-bold mb-6 text-white">Service Packages</h3>
+                        {profile.packages && profile.packages.length > 0 ? (
+                            <div className="grid gap-6">
+                            {profile.packages.map((pkg, index) => (
+                                <div
+                                key={pkg.id || index}
+                                className="relative bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6 hover:border-primary-500/50 transition-all duration-300"
+                                >
+                                {/* Paket Badge */}
+                                {index === 0 && (
+                                    <div className="absolute -top-3 left-6">
+                                    <span className="px-3 py-1 bg-gradient-to-r from-primary-500 to-primary-400 text-xs font-bold rounded-full text-black shadow-lg">
+                                        POPULAR
+                                    </span>
+                                    </div>
+                                )}
+
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    {/* Paket Bilgileri */}
+                                    <div className="flex-1">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                        <div>
+                                        <h4 className="text-xl font-bold mb-2 text-white">{pkg.title}</h4>
+                                        <p className="text-gray-400">{pkg.description}</p>
+                                        </div>
+                                        <div className="text-right mt-4 md:mt-0">
+                                        <div className="text-3xl font-bold text-primary-500 mb-1">₺{calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}</div>
+                                        <div className="text-sm text-gray-400">{pkg.deliveryTime} delivery</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Özellikler */}
+                                    {pkg.features && pkg.features.length > 0 && (
+                                        <div className="grid md:grid-cols-2 gap-4 mb-6">
+                                        {pkg.features.map((feature, featureIndex) => (
+                                            <div key={featureIndex} className="flex items-center space-x-2">
+                                            <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <span className="text-gray-300 text-sm">{feature}</span>
+                                            </div>
+                                        ))}
+                                        </div>
+                                    )}
+
+                                    {/* Order Button */}
+                                    <button className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg text-black">
+                                        Order Now - ₺{calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}
+                                    </button>
+                                    </div>
+                                </div>
+                                </div>
+                            ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                            <div className="text-gray-400 mb-4">
+                                <Music size={48} className="mx-auto mb-4 opacity-50" />
+                                <p className="text-lg">No packages available</p>
+                                <p className="text-sm">This provider hasn't created any service packages yet</p>
+                            </div>
+                            </div>
+                        )}
                         </div>
                     </motion.div>
                     )}

@@ -3,7 +3,7 @@ import { ProviderDashboard } from './ProviderDashboard';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 
-export async function DashboardRouter({user}) {
+export function DashboardRouter({user}) {
   const sessionUser = user;
 
   if (!sessionUser) {
@@ -25,6 +25,15 @@ export async function DashboardRouter({user}) {
       <Header />
       {isProvider && <ProviderDashboard AuthUser={user} />}
       {isArtist && <ArtistDashboard AuthUser={user} />}
+      {!isProvider && !isArtist && (
+        <div className="min-h-screen bg-black flex items-center justify-center text-white text-center">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Dashboard Mevcut Değil</h2>
+            <p className="text-gray-400">Role: {sessionUser.role}</p>
+            <p className="text-gray-500 text-sm mt-2">Bu role için dashboard bulunmuyor</p>
+          </div>
+        </div>
+      )}
       <Footer />
     </>
   );

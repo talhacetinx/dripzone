@@ -76,6 +76,7 @@ export async function GET(req) {
           studioPhotos: providerProfile.studioPhotos || [],
           about: providerProfile.about,
           services: providerProfile.services || [],
+          packages: providerProfile.packages || [],
           avatarUrl: providerProfile.avatarUrl,
           backgroundUrl: providerProfile.backgroundUrl,
           experience: providerProfile.experience,

@@ -80,6 +80,9 @@ model ProviderProfile {
   studioPhotos     String[]  @default([])
   genres           String[]  @default([])
 
+  // Paket sistemi - JSON array olarak saklanacak
+  packages         Json[]    @default([])
+
   slug             String    @unique
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

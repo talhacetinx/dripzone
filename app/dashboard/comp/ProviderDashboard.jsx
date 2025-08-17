@@ -208,14 +208,7 @@ export const ProviderDashboard = ({AuthUser}) => {
           {activeTab === 'overview' && <OverviewTab orders={orders} />}
           {activeTab === 'services' && (
             <ServicesTab
-              services={services}
-              onEdit={(service) => {
-                setEditingService(service)
-                setShowServiceModal(true)
-              }}
-              onDelete={(id) => {
-                setServices((prev) => prev.filter((s) => s.id !== id))
-              }}
+              userInfo={AuthUser}
             />
           )}
           {activeTab === 'orders' && <OrdersTab orders={orders} />}

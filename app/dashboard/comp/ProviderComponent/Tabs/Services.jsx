@@ -5,7 +5,8 @@ import { Plus, Minus, Eye, Check, X, Edit, Trash2, Loader2 } from "lucide-react"
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
-export const ServicesTab = ({ userInfo }) => {
+export const ServicesProviderTab = ({ userInfo }) => {
+  // Paket yönetimi
   const [packages, setPackages] = useState([]);
   const [packageForm, setPackageForm] = useState({
     title: "",
@@ -17,13 +18,14 @@ export const ServicesTab = ({ userInfo }) => {
   const [editingPackageId, setEditingPackageId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Özellik ekleme için
   const [featureInput, setFeatureInput] = useState("");
 
-
+  // Profil verilerini yükle
   useEffect(() => {
     const loadPackages = async () => {
       try {
-        const res = await fetch("/api/profile/packages/get", {
+        const res = await fetch("/api/profile/get", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -31,8 +33,8 @@ export const ServicesTab = ({ userInfo }) => {
         if (res.ok) {
           const data = await res.json();
           
-          if (data.packages && Array.isArray(data.packages)) {
-            setPackages(data.packages);
+          if (data.profile && data.profile.packages && Array.isArray(data.profile.packages)) {
+            setPackages(data.profile.packages);
           }
         }
       } catch (error) {
@@ -71,52 +73,10 @@ export const ServicesTab = ({ userInfo }) => {
     }
   };
 
-  // Komisyon hesaplama
-  const COMMISSION_RATE = 0.20; // %20 komisyon
-  
-  const calculateTotalPrice = (basePrice) => {
-    const price = parseFloat(basePrice) || 0;
-    return price + (price * COMMISSION_RATE);
-  };
-
-  const calculateCommission = (basePrice) => {
-    const price = parseFloat(basePrice) || 0;
-    return price * COMMISSION_RATE;
-  };
-
   // Paket işlemleri
-  const savePackages = async (updatedPackages) => {
-    try {
-      const res = await fetch("/api/profile/packages/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          packages: updatedPackages
-        }),
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setPackages(data.packages || updatedPackages);
-        return true;
-      } else {
-        const errorData = await res.json();
-        toast.error(errorData.error || 'Paket kaydedilirken hata oluştu!');
-        return false;
-      }
-    } catch (error) {
-      console.error("Paket kaydetme hatası:", error);
-      toast.error('Sunucu hatası!');
-      return false;
-    }
-  };
-
   const addPackage = async () => {
     if (packageForm.title && packageForm.description && packageForm.features.length > 0 && packageForm.deliveryTime && packageForm.price) {
       setIsLoading(true);
-      
-      const basePrice = parseFloat(packageForm.price);
-      const totalPrice = calculateTotalPrice(basePrice);
       
       const newPackage = {
         id: Date.now(),
@@ -124,20 +84,33 @@ export const ServicesTab = ({ userInfo }) => {
         description: packageForm.description,
         features: packageForm.features,
         deliveryTime: packageForm.deliveryTime,
-        basePrice: basePrice, // Provider'ın alacağı fiyat
-        price: totalPrice, // Müşterinin ödeyeceği toplam fiyat (komisyon dahil)
-        commission: calculateCommission(basePrice), // Komisyon miktarı
+        price: parseFloat(packageForm.price)
       };
       
       const updatedPackages = [...packages, newPackage];
       
-      const success = await savePackages(updatedPackages);
-      if (success) {
-        setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
-        toast.success('Paket başarıyla eklendi!');
+      try {
+        const res = await fetch("/api/profile/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider_packages: updatedPackages,
+            userInfo
+          }),
+        });
+        
+        if (res.ok) {
+          setPackages(updatedPackages);
+          setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
+          toast.success('Paket başarıyla eklendi!');
+        } else {
+          toast.error('Paket eklenirken hata oluştu!');
+        }
+      } catch (error) {
+        toast.error('Sunucu hatası!');
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     } else {
       toast.error('Lütfen tüm alanları doldurun ve en az bir özellik ekleyin!');
     }
@@ -149,7 +122,7 @@ export const ServicesTab = ({ userInfo }) => {
       description: packageData.description,
       features: [...packageData.features],
       deliveryTime: packageData.deliveryTime,
-      price: (packageData.basePrice || packageData.price).toString(), // Base price'ı göster
+      price: packageData.price.toString()
     });
     setEditingPackageId(packageData.id);
   };
@@ -158,30 +131,40 @@ export const ServicesTab = ({ userInfo }) => {
     if (packageForm.title && packageForm.description && packageForm.features.length > 0 && packageForm.deliveryTime && packageForm.price) {
       setIsLoading(true);
       
-      const basePrice = parseFloat(packageForm.price);
-      const totalPrice = calculateTotalPrice(basePrice);
-      
       const updatedPackage = {
         id: editingPackageId,
         title: packageForm.title,
         description: packageForm.description,
         features: packageForm.features,
         deliveryTime: packageForm.deliveryTime,
-        basePrice: basePrice, // Provider'ın alacağı fiyat
-        price: totalPrice, // Müşterinin ödeyeceği toplam fiyat (komisyon dahil)
-        commission: calculateCommission(basePrice), // Komisyon miktarı
+        price: parseFloat(packageForm.price)
       };
       
       const updatedPackages = packages.map(pkg => pkg.id === editingPackageId ? updatedPackage : pkg);
       
-      const success = await savePackages(updatedPackages);
-      if (success) {
-        setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
-        setEditingPackageId(null);
-        toast.success('Paket başarıyla güncellendi!');
+      try {
+        const res = await fetch("/api/profile/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider_packages: updatedPackages,
+            userInfo
+          }),
+        });
+        
+        if (res.ok) {
+          setPackages(updatedPackages);
+          setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
+          setEditingPackageId(null);
+          toast.success('Paket başarıyla güncellendi!');
+        } else {
+          toast.error('Paket güncellenirken hata oluştu!');
+        }
+      } catch (error) {
+        toast.error('Sunucu hatası!');
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     } else {
       toast.error('Lütfen tüm alanları doldurun ve en az bir özellik ekleyin!');
     }
@@ -192,12 +175,27 @@ export const ServicesTab = ({ userInfo }) => {
     
     const updatedPackages = packages.filter(pkg => pkg.id !== packageId);
     
-    const success = await savePackages(updatedPackages);
-    if (success) {
-      toast.success('Paket başarıyla silindi!');
+    try {
+      const res = await fetch("/api/profile/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider_packages: updatedPackages,
+          userInfo
+        }),
+      });
+      
+      if (res.ok) {
+        setPackages(updatedPackages);
+        toast.success('Paket başarıyla silindi!');
+      } else {
+        toast.error('Paket silinirken hata oluştu!');
+      }
+    } catch (error) {
+      toast.error('Sunucu hatası!');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const cancelEditPackage = () => {
@@ -255,7 +253,7 @@ export const ServicesTab = ({ userInfo }) => {
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Fiyat (₺) - Sizin Kazancınız
+                Fiyat (₺)
               </label>
               <input
                 type="number"
@@ -264,24 +262,6 @@ export const ServicesTab = ({ userInfo }) => {
                 className="w-full py-3 px-4 bg-gray-900/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white"
                 placeholder="Örn: 5000"
               />
-              {packageForm.price && (
-                <div className="mt-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <div className="text-sm text-yellow-400 space-y-1">
-                    <div className="flex justify-between">
-                      <span>Sizin kazancınız:</span>
-                      <span className="font-semibold">₺{parseFloat(packageForm.price || 0).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Platform komisyonu (%20):</span>
-                      <span className="font-semibold">₺{calculateCommission(packageForm.price).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between border-t border-yellow-500/30 pt-1">
-                      <span className="font-bold">Müşteri ödeyecek toplam:</span>
-                      <span className="font-bold text-yellow-300">₺{calculateTotalPrice(packageForm.price).toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
             
             <div>
@@ -406,13 +386,10 @@ export const ServicesTab = ({ userInfo }) => {
                   className="bg-gray-900/50 border border-gray-600 rounded-xl p-6 hover:border-primary-500/50 transition-colors"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    {/* Sol Taraf - Başlık ve Açıklama */}
                     <div className="flex-1">
                       <h5 className="text-xl font-bold text-white mb-2">{pkg.title}</h5>
                       <p className="text-gray-300 text-sm mb-3">{pkg.description}</p>
                     </div>
-                    
-                    {/* Sağ Taraf - Düzenle/Sil Butonları */}
                     <div className="flex gap-2 ml-4">
                       <button
                         type="button"
@@ -436,13 +413,7 @@ export const ServicesTab = ({ userInfo }) => {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <span className="text-xs text-gray-400 uppercase tracking-wide">Fiyat</span>
-                      <div className="space-y-1">
-                        <p className="text-lg font-semibold text-green-400">₺{calculateTotalPrice(pkg.basePrice || pkg.price)}</p>
-                        <div className="text-xs text-gray-400">
-                          <div>Kazancınız: ₺{pkg.basePrice || pkg.price}</div>
-                          <div>Komisyon: ₺{calculateCommission(pkg.basePrice || pkg.price)}</div>
-                        </div>
-                      </div>
+                      <p className="text-lg font-semibold text-green-400">₺{pkg.price}</p>
                     </div>
                     <div>
                       <span className="text-xs text-gray-400 uppercase tracking-wide">Teslim Süresi</span>
@@ -469,4 +440,4 @@ export const ServicesTab = ({ userInfo }) => {
       </div>
     </motion.div>
   );
-};  
+};

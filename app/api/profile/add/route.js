@@ -158,6 +158,7 @@ export async function POST(req) {
         provider_specialties = [],
         provider_important_clients = [],
         provider_studio_images = [],
+        provider_packages = [],
         genres = [],
         background_image,
       } = body;
@@ -236,6 +237,7 @@ export async function POST(req) {
             studioPhotos,
             about: provider_about || null,
             services: Array.isArray(provider_services) ? provider_services : [],
+            packages: Array.isArray(provider_packages) ? provider_packages : [],
             avatarUrl,
             backgroundUrl,
             experience: provider_experience ? parseInt(provider_experience) : null,
@@ -255,6 +257,7 @@ export async function POST(req) {
             studioPhotos,
             about: provider_about || null,
             services: Array.isArray(provider_services) ? provider_services : [],
+            packages: Array.isArray(provider_packages) ? provider_packages : [],
             avatarUrl,
             backgroundUrl,
             experience: provider_experience ? parseInt(provider_experience) : null,

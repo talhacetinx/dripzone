@@ -12,7 +12,15 @@ export async function generateMetadata({ params }) {
     },
   });
 
+
   if (!user || (!user.artistProfile && !user.providerProfile)) {
+    return {
+      title: "Profile Not Found",
+      description: "The requested profile could not be found.",
+    };
+  }
+
+  if (user.userPending === false) {
     return {
       title: "Profile Not Found",
       description: "The requested profile could not be found.",
@@ -31,7 +39,6 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ProfilePage({ params }) {
-  // Server-side check for SEO and initial load
   const resolvedParams = await params;
   const user = await prisma.user.findFirst({
     where: { user_name: resolvedParams.user_name },
@@ -42,6 +49,11 @@ export default async function ProfilePage({ params }) {
   });
 
   if (!user || (!user.artistProfile && !user.providerProfile)) {
+    notFound();
+  }
+
+  // Onaylanmamış profiller için 404
+  if (user.userPending === false) {
     notFound();
   }
 

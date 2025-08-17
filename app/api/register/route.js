@@ -71,8 +71,7 @@ export async function POST(req) {
         phone: sPhone,
         password: hashedPassword,
         role: sUserType,
-        country: sCountry || "Belirtilmemiş", // Country opsiyonel, varsayılan değer
-        // user_photo artık register sırasında yok, profil sayfasında eklenecek
+        country: sCountry || "Belirtilmemiş", 
       },
     });
 

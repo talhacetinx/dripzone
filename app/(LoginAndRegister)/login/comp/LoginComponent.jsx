@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function LoginPageComponent() {
-  const router = useRouter();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
