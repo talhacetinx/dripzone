@@ -45,7 +45,7 @@ a {
   }
 }
 
-/* Google Translate Styling */
+/* Google Translate Styling - Tüm Elementleri Gizle */
 .goog-te-banner-frame.skiptranslate {
   display: none !important;
 }
@@ -77,11 +77,102 @@ body {
   display: none !important;
 }
 
+/* Footer'daki Google Translate elementlerini gizle */
+.goog-te-ftab {
+  display: none !important;
+}
+
+.goog-te-menu-frame {
+  display: none !important;
+}
+
+.goog-te-menu {
+  display: none !important;
+}
+
+/* Google Translate balonu/tooltip */
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+/* Google Translate'in tüm popup'ları */
+.goog-te-spinner-pos {
+  display: none !important;
+}
+
+/* Google Translate toolbar */
+div[id^="goog-gt-"] {
+  display: none !important;
+}
+
+/* Google Translate container'ları */
+.goog-te-banner-frame,
+.goog-te-menu-frame,
+.goog-te-ftab-frame {
+  display: none !important;
+  visibility: hidden !important;
+}
+
 /* Sayfa üstündeki boşluğu kaldır */
 body.translated-ltr {
   margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 body.translated-rtl {
   margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Google Translate'in eklediği tüm class'ları gizle */
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf {
+  display: none !important;
+}
+
+.VIpgJd-ZVi9od-xl07Ob-lTBxed {
+  display: none !important;
+}
+
+.VIpgJd-ZVi9od-ORHb-OEVmcd {
+  display: none !important;
+}
+
+/* Google Translate floating button */
+.goog-te-spinner {
+  display: none !important;
+}
+
+/* Powered by Google Translate yazısı */
+.goog-logo-link {
+  display: none !important;
+}
+
+.goog-te-gadget-simple {
+  display: none !important;
+}
+
+/* Tüm Google Translate iframe'lerini gizle */
+iframe[src*="translate.google"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Google'ın dinamik olarak eklediği elementler */
+div[style*="position: fixed"][style*="bottom"] {
+  display: none !important;
+}
+
+/* Google Translate notification/banner */
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Google'ın body'ye eklediği stil override'ları */
+body.translated-ltr,
+body.translated-rtl {
+  position: static !important;
+  top: auto !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
