@@ -45,7 +45,6 @@ a {
   }
 }
 
-/* Google Translate Styling - Tüm Elementleri Gizle */
 .goog-te-banner-frame.skiptranslate {
   display: none !important;
 }
@@ -66,18 +65,15 @@ body {
   display: none !important;
 }
 
-/* Google Translate iframe gizle */
 .skiptranslate iframe {
   visibility: hidden !important;
   display: none !important;
 }
 
-/* Google Translate banner'ını gizle */
 .goog-te-banner-frame {
   display: none !important;
 }
 
-/* Footer'daki Google Translate elementlerini gizle */
 .goog-te-ftab {
   display: none !important;
 }
@@ -90,22 +86,18 @@ body {
   display: none !important;
 }
 
-/* Google Translate balonu/tooltip */
 .goog-te-balloon-frame {
   display: none !important;
 }
 
-/* Google Translate'in tüm popup'ları */
 .goog-te-spinner-pos {
   display: none !important;
 }
 
-/* Google Translate toolbar */
 div[id^="goog-gt-"] {
   display: none !important;
 }
 
-/* Google Translate container'ları */
 .goog-te-banner-frame,
 .goog-te-menu-frame,
 .goog-te-ftab-frame {
@@ -113,7 +105,6 @@ div[id^="goog-gt-"] {
   visibility: hidden !important;
 }
 
-/* Sayfa üstündeki boşluğu kaldır */
 body.translated-ltr {
   margin-top: 0 !important;
   padding-top: 0 !important;
@@ -142,7 +133,6 @@ body.translated-rtl {
   display: none !important;
 }
 
-/* Powered by Google Translate yazısı */
 .goog-logo-link {
   display: none !important;
 }
@@ -151,24 +141,20 @@ body.translated-rtl {
   display: none !important;
 }
 
-/* Tüm Google Translate iframe'lerini gizle */
 iframe[src*="translate.google"] {
   display: none !important;
   visibility: hidden !important;
 }
 
-/* Google'ın dinamik olarak eklediği elementler */
 div[style*="position: fixed"][style*="bottom"] {
   display: none !important;
 }
 
-/* Google Translate notification/banner */
 .goog-te-banner-frame.skiptranslate {
   display: none !important;
   visibility: hidden !important;
 }
 
-/* Google'ın body'ye eklediği stil override'ları */
 body.translated-ltr,
 body.translated-rtl {
   position: static !important;

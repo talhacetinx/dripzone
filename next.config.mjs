@@ -9,24 +9,29 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: `
-              default-src 'self';
+              default-src 'self' https://dripzone-topaz.vercel.app;
               script-src 'self' 'unsafe-inline' 'unsafe-eval' 
                 https://translate.google.com 
                 https://translate.googleapis.com 
-                https://translate-pa.googleapis.com;
+                https://translate-pa.googleapis.com
+                https://dripzone-topaz.vercel.app;
               style-src 'self' 'unsafe-inline' 
-                https://translate.googleapis.com;
+                https://translate.googleapis.com
+                https://dripzone-topaz.vercel.app;
               font-src 'self' 
                 https://fonts.gstatic.com 
                 https://translate.googleapis.com;
               connect-src 'self' 
                 https://translate.googleapis.com 
-                https://translate-pa.googleapis.com;
-              frame-src 
-                https://translate.googleapis.com;
+                https://translate-pa.googleapis.com
+                https://dripzone-topaz.vercel.app;
+              frame-src 'self'
+                https://translate.googleapis.com
+                https://dripzone-topaz.vercel.app;
               img-src 'self' data: blob: 
                 https://translate.googleapis.com 
-                https://www.gstatic.com;
+                https://www.gstatic.com
+                https://dripzone-topaz.vercel.app;
             `.replace(/\s+/g, ' ').trim()
           }
         ]
@@ -36,9 +41,19 @@ const nextConfig = {
   
   // External domain'lere izin ver
   images: {
-    domains: [
-      'translate.googleapis.com',
-      'www.gstatic.com'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'translate.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.gstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'dripzone-topaz.vercel.app',
+      }
     ],
   },
   

@@ -16,14 +16,17 @@ export const LanguageProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState('tr');
   const [isTranslating, setIsTranslating] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Debug için state değişikliklerini logla
   useEffect(() => {
     console.log("🔄 Language state changed:", currentLanguage);
   }, [currentLanguage]);
 
-  // Sayfa yüklendiğinde mevcut dil durumunu tespit et
+  // Sayfa yüklendiğinde mevcut dil durumunu tespit et - sadece bir kez
   useEffect(() => {
+    if (isInitialized) return;
+    
     const detectCurrentLanguage = () => {
       if (typeof window !== 'undefined') {
         // Google Translate cookie'sini kontrol et
@@ -33,7 +36,7 @@ export const LanguageProvider = ({ children }) => {
         // Body class'ını kontrol et
         const bodyTranslated = document.body.className.includes('translated-ltr');
         
-        console.log("🔍 Detecting language on page load:", {
+        console.log("🔍 Initial language detection:", {
           cookie: googTransMatch?.[1],
           bodyTranslated,
           currentState: currentLanguage
@@ -56,27 +59,18 @@ export const LanguageProvider = ({ children }) => {
           console.log("🌐 English detected from body class");
         }
         
-        // State'i güncelle
+        // State'i güncelle (sadece farklıysa)
         if (detectedLang !== currentLanguage) {
-          console.log(`🔄 Language updated: ${currentLanguage} → ${detectedLang}`);
+          console.log(`🔄 Initial language set: ${currentLanguage} → ${detectedLang}`);
           setCurrentLanguage(detectedLang);
-          setForceUpdate(prev => prev + 1);
         }
+        
+        setIsInitialized(true);
       }
     };
     
     // İlk yükleme
     detectCurrentLanguage();
-    
-    // Periyodik kontrol (Google Translate async yüklenirse)
-    const interval = setInterval(detectCurrentLanguage, 1000);
-    
-    // 10 saniye sonra interval'ı durdur
-    setTimeout(() => {
-      clearInterval(interval);
-    }, 10000);
-    
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
