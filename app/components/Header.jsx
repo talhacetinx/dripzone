@@ -87,6 +87,11 @@ export const Header = () => {
                   {profile.user_type === "artist" && (
                     <Link href="/orders" className="text-white hover:text-primary-400">Siparişler</Link>
                   )}
+                  
+                  {/* Dashboard Link - Her zaman görünür */}
+                  <Link href="/dashboard" className="px-4 py-2 bg-primary-600 text-black rounded-lg hover:bg-primary-700 transition-colors font-semibold">
+                    Dashboard
+                  </Link>
 
                   {/* Language Selector */}
                   <div className="relative">
@@ -284,6 +289,12 @@ export const Header = () => {
                         Siparişler
                       </Link>
                     )}
+                    
+                    {/* Dashboard Link - Mobile */}
+                    <Link href="/dashboard" className="block px-4 py-3 bg-primary-600 text-black rounded-lg hover:bg-primary-700 transition-colors font-semibold mx-4 text-center" onClick={() => setIsMenuOpen(false)}>
+                      Dashboard
+                    </Link>
+                    
                     <Link href="/profile" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
                       Profil
                     </Link>
