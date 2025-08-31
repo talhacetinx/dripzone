@@ -19,10 +19,20 @@ export function verifyToken(token) {
 
 const _getAuthUser = unstable_cache(
   async (userId) => {
-    return prisma.user.findUnique({ where: { id: userId } });
+    return prisma.user.findUnique({ 
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        user_name: true,
+        role: true,
+        user_photo: true
+      }
+    });
   },
-  ["auth-user-v2"], // Cache key'i değiştir
-  { revalidate: 10 } // Cache süresini kısalt
+  ["auth-user-v6"], // Cache key'i güncelle
+  { revalidate: 3600 } // Cache süresini 1 saate çıkar
 );
 
 export async function getAuthUser() {

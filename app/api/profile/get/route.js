@@ -1,96 +1,144 @@
 import { NextResponse } from "next/server";
-import prisma from "../../lib/prisma";
 import { getAuthUser } from "../../lib/auth";
-import { checkRateLimit, ALLOWED_ORIGINS } from "../../lib/rate";
+import prisma from "../../lib/prisma";
 
-export async function GET(req) {
-  const ip = req.headers.get("x-forwarded-for") || "unknown";
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json(
-      { message: "Çok fazla istek gönderdiniz. Lütfen bekleyin." },
-      { status: 429 }
-    );
-  }
+// Basit in-memory cache
+const profileCache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 dakika
 
-  const origin = req.headers.get("origin") || "";
+export async function GET() {
+  const startTime = Date.now();
   
-  // Origin kontrolünü geçici olarak devre dışı bırak (sadece development için)
-  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
-    return NextResponse.json({ message: "Yetkisiz istek." }, { status: 403 });
-  }
-
-  const session = await getAuthUser();
-  if (!session) {
-    return NextResponse.json(
-      { error: "Oturum verisi eksik, lütfen oturum açınız." },
-      { status: 401 }
-    );
-  }
-
-  const userId = session.id;
-
   try {
+    const session = await getAuthUser();
+    if (!session) {
+      return NextResponse.json(
+        { error: "Oturum verisi eksik, lütfen giriş yapınız." },
+        { status: 401 }
+      );
+    }
+
+    const { id: userId, role } = session;
+    const cacheKey = `${userId}-${role}`;
+
+    // Cache kontrol
+    const cached = profileCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      console.log(`✅ Cache hit for user ${userId} - ${Date.now() - startTime}ms`);
+      return NextResponse.json({
+        ...cached.data,
+        _cached: true,
+        _responseTime: Date.now() - startTime
+      });
+    }
+
+    // Basit profil verisi - cache yok
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true }
+      select: {
+        role: true,
+        user_photo: true,
+        artistProfile: role === "ARTIST" ? {
+          select: {
+            bio: true,
+            backgroundUrl: true,
+            experience: true,
+            genres: true,
+            title: true,
+          }
+        } : false,
+        providerProfile: role === "PROVIDER" ? {
+          select: {
+            studioName: true,
+            about: true,
+            serviceType: true,
+            serviceData: true, // Service data'yı da include et
+            backgroundUrl: true,
+            experience: true,
+            projectCount: true,
+            responseTime: true,
+            specialties: true,
+            importantClients: true,
+            genres: true,
+          }
+        } : false
+      }
     });
 
     if (!user) {
       return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 });
     }
 
-    if (user.role === "ARTIST") {
-      const artistProfile = await prisma.artistProfile.findUnique({
-        where: { userId }
+    // 🎤 Artist profil
+    if (role === "ARTIST") {
+      const p = user.artistProfile;
+      const responseData = {
+        profile: p ? {
+          bio: p.bio,
+          avatarUrl: user.user_photo,
+          backgroundUrl: p.backgroundUrl,
+          experience: p.experience,
+          genres: p.genres ? (Array.isArray(p.genres) ? p.genres : p.genres.split(",")) : [],
+          title: p.title,
+        } : null
+      };
+      
+      // Cache'e kaydet
+      profileCache.set(cacheKey, {
+        data: responseData,
+        timestamp: Date.now()
       });
-
-      if (!artistProfile) {
-        return NextResponse.json({ profile: null }, { status: 200 });
-      }
-
+      
+      console.log(`✅ Artist profile loaded - ${Date.now() - startTime}ms`);
       return NextResponse.json({
-        profile: {
-          bio: artistProfile.bio,
-          avatarUrl: artistProfile.avatarUrl,
-          backgroundUrl: artistProfile.backgroundUrl,
-          experience: artistProfile.experience,
-          genres: artistProfile.genres ? artistProfile.genres.split(",") : [],
-          title: artistProfile.title,
-        }
-      }, { status: 200 });
+        ...responseData,
+        _cached: false,
+        _responseTime: Date.now() - startTime
+      });
     }
 
-    if (user.role === "PROVIDER") {
-      const providerProfile = await prisma.providerProfile.findUnique({
-        where: { userId }
+    // 🏢 Provider profil - serviceData dahil değil
+    if (role === "PROVIDER") {
+      const p = user.providerProfile;
+      
+      const responseData = {
+        profile: p ? {
+          studioName: p.studioName,
+          about: p.about,
+          serviceType: p.serviceType, // Bu önemli - client tarafında kullanılacak
+          serviceData: p.serviceData, // Service data'yı da include et
+          avatarUrl: user.user_photo,
+          backgroundUrl: p.backgroundUrl,
+          experience: p.experience,
+          projectCount: p.projectCount,
+          responseTime: p.responseTime,
+          specialties: p.specialties ? (Array.isArray(p.specialties) ? p.specialties : p.specialties.split(",")) : [],
+          importantClients: p.importantClients ? (Array.isArray(p.importantClients) ? p.importantClients : p.importantClients.split(",")) : [],
+          genres: p.genres ? (Array.isArray(p.genres) ? p.genres : p.genres.split(",")) : [],
+        } : null
+      };
+      
+      // Cache'e kaydet
+      profileCache.set(cacheKey, {
+        data: responseData,
+        timestamp: Date.now()
       });
-
-      if (!providerProfile) {
-        return NextResponse.json({ profile: null }, { status: 200 });
-      }
-
+      
+      console.log(`✅ Provider profile loaded - ${Date.now() - startTime}ms`);
       return NextResponse.json({
-        profile: {
-          studioName: providerProfile.studioName,
-          studioPhoto: providerProfile.studioPhoto,
-          studioPhotos: providerProfile.studioPhotos || [],
-          about: providerProfile.about,
-          services: providerProfile.services || [],
-          packages: providerProfile.packages || [],
-          avatarUrl: providerProfile.avatarUrl,
-          backgroundUrl: providerProfile.backgroundUrl,
-          experience: providerProfile.experience,
-          projectCount: providerProfile.projectCount,
-          responseTime: providerProfile.responseTime,
-          specialties: providerProfile.specialties || [],
-          importantClients: providerProfile.importantClients || [],
-          genres: providerProfile.genres || [],
-        }
-      }, { status: 200 });
+        ...responseData,
+        _cached: false,
+        _responseTime: Date.now() - startTime
+      });
     }
 
-    return NextResponse.json({ error: "Desteklenmeyen rol" }, { status: 403 });
-  } catch (err) {
-    return NextResponse.json({ error: err.message || "Sunucu hatası" }, { status: 500 });
+    return NextResponse.json({ profile: null });
+
+  } catch (error) {
+    console.error("Profile GET error:", error);
+    return NextResponse.json(
+      { error: "Sunucu hatası oluştu" },
+      { status: 500 }
+    );
   }
 }

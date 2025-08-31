@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { Upload, Plus, Minus, Eye, ExternalLink, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import { useAuth } from "../../../../context/AuthContext";
 
 export const ProfileTab = ({ userInfo }) => {
+  const { checkAuth } = useAuth(); // AuthContext'ten checkAuth'i al
   const [fileName, setFileName] = useState("Resminizi Yükleyiniz");
   const [preview, setPreview] = useState(null);
   const [formData, setFormData] = useState({ photo: null });
@@ -40,6 +42,8 @@ export const ProfileTab = ({ userInfo }) => {
           
           if (data.profile) {
             const profile = data.profile;
+            console.log("🎨 Artist Profil bulundu:", profile);
+            console.log("🖼️ Artist Avatar URL:", profile.avatarUrl);
             
             // Form verilerini doldur
             setFormData2({
@@ -50,8 +54,11 @@ export const ProfileTab = ({ userInfo }) => {
 
             // Avatar
             if (profile.avatarUrl) {
+              console.log("✅ Artist Avatar URL bulundu, preview ayarlanıyor:", profile.avatarUrl);
               setPreview(profile.avatarUrl);
               setFileName("Mevcut profil fotoğrafı");
+            } else {
+              console.log("❌ Artist Avatar URL bulunamadı");
             }
 
             // Background image
@@ -168,6 +175,8 @@ export const ProfileTab = ({ userInfo }) => {
         toast.error(data.error || data.message || "İşlem başarısız");
       } else {
         toast.success(data.message || "Profil başarıyla güncellendi!");
+        // Header'daki profil fotoğrafını güncellemek için AuthContext'i refresh et
+        await checkAuth();
       }
     } catch (err) {
       toast.error("Sunucu hatası");

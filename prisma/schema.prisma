@@ -17,6 +17,7 @@ model User {
   country     String?
   role        Role?
   userPending Boolean  @default(false)
+  isApproved  Boolean  @default(true)
   user_photo  String?
   createdAt   DateTime @default(now())
   newPasswordAuth String?
@@ -26,6 +27,13 @@ model User {
 
   artistProfile   ArtistProfile?
   providerProfile ProviderProfile?
+
+  // Mesajlaşma sistemi
+  sentMessages Message[] @relation("SentMessages")
+  
+  // Engelleme sistemi
+  blockedUsers UserBlock[] @relation("BlockedByUser") // Bu kullanıcının engellediği kişiler
+  blockedBy    UserBlock[] @relation("UserBlocks")    // Bu kullanıcıyı engelleyenler
 }
 
 model Artist {
@@ -65,9 +73,12 @@ model ProviderProfile {
   user             User      @relation(fields: [userId], references: [id])
 
   studioName       String?
-  studioPhoto      String?
   about            String?
-  services         String[]  @default([])
+
+  // Yeni hizmet tipi ve portfolio sistemi
+  serviceType      String?   // 'recording_studio', 'music_producer', 'album_cover_artist', 'music_video_director'
+  serviceData      Json?     // Hizmet tipine özel veriler (studioPhotos, musicProjects, albumCovers, musicVideos)
+  portfolioFiles   Json[]    @default([]) // Portfolio dosyaları { url, name, type } - Eski sistem
 
   avatarUrl        String?
   backgroundUrl    String?   // Arkaplan fotoğrafı URL'i eklendi
@@ -77,7 +88,6 @@ model ProviderProfile {
   responseTime     Int?
   specialties      String[]  @default([])
   importantClients String[]  @default([])
-  studioPhotos     String[]  @default([])
   genres           String[]  @default([])
 
   // Paket sistemi - JSON array olarak saklanacak
@@ -93,4 +103,58 @@ enum Role {
   ADMIN
   PROVIDER
   ARTIST
+}
+
+// Mesajlaşma sistemi modelleri
+model Conversation {
+  id            String   @id @default(cuid())
+  participants  String[] // [user1Id, user2Id]
+  lastMessage   String?
+  lastMessageAt DateTime?
+  isActive      Boolean  @default(true) // Engelleme için
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  messages      Message[]
+  
+  @@index([participants])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  messageType    MessageType  @default(TEXT)
+  packageData    String?      // JSON string olarak paket verisi
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  
+  @@index([conversationId])
+  @@index([senderId])
+}
+
+// Kullanıcı engelleme sistemi
+model UserBlock {
+  id              String   @id @default(cuid())
+  blockerUserId   String   // Engelleyen kullanıcı
+  blockedUserId   String   // Engellenen kullanıcı
+  createdAt       DateTime @default(now())
+  
+  blocker         User     @relation("BlockedByUser", fields: [blockerUserId], references: [id], onDelete: Cascade)
+  blocked         User     @relation("UserBlocks", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  
+  @@unique([blockerUserId, blockedUserId])
+  @@index([blockerUserId])
+  @@index([blockedUserId])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  PACKAGE
 }

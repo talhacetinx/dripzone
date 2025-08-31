@@ -11,6 +11,18 @@
 :root {
   --background: #000;
   --foreground: #171717;
+  
+  /* Primary colors - Yellow theme */
+  --primary-50: #FFFEF0;
+  --primary-100: #FFFCE0;
+  --primary-200: #FFF9C2;
+  --primary-300: #FFF685;
+  --primary-400: #FFF347;
+  --primary-500: #FAFB00;
+  --primary-600: #E6E200;
+  --primary-700: #B3B000;
+  --primary-800: #808000;
+  --primary-900: #4D4D00;
 }
 
 @media (prefers-color-scheme: dark) {

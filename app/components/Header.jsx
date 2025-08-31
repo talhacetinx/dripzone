@@ -2,18 +2,21 @@
 
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { Menu, X, User, LogOut, Settings, Globe } from "lucide-react";
+import { Menu, X, User, LogOut, Settings, Globe, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useSocket } from "../context/SocketContext";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   
   const { user: AuthUser, logout, loading } = useAuth();
+  const { socket } = useSocket();
 
   const { currentLanguage, changeLanguage, languages, isTranslating, forceUpdate } = useLanguage();
 
@@ -36,6 +39,25 @@ export const Header = () => {
     //   flag: sortedLanguages[0]?.flag
     // });
   }, [currentLanguage, forceUpdate, sortedLanguages]);
+
+  // Socket mesaj bildirimi dinleyicisi
+  useEffect(() => {
+    if (!socket || !AuthUser) return;
+
+    const handleNewMessage = (messageData) => {
+      // Sadece kendi mesajımız değilse bildirim göster
+      if (messageData.senderId !== AuthUser.id) {
+        setUnreadMessages(prev => prev + 1);
+        console.log('🔔 Yeni mesaj bildirimi:', messageData.content);
+      }
+    };
+
+    socket.on('new_message', handleNewMessage);
+
+    return () => {
+      socket.off('new_message', handleNewMessage);
+    };
+  }, [socket, AuthUser]);
 
   const handleLanguageChange = (langCode) => {
     // console.log("🔄 Changing language to:", langCode);
@@ -83,7 +105,22 @@ export const Header = () => {
               {isLoggedIn ? (
                 <>
                   <Link href="/dashboard" className="text-white hover:text-primary-400">Kontrol Paneli</Link>
-                  <Link href="/messages" className="text-white hover:text-primary-400">Mesajlar</Link>
+                  
+                  {/* Mesajlar - Bildirim ile */}
+                  <Link 
+                    href="/dashboard/messages" 
+                    className="relative text-white hover:text-primary-400 flex items-center"
+                    onClick={() => setUnreadMessages(0)}
+                  >
+                    <MessageCircle className="w-5 h-5 mr-1" />
+                    Mesajlar
+                    {unreadMessages > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                        {unreadMessages > 9 ? '9+' : unreadMessages}
+                      </span>
+                    )}
+                  </Link>
+                  
                   {profile.user_type === "artist" && (
                     <Link href="/orders" className="text-white hover:text-primary-400">Siparişler</Link>
                   )}
@@ -281,9 +318,25 @@ export const Header = () => {
                     <Link href="/dashboard" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
                       Kontrol Paneli
                     </Link>
-                    <Link href="/messages" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
+                    
+                    {/* Mesajlar - Mobil */}
+                    <Link 
+                      href="/dashboard/messages" 
+                      className="relative flex items-center px-4 py-3 text-white hover:text-primary-400" 
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setUnreadMessages(0);
+                      }}
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
                       Mesajlar
+                      {unreadMessages > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                          {unreadMessages > 9 ? '9+' : unreadMessages}
+                        </span>
+                      )}
                     </Link>
+                    
                     {profile.user_type === "artist" && (
                       <Link href="/orders" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
                         Siparişler

@@ -79,6 +79,45 @@ const mockConversations = [
 
 export const ProviderDashboard = ({AuthUser}) => {
   const [activeTab, setActiveTab] = useState('overview')
+  const [profileCache, setProfileCache] = useState(null); // Profil cache
+  const [profileLoading, setProfileLoading] = useState(false);
+  
+  // Tab değiştirme fonksiyonu - Profile tabına geçerken loading başlat
+  const handleTabChange = (newTab) => {
+    console.log(`🔄 Tab değiştiriliyor: ${activeTab} → ${newTab}`);
+    setActiveTab(newTab);
+    
+    // Profile tabına geçiş yapılıyorsa loading başlat
+    if (newTab === 'profile') {
+      console.log("🏗️ Profile tabına geçiş - loading başlatılıyor");
+      // ProfileProviderTab component'i mount edildiğinde loading başlayacak
+    }
+  }
+
+  // Dashboard açılır açılmaz profil verilerini pre-load et
+  const preloadProfileData = async () => {
+    if (profileCache || profileLoading) return; // Zaten yüklendi veya yükleniyor
+    
+    setProfileLoading(true);
+    try {
+      console.log("📦 Pre-loading profile data...");
+      
+      const profileResponse = await fetch('/api/profile/get', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        setProfileCache(profileData);
+        console.log("✅ Profile data pre-loaded and cached");
+      }
+    } catch (error) {
+      console.error("❌ Profile pre-load failed:", error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
   const [showServiceModal, setShowServiceModal] = useState(false)
   const [editingService, setEditingService] = useState(null)
   const [services, setServices] = useState([])
@@ -92,10 +131,15 @@ export const ProviderDashboard = ({AuthUser}) => {
       setOrders(mockOrders)
       setConversations(mockConversations)
       setIsLoading(false)
+      
+      // Dashboard yüklendikten sonra profil verilerini pre-load et
+      if (AuthUser?.role === "PROVIDER") {
+        preloadProfileData();
+      }
     }, 1000)
 
     return () => clearTimeout(timeout)
-  }, [])
+  }, [AuthUser])
 
   if (isLoading) {
     return (
@@ -193,7 +237,7 @@ export const ProviderDashboard = ({AuthUser}) => {
           {['overview', 'services', 'orders', 'revenue' , 'profile'].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabChange(tab)}
               className={`pb-2 text-md   font-semibold ${
                 activeTab === tab ? 'text-primary-500 border-b-2 border-primary-500' : 'text-gray-400'
               }`}
@@ -213,7 +257,7 @@ export const ProviderDashboard = ({AuthUser}) => {
           )}
           {activeTab === 'orders' && <OrdersTab orders={orders} />}
           {activeTab === 'revenue' && <RevenueTab totalRevenue={totalRevenue} />}
-          {activeTab === 'profile' && <ProfileProviderTab userInfo={AuthUser} />}
+          {activeTab === 'profile' && <ProfileProviderTab userInfo={AuthUser} profileCache={profileCache} />}
         </div>
       </div>
 

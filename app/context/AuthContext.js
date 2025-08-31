@@ -58,3 +58,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export const useAuthContext = useAuth; // Alias for compatibility

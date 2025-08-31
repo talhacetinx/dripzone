@@ -18,6 +18,11 @@ function decodeJWT(token) {
 export function middleware(request) {
   const { pathname } = request.nextUrl;
   
+  // Socket.io path'larını bypass et
+  if (pathname.startsWith('/api/socket')) {
+    return NextResponse.next();
+  }
+  
   
   const token = request.cookies.get("token")?.value;
 
@@ -50,5 +55,9 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
+  matcher: [
+    "/dashboard/:path*", 
+    "/admin/:path*",
+    "/api/socket/:path*"
+  ],
 };

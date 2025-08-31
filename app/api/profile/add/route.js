@@ -5,6 +5,7 @@ import { randomBytes } from "crypto";
 import prisma from "../../lib/prisma";
 import { getAuthUser } from "../../lib/auth";
 import { checkRateLimit, ALLOWED_ORIGINS } from "../../lib/rate";
+import { saveFile } from "../../../../lib/fileUpload";
 
 const allowedTypes = ["png", "jpeg", "jpg", "webp"];
 
@@ -113,6 +114,14 @@ export async function POST(req) {
         where: { userId }
       });
 
+      // User tablosundaki user_photo'yu güncelle
+      if (avatarUrl) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { user_photo: avatarUrl }
+        });
+      }
+
       await prisma.artistProfile.upsert({
         where: { userId },
         update: {
@@ -153,19 +162,41 @@ export async function POST(req) {
         provider_project_count,
         provider_response_time,
         provider_studio_name,
-        provider_services = [],
-        provider_services_csv,
         provider_specialties = [],
         provider_important_clients = [],
-        provider_studio_images = [],
-        provider_packages = [],
+        provider_service_type,
+        provider_portfolio_files = [],
         genres = [],
         background_image,
+        // Yeni hizmet tipi verileri
+        studioPhotos = [],
+        musicProjects = [],
+        albumCovers = [],
+        musicVideos = [],
       } = body;
 
       if (!photos) {
         return NextResponse.json({ error: "Fotoğraf eksik" }, { status: 400 });
       }
+
+      if (!provider_service_type) {
+        return NextResponse.json({ error: "Hizmet tipi seçilmemiş" }, { status: 400 });
+      }
+
+      // Service type mapping - dashboard'dan gelen değerler ile backend'deki değerleri eşleştir
+      // Dashboard'da producer olarak saklanıyor ama API'de music_producer bekliyor
+      const serviceTypeMap = {
+        'producer': 'music_producer',
+        'album_cover_designer': 'album_cover_artist', 
+        'music_video_director': 'music_video_director',
+        'recording_studio': 'recording_studio',
+        // Backward compatibility için eski değerler
+        'music_producer': 'music_producer',
+        'album_cover_artist': 'album_cover_artist'
+      };
+
+      const mappedServiceType = serviceTypeMap[provider_service_type] || provider_service_type;
+      console.log(`🔄 Service type mapping: ${provider_service_type} → ${mappedServiceType}`);
 
       let avatarUrl;
       try {
@@ -202,26 +233,125 @@ export async function POST(req) {
         }
       }
 
-      const studioPhotos = [];
+      // Hizmet tipine özel dosyaları işle
+      let processedServiceData = {};
+      
       try {
-        for (const item of provider_studio_images.slice(0, 3)) {
-          if (item?.dataUrl) {
-            if (typeof item.dataUrl === 'string' && item.dataUrl.startsWith('/')) {
-              studioPhotos.push(item.dataUrl);
-            } else {
-              try {
-                const url = await saveBase64Image(item.dataUrl, "studio");
-                studioPhotos.push(url);
-              } catch (saveError) {
-                console.warn("Studio fotoğraf kaydetme başarısız, base64 olarak kaydediliyor:", saveError.message);
-                studioPhotos.push(item.dataUrl);
+        console.log("� Hizmet tipi verileri işleniyor:", provider_service_type);
+        
+        if (mappedServiceType === "recording_studio") {
+          // Stüdyo fotoğraflarını kaydet
+          const processedPhotos = [];
+          if (studioPhotos && Array.isArray(studioPhotos)) {
+            for (let i = 0; i < studioPhotos.length; i++) {
+              const photo = studioPhotos[i];
+              if (photo?.file && photo?.preview) {
+                try {
+                  const saveResult = await saveFile(photo.preview, 'image', `studio/${userId}`);
+                  if (saveResult.success) {
+                    processedPhotos.push({
+                      url: saveResult.filePath,
+                      name: photo.name
+                    });
+                  }
+                } catch (err) {
+                  console.error(`Stüdyo fotoğrafı ${i + 1} kaydetme hatası:`, err);
+                }
               }
             }
           }
+          processedServiceData.studioPhotos = processedPhotos;
+          
+        } else if (mappedServiceType === "music_producer") {
+          // Müzik projelerini işle
+          const processedProjects = [];
+          if (musicProjects && Array.isArray(musicProjects)) {
+            for (let i = 0; i < musicProjects.length; i++) {
+              const project = musicProjects[i];
+              const processedProject = {
+                songName: project.songName || "",
+                songDescription: project.songDescription || "",
+                link: project.link || "",
+                mediaUrl: null
+              };
+              
+              if (project.mediaFile && project.mediaPreview) {
+                try {
+                  console.log(`Processing media for project ${i + 1}:`, {
+                    mediaFileType: project.mediaFile?.type,
+                    hasMediaPreview: !!project.mediaPreview,
+                    songName: project.songName
+                  });
+                  
+                  const mediaType = project.mediaFile.type.startsWith('image/') ? 'image' : 'video';
+                  const saveResult = await saveFile(project.mediaPreview, mediaType, `producer/${userId}`);
+                  console.log(`Save result for project ${i + 1}:`, saveResult);
+                  
+                  if (saveResult.success) {
+                    processedProject.mediaUrl = saveResult.filePath;
+                    console.log(`Set mediaUrl for project ${i + 1}:`, processedProject.mediaUrl);
+                  }
+                } catch (err) {
+                  console.error(`Proje ${i + 1} medya kaydetme hatası:`, err);
+                }
+              } else {
+                console.log(`No media file for project ${i + 1}:`, {
+                  hasMediaFile: !!project.mediaFile,
+                  hasMediaPreview: !!project.mediaPreview
+                });
+              }
+              
+              processedProjects.push(processedProject);
+            }
+          }
+          processedServiceData.musicProjects = processedProjects;
+          console.log('Final processedServiceData.musicProjects:', JSON.stringify(processedProjects, null, 2));
+          
+        } else if (mappedServiceType === "album_cover_artist") {
+          // Albüm kapaklarını işle
+          const processedCovers = [];
+          if (albumCovers && Array.isArray(albumCovers)) {
+            for (let i = 0; i < albumCovers.length; i++) {
+              const cover = albumCovers[i];
+              if (cover?.file && cover?.preview) {
+                try {
+                  const saveResult = await saveFile(cover.preview, 'image', `covers/${userId}`);
+                  if (saveResult.success) {
+                    processedCovers.push({
+                      url: saveResult.filePath,
+                      name: cover.name,
+                      songLink: cover.songLink || ""
+                    });
+                  }
+                } catch (err) {
+                  console.error(`Albüm kapağı ${i + 1} kaydetme hatası:`, err);
+                }
+              }
+            }
+          }
+          processedServiceData.albumCovers = processedCovers;
+          
+        } else if (mappedServiceType === "music_video_director") {
+          // YouTube linklerini işle
+          const processedVideos = [];
+          if (musicVideos && Array.isArray(musicVideos)) {
+            musicVideos.forEach((video) => {
+              if (video.youtubeLink) {
+                processedVideos.push({
+                  youtubeLink: video.youtubeLink
+                });
+              }
+            });
+          }
+          processedServiceData.musicVideos = processedVideos;
         }
-      } catch (studioError) {
-        console.error("Stüdyo fotoğrafları kaydetme hatası:", studioError);
-        return NextResponse.json({ error: "Stüdyo fotoğrafları kaydetme hatası: " + studioError.message }, { status: 500 });
+        
+        console.log(`✅ ${mappedServiceType} verileri başarıyla işlendi`);
+      } catch (serviceError) {
+        console.error("Hizmet tipi verileri işleme hatası:", serviceError);
+        return NextResponse.json({ 
+          error: "Hizmet tipi verileri işleme hatası: " + serviceError.message 
+        }, { status: 500 });
       }
 
       try {
@@ -229,15 +359,21 @@ export async function POST(req) {
           where: { userId }
         });
 
+        // User tablosundaki user_photo'yu güncelle
+        if (avatarUrl) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { user_photo: avatarUrl }
+          });
+        }
+
         const result = await prisma.providerProfile.upsert({
           where: { userId },
           update: {
             studioName: provider_studio_name || null,
-            studioPhoto: studioPhotos[0] || null,
-            studioPhotos,
             about: provider_about || null,
-            services: Array.isArray(provider_services) ? provider_services : [],
-            packages: Array.isArray(provider_packages) ? provider_packages : [],
+            serviceType: mappedServiceType,
+            serviceData: processedServiceData, // Yeni hizmet tipi verileri
             avatarUrl,
             backgroundUrl,
             experience: provider_experience ? parseInt(provider_experience) : null,
@@ -253,11 +389,9 @@ export async function POST(req) {
           create: {
             userId,
             studioName: provider_studio_name || null,
-            studioPhoto: studioPhotos[0] || null,
-            studioPhotos,
             about: provider_about || null,
-            services: Array.isArray(provider_services) ? provider_services : [],
-            packages: Array.isArray(provider_packages) ? provider_packages : [],
+            serviceType: mappedServiceType,
+            serviceData: processedServiceData, // Yeni hizmet tipi verileri
             avatarUrl,
             backgroundUrl,
             experience: provider_experience ? parseInt(provider_experience) : null,

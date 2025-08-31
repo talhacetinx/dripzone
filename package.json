@@ -2,11 +2,13 @@
   "name": "dripzome-v2",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "node server.js",
+    "dev-next": "next dev",
+    "dev-turbo": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node server.js",
+    "start-next": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
@@ -30,6 +32,9 @@
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
     "react-toastify": "^11.0.5",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "uuid": "^11.1.0",
     "xss": "^1.0.15"
   },
   "devDependencies": {

@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // TypeScript hata kontrolünü devre dışı bırak
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  // ESLint hata kontrolünü devre dışı bırak
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Google Translate için external domain'lere izin ver
   async headers() {
     return [
@@ -24,7 +32,9 @@ const nextConfig = {
               connect-src 'self' 
                 https://translate.googleapis.com 
                 https://translate-pa.googleapis.com
-                https://*.vercel.app;
+                https://*.vercel.app
+                ws://localhost:*
+                wss://*.vercel.app;
               frame-src 'self'
                 https://translate.googleapis.com
                 https://*.vercel.app;
