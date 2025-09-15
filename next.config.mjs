@@ -34,7 +34,9 @@ const nextConfig = {
                 https://translate-pa.googleapis.com
                 https://*.vercel.app
                 ws://localhost:*
-                wss://*.vercel.app;
+                wss://*.vercel.app
+                wss://dripzone-topaz.vercel.app
+                ${process.env.PROD_URL ? `wss://${process.env.PROD_URL.replace('https://', '')}` : ''};
               frame-src 'self'
                 https://translate.googleapis.com
                 https://*.vercel.app;
@@ -71,6 +73,23 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   // swcMinify removed - already default in Next.js 15
+  
+  // WebSocket ve server konfigürasyonu
+  experimental: {
+    serverComponentsExternalPackages: ['socket.io', 'socket.io-client']
+  },
+  
+  // WebSocket proxy development için
+  ...(process.env.NODE_ENV === 'development' && {
+    async rewrites() {
+      return [
+        {
+          source: '/socket.io/:path*',
+          destination: '/api/socket/:path*'
+        }
+      ];
+    }
+  })
 };
 
 export default nextConfig;

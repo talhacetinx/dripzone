@@ -27,18 +27,29 @@ export const SocketProvider = ({ children }) => {
       console.log('🔌 Kullanıcı bağlanıyor:', user.name);
       
       const socketUrl = process.env.NODE_ENV === 'production' 
-        ? (process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin)
+        ? (process.env.NEXT_PUBLIC_PROD_URL || window.location.origin)
         : 'http://localhost:3000';
         
       console.log('🌐 Socket URL:', socketUrl);
+      
+      // Production'da standart socket.io path kullan
+      const socketPath = process.env.NODE_ENV === 'production' 
+        ? '/socket.io/' 
+        : '/socket.io/';
+        
+      console.log('🛤️ Socket Path:', socketPath);
         
       const newSocket = io(socketUrl, {
+        path: socketPath,
         auth: {
           userId: user.id,
           userName: user.name
         },
-        transports: ['websocket', 'polling'],
-        upgrade: true,
+        // Production'da sadece polling kullan (Vercel serverless için)
+        transports: process.env.NODE_ENV === 'production' 
+          ? ['polling'] 
+          : ['websocket', 'polling'],
+        upgrade: process.env.NODE_ENV === 'development',
         timeout: 20000,
         reconnection: true,
         reconnectionAttempts: maxReconnectAttempts,
@@ -49,7 +60,8 @@ export const SocketProvider = ({ children }) => {
         // Production için ek ayarlar
         ...(process.env.NODE_ENV === 'production' ? {
           secure: true,
-          rejectUnauthorized: false
+          rejectUnauthorized: false,
+          rememberUpgrade: false // Vercel için upgrade'i kapat
         } : {})
       });
 

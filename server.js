@@ -32,6 +32,7 @@ app.prepare().then(() => {
       origin: dev 
         ? ['http://localhost:3000', 'http://localhost:3001']
         : [
+            process.env.PROD_URL,
             'https://dripzone-topaz.vercel.app',
             'https://*.vercel.app',
             process.env.NEXT_PUBLIC_SITE_URL,
@@ -41,16 +42,16 @@ app.prepare().then(() => {
       credentials: true,
       allowEIO3: true
     },
-    transports: ['websocket', 'polling'],
+    transports: dev ? ['websocket', 'polling'] : ['polling', 'websocket'],
     pingTimeout: 60000,
     pingInterval: 25000,
     allowEIO3: true,
-    // Production için ek ayarlar
     ...(dev ? {} : {
       cookie: false,
       serveClient: false,
-      upgrade: true,
-      rememberUpgrade: true
+      upgrade: false, // Vercel için upgrade'i kapat
+      rememberUpgrade: false,
+      allowUpgrades: false // Vercel WebSocket upgrade'ini engelle
     })
   });
 
