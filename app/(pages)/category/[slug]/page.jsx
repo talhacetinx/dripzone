@@ -2,11 +2,11 @@ import { Header } from "../../../components/Header";
 import { Footer } from "../../../components/Footer";
 import { CategoryComponent } from "../../../components/Category/CategoryComponent";
 
-export default function CategorySlugPage({ params }) {
-    const { slug } = params;
+export default async function CategorySlugPage({ params }) {
+    const { slug } = await params;
     
     return (
-        <>  
+        <>
             <Header />
             <CategoryComponent categorySlug={slug} />
             <Footer />
@@ -30,7 +30,7 @@ export async function generateStaticParams() {
 
 // Metadata generation
 export async function generateMetadata({ params }) {
-    const { slug } = params;
+    const { slug } = await params;
     
     const categoryNames = {
         'videographers': 'Video Çekimi Uzmanları',

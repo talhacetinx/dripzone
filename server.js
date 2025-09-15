@@ -4,13 +4,12 @@ const next = require('next');
 const { Server } = require('socket.io');
 
 const dev = process.env.NODE_ENV !== 'production';
-const hostname = 'localhost';
+const hostname = dev ? 'localhost' : '0.0.0.0';
 const port = process.env.PORT || 3000;
 
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-// Socket.io helper import (dynamic import for ES module)
 let setSocketIO = null;
 
 const onlineUsers = new Map();
@@ -32,61 +31,82 @@ app.prepare().then(() => {
     cors: {
       origin: dev 
         ? ['http://localhost:3000', 'http://localhost:3001']
-        : ['https://dripzone-topaz.vercel.app'],
+        : [
+            'https://dripzone-topaz.vercel.app',
+            'https://*.vercel.app',
+            process.env.NEXT_PUBLIC_SITE_URL,
+            process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
+          ].filter(Boolean),
       methods: ['GET', 'POST'],
-      credentials: true
+      credentials: true,
+      allowEIO3: true
     },
     transports: ['websocket', 'polling'],
     pingTimeout: 60000,
-    pingInterval: 25000
+    pingInterval: 25000,
+    allowEIO3: true,
+    // Production için ek ayarlar
+    ...(dev ? {} : {
+      cookie: false,
+      serveClient: false,
+      upgrade: true,
+      rememberUpgrade: true
+    })
   });
 
-  // Socket.io instance'ını global olarak erişilebilir yap
   global.socketIO = io;
 
   io.on('connection', (socket) => {
-    console.log('✅ Yeni kullanıcı bağlandı:', socket.id);
+    console.log('✅ Yeni kullanıcı bağlandı:', socket.id, 'Transport:', socket.conn.transport.name);
+    
+    socket.conn.on('upgrade', () => {
+      console.log('🔄 Transport upgraded to:', socket.conn.transport.name);
+    });
 
-    // User comes online
     socket.on('user_online', (userId) => {
-      console.log('👤 Kullanıcı online:', userId);
+      console.log('👤 Kullanıcı online:', userId, 'Socket:', socket.id);
       onlineUsers.set(userId, socket.id);
       socket.userId = userId;
       
-      // Broadcast to other users
       socket.broadcast.emit('user_connected', userId);
-      io.emit('users_online', Array.from(onlineUsers.keys()));
+      
+      const onlineUsersList = Array.from(onlineUsers.keys());
+      io.emit('users_online', onlineUsersList);
+      console.log('📊 Online kullanıcılar:', onlineUsersList);
     });
 
-    // Join conversation room
     socket.on('join_conversation', (conversationId) => {
       console.log('💬 Konuşmaya katıldı:', conversationId);
       socket.join(conversationId);
     });
 
-    // Send message
     socket.on('send_message', async (data) => {
-      console.log('📨 Mesaj gönderiliyor:', data);
+      console.log('📨 Mesaj gönderiliyor:', data.conversationId, 'Sender:', data.senderId);
       try {
-        // Emit to conversation room
-        socket.to(data.conversationId).emit('new_message', {
+        const messageData = {
           id: data.id || Date.now(),
           content: data.content,
           senderId: data.senderId,
           conversationId: data.conversationId,
           createdAt: new Date(),
           sender: data.sender
-        });
+        };
         
-        // Confirm to sender
+        socket.to(data.conversationId).emit('new_message', messageData);
+        
+        if (data.receiverId && onlineUsers.has(data.receiverId)) {
+          const receiverSocketId = onlineUsers.get(data.receiverId);
+          io.to(receiverSocketId).emit('new_message', messageData);
+        }
+        
         socket.emit('message_sent', { success: true, messageId: data.id });
+        console.log('✅ Mesaj başarıyla gönderildi');
       } catch (error) {
-        console.error('Mesaj gönderme hatası:', error);
+        console.error('❌ Mesaj gönderme hatası:', error);
         socket.emit('message_sent', { success: false, error: error.message });
       }
     });
 
-    // Typing indicators
     socket.on('typing_start', (data) => {
       socket.to(data.conversationId).emit('user_typing', {
         userId: data.userId,
@@ -101,15 +121,25 @@ app.prepare().then(() => {
       });
     });
 
-    // Disconnect
     socket.on('disconnect', (reason) => {
-      console.log('❌ Kullanıcı ayrıldı:', socket.id, 'Sebep:', reason);
+      console.log('❌ Kullanıcı ayrıldı:', socket.id, 'Sebep:', reason, 'UserId:', socket.userId);
       
       if (socket.userId) {
         onlineUsers.delete(socket.userId);
         socket.broadcast.emit('user_disconnected', socket.userId);
-        io.emit('users_online', Array.from(onlineUsers.keys()));
+        
+        const onlineUsersList = Array.from(onlineUsers.keys());
+        io.emit('users_online', onlineUsersList);
+        console.log('📊 Güncel online kullanıcılar:', onlineUsersList);
       }
+    });
+    
+    socket.on('connect_error', (error) => {
+      console.error('🔥 Socket bağlantı hatası:', error);
+    });
+    
+    socket.on('ping', () => {
+      socket.emit('pong');
     });
   });
 

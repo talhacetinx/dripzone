@@ -27,8 +27,10 @@ export const SocketProvider = ({ children }) => {
       console.log('🔌 Kullanıcı bağlanıyor:', user.name);
       
       const socketUrl = process.env.NODE_ENV === 'production' 
-        ? process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin
+        ? (process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin)
         : 'http://localhost:3000';
+        
+      console.log('🌐 Socket URL:', socketUrl);
         
       const newSocket = io(socketUrl, {
         auth: {
@@ -37,21 +39,42 @@ export const SocketProvider = ({ children }) => {
         },
         transports: ['websocket', 'polling'],
         upgrade: true,
-        timeout: 10000,
+        timeout: 20000,
         reconnection: true,
         reconnectionAttempts: maxReconnectAttempts,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        randomizationFactor: 0.5
+        reconnectionDelay: 2000,
+        reconnectionDelayMax: 10000,
+        randomizationFactor: 0.5,
+        forceNew: false,
+        // Production için ek ayarlar
+        ...(process.env.NODE_ENV === 'production' ? {
+          secure: true,
+          rejectUnauthorized: false
+        } : {})
       });
 
       // Bağlantı olayları
       newSocket.on('connect', () => {
-        console.log('✅ Socket başarıyla bağlandı:', newSocket.id);
+        console.log('✅ Socket başarıyla bağlandı:', newSocket.id, 'Transport:', newSocket.io.engine.transport.name);
         setIsConnected(true);
         setReconnectAttempts(0);
+        
+        // Transport upgrade'i dinle
+        newSocket.io.engine.on('upgrade', () => {
+          console.log('🔄 Transport upgraded to:', newSocket.io.engine.transport.name);
+        });
+        
         // Kullanıcıyı online olarak işaretle
         newSocket.emit('user_online', user.id);
+        
+        // Heartbeat gönder
+        const heartbeat = setInterval(() => {
+          if (newSocket.connected) {
+            newSocket.emit('ping');
+          } else {
+            clearInterval(heartbeat);
+          }
+        }, 25000);
       });
 
       newSocket.on('disconnect', (reason) => {
@@ -94,15 +117,19 @@ export const SocketProvider = ({ children }) => {
         setIsConnected(false);
       });
 
-      // Online kullanıcıları dinle
-      newSocket.on('online_users', (userIds) => {
-        console.log('👥 Online kullanıcılar:', userIds);
+      // Online kullanıcıları dinle - Event adını düzelt
+      newSocket.on('users_online', (userIds) => {
+        console.log('👥 Online kullanıcılar güncellendi:', userIds);
         setOnlineUsers(new Set(userIds));
       });
 
       newSocket.on('user_connected', (userId) => {
         console.log('👤 Kullanıcı bağlandı:', userId);
-        setOnlineUsers(prev => new Set([...prev, userId]));
+        setOnlineUsers(prev => {
+          const newSet = new Set([...prev, userId]);
+          console.log('👥 Güncel online kullanıcılar:', Array.from(newSet));
+          return newSet;
+        });
       });
 
       newSocket.on('user_disconnected', (userId) => {
@@ -110,8 +137,14 @@ export const SocketProvider = ({ children }) => {
         setOnlineUsers(prev => {
           const newSet = new Set(prev);
           newSet.delete(userId);
+          console.log('👥 Güncel online kullanıcılar:', Array.from(newSet));
           return newSet;
         });
+      });
+      
+      // Pong response
+      newSocket.on('pong', () => {
+        console.log('🏓 Pong alındı');
       });
 
       setSocket(newSocket);
@@ -120,11 +153,9 @@ export const SocketProvider = ({ children }) => {
     return () => {
       if (socket) {
         console.log('🔌 Socket temizleniyor...');
-        // Reconnection timeout'u temizle
         if (reconnectTimeoutRef.current) {
           clearTimeout(reconnectTimeoutRef.current);
         }
-        // Socket'i manuel olarak kapat
         socket.disconnect();
         setSocket(null);
         setIsConnected(false);

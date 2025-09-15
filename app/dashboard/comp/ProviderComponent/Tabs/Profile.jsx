@@ -69,7 +69,28 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
     provider_studio_name: "",
   });
 
-  const genres = ["Rock", "Pop", "Jazz", "Rap"];
+  const genres = [
+    "Rock",
+    "Pop", 
+    "Hip-Hop / Rap",
+    "R&B / Soul",
+    "Jazz",
+    "Klasik (Classical)",
+    "Elektronik / EDM",
+    "Folk",
+    "Reggae / Ska",
+    "Film / Oyun Müzikleri",
+    "Ambient / Chill / Downtempo",
+    "World Music",
+    "Spiritual / Dini",
+    "Türk Müziği",
+    "Blues",
+    "Experimental / Avant-Garde",
+    "Metal",
+    "Latin",
+    "Urban",
+    "8-bit / Chip Tune"
+  ];
 
   const handleServiceTypeChange = (newServiceType) => {
     const profileComplete = isProfileComplete();
@@ -472,6 +493,43 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
               }));
               setMusicProjects(projects);
               console.log("🎵 Music projects loaded from profile:", projects);
+            }
+            
+            // Recording studio için stüdyo fotoğrafları
+            if (profile.serviceType === "recording_studio" && profile.serviceData.studioPhotos) {
+              console.log("🏗️ Loading studio photos from profile:", profile.serviceData.studioPhotos);
+              const photos = profile.serviceData.studioPhotos.slice(0, 3).map(photo => ({
+                file: null,
+                preview: null,
+                url: photo.url,
+                name: photo.name || "Stüdyo Fotoğrafı",
+                isNew: false
+              }));
+              setStudioPhotos(photos);
+              console.log("📸 Studio photos set in state:", photos);
+            }
+            
+            // Album cover artist için albüm kapakları
+            if (profile.serviceType === "album_cover_artist" && profile.serviceData.albumCovers) {
+              const covers = profile.serviceData.albumCovers.slice(0, 4);
+              const newAlbumCovers = [...albumCovers];
+              covers.forEach((cover, index) => {
+                if (index < 4) {
+                  newAlbumCovers[index] = {
+                    songLink: cover.songLink || "",
+                    file: null,
+                    preview: null,
+                    url: cover.url,
+                    name: cover.name || `Albüm Kapağı ${index + 1}`
+                  };
+                }
+              });
+              setAlbumCovers(newAlbumCovers);
+            }
+            
+            // Music video director için video linkleri
+            if (profile.serviceType === "music_video_director" && profile.serviceData.musicVideos) {
+              setMusicVideos(profile.serviceData.musicVideos);
             }
           } else {
             // ServiceData yoksa API'den çek
@@ -1539,12 +1597,12 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
           <div className="w-full mb-9 flex flex-col gap-4 items-start">
             <div className="w-full flex flex-1 flex-col">
               <div className="pb-3 text-xl font-bold">Hangi Türde Müzik Yapıyorsunuz?</div>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                 {genres.map((genre) => (
                   <div
                     key={genre}
                     onClick={() => handleGenreClick(genre)}
-                    className={`cursor-pointer px-4 py-2 rounded-lg border transition-all ${
+                    className={`cursor-pointer px-4 py-2 rounded-lg border transition-all whitespace-nowrap flex-shrink-0 ${
                       selectedGenres.includes(genre)
                         ? "border-blue-500 bg-blue-100 text-blue-700"
                         : "bg-gradient-to-r from-primary-500/20 to-primary-400/10 border border-primary-500/30 text-primary-400 font-semibold"

@@ -71,6 +71,64 @@ const mockOrders = [
   }
 ]
 
+const mockRecentTransactions = [
+  {
+    id: '201',
+    provider_amount: 85,
+    artist: {
+      full_name: 'Alex Johnson',
+      avatar_url: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=50'
+    },
+    service: {
+      title: 'Professional Beat Production'
+    }
+  },
+  {
+    id: '202',
+    provider_amount: 120,
+    artist: {
+      full_name: 'Sarah Williams',
+      avatar_url: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=50'
+    },
+    service: {
+      title: 'Vocal Recording & Mixing'
+    }
+  },
+  {
+    id: '203',
+    provider_amount: 95,
+    artist: {
+      full_name: 'Michael Brown',
+      avatar_url: 'https://images.pexels.com/photos/1704488/pexels-photo-1704488.jpeg?auto=compress&cs=tinysrgb&w=50'
+    },
+    service: {
+      title: 'Mastering Services'
+    }
+  },
+  {
+    id: '204',
+    provider_amount: 150,
+    artist: {
+      full_name: 'Emma Davis',
+      avatar_url: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=50'
+    },
+    service: {
+      title: 'Full Song Production'
+    }
+  },
+  {
+    id: '205',
+    provider_amount: 75,
+    artist: {
+      full_name: 'David Wilson',
+      avatar_url: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=50'
+    },
+    service: {
+      title: 'Beat Customization'
+    }
+  }
+]
+
 const mockConversations = [
   { id: 'c1', unread_count: 2 },
   { id: 'c2', unread_count: 0 },
@@ -122,6 +180,7 @@ export const ProviderDashboard = ({AuthUser}) => {
   const [editingService, setEditingService] = useState(null)
   const [services, setServices] = useState([])
   const [orders, setOrders] = useState([])
+  const [recentTransactions, setRecentTransactions] = useState([])
   const [conversations, setConversations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -129,10 +188,10 @@ export const ProviderDashboard = ({AuthUser}) => {
     const timeout = setTimeout(() => {
       setServices(mockServices)
       setOrders(mockOrders)
+      setRecentTransactions(mockRecentTransactions)
       setConversations(mockConversations)
       setIsLoading(false)
       
-      // Dashboard yüklendikten sonra profil verilerini pre-load et
       if (AuthUser?.role === "PROVIDER") {
         preloadProfileData();
       }
@@ -163,16 +222,16 @@ export const ProviderDashboard = ({AuthUser}) => {
 
   const stats = [
     {
-      title: 'Total Revenue',
+      title: 'Toplam Gelir',
       value: `$${totalRevenue.toFixed(2)}`,
-      subtitle: '80% of sales',
+      subtitle: 'Satışların %80\'i',
       icon: DollarSign,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-500/10',
       borderColor: 'border-emerald-500/20'
     },
     {
-      title: 'Active Services',
+      title: 'Aktif Hizmetler',
       value: services.length,
       icon: Package,
       color: 'text-blue-400',
@@ -180,7 +239,7 @@ export const ProviderDashboard = ({AuthUser}) => {
       borderColor: 'border-blue-500/20'
     },
     {
-      title: 'Pending Orders',
+      title: 'Bekleyen Siparişler',
       value: orders.filter(o => o.status === 'pending').length,
       icon: Clock,
       color: 'text-yellow-400',
@@ -188,7 +247,7 @@ export const ProviderDashboard = ({AuthUser}) => {
       borderColor: 'border-yellow-500/20'
     },
     {
-      title: 'Unread Messages',
+      title: 'Okunmamış Mesajlar',
       value: conversations.reduce((sum, c) => sum + c.unread_count, 0),
       icon: MessageCircle,
       color: 'text-primary-400',
@@ -234,15 +293,19 @@ export const ProviderDashboard = ({AuthUser}) => {
 
         {/* Tab Buttons */}
         <div className="overflow-x-auto flex space-x-4 border-b border-gray-700 mb-6">
-          {['overview', 'services', 'orders', 'revenue' , 'profile'].map((tab) => (
+          {[
+            { key: 'overview', label: 'Genel Bakış' },
+            { key: 'services', label: 'Hizmetler' },
+            { key: 'profile', label: 'Profil' }
+          ].map((tab) => (
             <button
-              key={tab}
-              onClick={() => handleTabChange(tab)}
-              className={`pb-2 text-md   font-semibold ${
-                activeTab === tab ? 'text-primary-500 border-b-2 border-primary-500' : 'text-gray-400'
+              key={tab.key}
+              onClick={() => handleTabChange(tab.key)}
+              className={`pb-2 text-md font-semibold ${
+                activeTab === tab.key ? 'text-primary-500 border-b-2 border-primary-500' : 'text-gray-400'
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -255,8 +318,6 @@ export const ProviderDashboard = ({AuthUser}) => {
               userInfo={AuthUser}
             />
           )}
-          {activeTab === 'orders' && <OrdersTab orders={orders} />}
-          {activeTab === 'revenue' && <RevenueTab totalRevenue={totalRevenue} />}
           {activeTab === 'profile' && <ProfileProviderTab userInfo={AuthUser} profileCache={profileCache} />}
         </div>
       </div>

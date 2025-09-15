@@ -191,7 +191,7 @@ export const HomePage = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
-                  href="/auth/register"
+                  href="/register"
                   className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl text-base transition-all duration-300 shadow-lg hover:shadow-primary-500/25 min-w-[200px] justify-center"
                 >
                   <span>Ücretsiz Başlayın</span>

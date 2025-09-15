@@ -241,25 +241,60 @@ export async function POST(req) {
         
         if (mappedServiceType === "recording_studio") {
           // Stüdyo fotoğraflarını kaydet
+          console.log("🏗️ Processing studio photos:");
+          console.log("- studioPhotos received:", studioPhotos);
+          console.log("- studioPhotos type:", typeof studioPhotos);
+          console.log("- studioPhotos length:", studioPhotos?.length);
+          if (studioPhotos && studioPhotos.length > 0) {
+            console.log("- first photo structure:", studioPhotos[0]);
+          }
+          
           const processedPhotos = [];
           if (studioPhotos && Array.isArray(studioPhotos)) {
             for (let i = 0; i < studioPhotos.length; i++) {
               const photo = studioPhotos[i];
-              if (photo?.file && photo?.preview) {
+              console.log(`- Photo ${i + 1}:`, {
+                hasFile: !!photo?.file,
+                hasPreview: !!photo?.preview,
+                hasUrl: !!photo?.url,
+                isNew: photo?.isNew,
+                name: photo?.name
+              });
+              
+              // Hem yeni yüklenen hem de mevcut fotoğrafları işle
+              if ((photo?.file && photo?.preview) || (!photo?.isNew && photo?.url)) {
                 try {
-                  const saveResult = await saveFile(photo.preview, 'image', `studio/${userId}`);
-                  if (saveResult.success) {
+                  let photoUrl, photoName;
+                  
+                  if (photo?.file && photo?.preview) {
+                    // Yeni yüklenen fotoğraf
+                    const saveResult = await saveFile(photo.preview, 'image', `studio/${userId}`);
+                    if (saveResult.success) {
+                      photoUrl = saveResult.filePath;
+                      photoName = photo.name;
+                    }
+                  } else if (!photo?.isNew && photo?.url) {
+                    // Mevcut fotoğraf (zaten kaydedilmiş)
+                    photoUrl = photo.url;
+                    photoName = photo.name;
+                  }
+                  
+                  if (photoUrl) {
                     processedPhotos.push({
-                      url: saveResult.filePath,
-                      name: photo.name
+                      url: photoUrl,
+                      name: photoName
                     });
+                    console.log(`✅ Photo ${i + 1} processed successfully:`, photoUrl);
                   }
                 } catch (err) {
-                  console.error(`Stüdyo fotoğrafı ${i + 1} kaydetme hatası:`, err);
+                  console.error(`❌ Stüdyo fotoğrafı ${i + 1} kaydetme hatası:`, err);
                 }
+              } else {
+                console.log(`⚠️ Photo ${i + 1} skipped - doesn't meet conditions`);
               }
             }
           }
+          console.log("🏁 Final processed photos:", processedPhotos);
           processedServiceData.studioPhotos = processedPhotos;
           
         } else if (mappedServiceType === "music_producer") {

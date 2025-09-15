@@ -6,8 +6,7 @@ import Link from 'next/link';
 export const Footer = () => {
   const quickLinks = [
     { name: 'Hakkımızda', path: '/about' },
-    { name: 'İletişim', path: '/contact' },
-    { name: 'Çerez Politikası', path: '/cookies' },
+    { name: 'Çerez Politikası', path: '/cookie' },
   ];
 
   const categories = [

@@ -37,8 +37,8 @@ export default function ProfileClientPage({ params, initialData }) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Profile Not Found</h1>
-          <p className="text-gray-400">The requested profile could not be found.</p>
+          <h1 className="text-4xl font-bold text-white mb-4">Profil Bulunamadı</h1>
+          <p className="text-gray-400">İstenen profil bulunamadı.</p>
         </div>
       </div>
     );
@@ -47,6 +47,36 @@ export default function ProfileClientPage({ params, initialData }) {
   const profile = user.artistProfile || user.providerProfile;
   console.log(profile);
   
+  // Parse serviceData if it's a string
+  if (profile && profile.serviceData && typeof profile.serviceData === 'string') {
+    try {
+      profile.serviceData = JSON.parse(profile.serviceData);
+      console.log('🔧 ServiceData parsed from string:', profile.serviceData);
+    } catch (e) {
+      console.error('❌ Failed to parse serviceData:', e);
+      profile.serviceData = {};
+    }
+  }
+  console.log('🏗️ Profile ServiceData studioPhotos:', profile?.serviceData?.studioPhotos);
+  
+  // Additional debugging for recording studio
+  if (profile && profile.serviceType === 'recording_studio') {
+    console.log('🎵 Recording Studio Profile Debug:');
+    console.log('- serviceType:', profile.serviceType);
+    console.log('- serviceData type:', typeof profile.serviceData);
+    console.log('- serviceData content:', profile.serviceData);
+    console.log('- studioPhotos:', profile.serviceData?.studioPhotos);
+    console.log('- studioPhotos length:', profile.serviceData?.studioPhotos?.length);
+    if (profile.serviceData?.studioPhotos?.length > 0) {
+      console.log('- first photo:', profile.serviceData.studioPhotos[0]);
+    }
+    
+    // Check raw database data
+    console.log('- RAW user data:', user);
+    console.log('- RAW providerProfile:', user.providerProfile);
+    console.log('- RAW serviceData from DB:', user.providerProfile?.serviceData);
+  }
+  
   const isArtist = Boolean(user.artistProfile);
 
   const getCategoryIcon = (isArtist) => {
@@ -54,19 +84,19 @@ export default function ProfileClientPage({ params, initialData }) {
   };
 
   const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'reviews', label: 'Reviews' }
+    { id: 'overview', label: 'Genel Bakış' },
+    { id: 'reviews', label: 'Değerlendirmeler' }
   ];
 
   // Portfolio tab'ını sadece artist'ler veya recording_studio olmayan provider'lar için ekle
   if (isArtist || (profile.serviceType && profile.serviceType !== 'recording_studio')) {
-    tabs.splice(1, 0, { id: 'portfolio', label: 'Portfolio' });
+    tabs.splice(1, 0, { id: 'portfolio', label: 'Portföy' });
   }
 
   if (!isArtist) {
     const insertIndex = tabs.length - 1; // reviews'dan önce
-    tabs.splice(insertIndex, 0, { id: 'services', label: 'Services' });
-    tabs.splice(insertIndex + 1, 0, { id: 'packages', label: 'Packages' });
+    tabs.splice(insertIndex, 0, { id: 'services', label: 'Hizmetler' });
+    tabs.splice(insertIndex + 1, 0, { id: 'packages', label: 'Paketler' });
   }
 
     const router = useRouter();
@@ -116,22 +146,22 @@ export default function ProfileClientPage({ params, initialData }) {
                                     {profile.serviceType ? profile.serviceType.replace(/_/g, ' ') : (isArtist ? 'Artist' : 'Provider')}
                                 </span>
                             </div>
-                        </div>
+                        </div>  
                         <p className="text-xl text-gray-300 mb-3">@{user.user_name}</p>
                         
                         <div className="flex flex-col items-left space-x-6 text-sm gap-3 sm:flex-row">
                             <div className="flex items-center space-x-2">
                                 <Star className="w-4 h-4 text-primary-500 fill-current" />
                                 <span className="font-bold text-white">4.8</span>
-                                <span className="text-gray-400">(127 reviews)</span>
+                                <span className="text-gray-400">(127 değerlendirme)</span>
                             </div>
                             <div className="flex items-center space-x-2 text-gray-400">
                                 <MapPin className="w-4 h-4" />
-                                <span>{user.country || 'Location not specified'}</span>
+                                <span>{user.country || 'Konum belirtilmedi'}</span>
                             </div>
                             <div className="flex items-center space-x-2 text-gray-400">
                                 <Award className="w-4 h-4" />
-                                <span>{profile.experience || 0} years</span>
+                                <span>{profile.experience || 0} yıl</span>
                             </div>
                         </div>
                     </div>
@@ -142,54 +172,54 @@ export default function ProfileClientPage({ params, initialData }) {
                     <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                         <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
                         <MessageCircle className="w-4 h-4" />
-                        <span>Contact</span>
+                        <span>İletişim</span>
                         </button>
                         <button className="flex items-center justify-center space-x-2 px-6 py-3 border-2 border-gray-700 hover:border-primary-500 text-white rounded-xl font-bold transition-all duration-300 backdrop-blur-sm">
                         <Heart className="w-4 h-4" />
-                        <span>Save</span>
+                        <span>Kaydet</span>
                         </button>
                     </div>
                     </div>
                 </div>
 
-                {/* Quick Stats */}
+                {/* Hızlı İstatistikler */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-8 border-t border-gray-800/50">
                     {isArtist ? (
                     <>
                         <div className="text-center">
                         <div className="text-2xl font-bold text-primary-500 mb-1">{profile.experience || 0}</div>
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Experience</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Deneyim</div>
                         </div>
                         <div className="text-center">
-                        <div className="text-2xl font-bold text-primary-500 mb-1">24h</div>
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Response</div>
+                        <div className="text-2xl font-bold text-primary-500 mb-1">24s</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Yanıt Süresi</div>
                         </div>
                         <div className="text-center">
                         <div className="text-2xl font-bold text-primary-500 mb-1">4.8</div>
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Rating</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Değerlendirme</div>
                         </div>
                         <div className="text-center">
                         <div className="text-2xl font-bold text-primary-500 mb-1">98%</div>
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Satisfaction</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Memnuniyet</div>
                         </div>
                     </>
                     ) : (
                     <>
                         <div className="text-center">
                         <div className="text-2xl font-bold text-primary-500 mb-1">{profile.projectCount || 0}</div>
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Projects</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Projeler</div>
                         </div>
                         <div className="text-center">
-                        <div className="text-2xl font-bold text-primary-500 mb-1">{profile.responseTime || 24}  günde</div>
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Response</div>
+                        <div className="text-2xl font-bold text-primary-500 mb-1">{profile.responseTime || 24} gün</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Yanıt Süresi</div>
                         </div>
                         <div className="text-center">
                         <div className="text-2xl font-bold text-primary-500 mb-1">{profile.experience || 0}</div>
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Experience</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Deneyim</div>
                         </div>
                         <div className="text-center">
                         <div className="text-2xl font-bold text-primary-500 mb-1">98%</div>
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Satisfaction</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Memnuniyet</div>
                         </div>
                     </>
                     )}
@@ -279,16 +309,16 @@ export default function ProfileClientPage({ params, initialData }) {
                                 </span>
                                 ))
                             ) : (
-                                <span className="text-gray-400">No specialties specified</span>
+                                <span className="text-gray-400">Uzmanlık alanı belirtilmedi</span>
                             )
                             )}
                         </div>
                         </div>
 
-                        {/* Notable Clients (for Providers) */}
+                        {/* Önemli Müşteriler (Provider'lar için) */}
                         {!isArtist && (
                         <div>
-                            <h3 className="text-xl font-bold mb-4 text-white">Notable Clients</h3>
+                            <h3 className="text-xl font-bold mb-4 text-white">Önemli Müşteriler</h3>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {profile.importantClients && profile.importantClients.length > 0 ? (
                                 profile.importantClients.map((client, index) => (
@@ -300,7 +330,7 @@ export default function ProfileClientPage({ params, initialData }) {
                                 </div>
                                 ))
                             ) : (
-                                <span className="text-gray-400 col-span-full">No notable clients listed</span>
+                                <span className="text-gray-400 col-span-full">Önemli müşteri listelenmedi</span>
                             )}
                             </div>
                         </div>
@@ -318,7 +348,6 @@ export default function ProfileClientPage({ params, initialData }) {
                                 <div className="w-16 h-1 bg-gradient-to-r from-primary-500 to-primary-400 rounded-full"></div>
                             </div>
                             )}
-                            
                             <h3 className="text-xl font-bold mb-6 text-white">Stüdyo Fotoğrafları</h3>
                             {profile.serviceData?.studioPhotos && profile.serviceData.studioPhotos.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -811,7 +840,7 @@ export default function ProfileClientPage({ params, initialData }) {
                         className="space-y-6"
                     >
                         <div>
-                        <h3 className="text-xl font-bold mb-4 text-white">Services Offered</h3>
+                        <h3 className="text-xl font-bold mb-4 text-white">Sunulan Hizmetler</h3>
                         <div className="grid gap-4">
                             {profile.services && profile.services.length > 0 ? (
                             profile.services.map((service, index) => (
@@ -820,12 +849,12 @@ export default function ProfileClientPage({ params, initialData }) {
                                 className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6 hover:border-primary-500/50 transition-all duration-300"
                                 >
                                 <h4 className="text-lg font-bold mb-2 text-white">{service}</h4>
-                                <p className="text-gray-400">Professional {service.toLowerCase()} services</p>
+                                <p className="text-gray-400">Profesyonel {service.toLowerCase()} hizmetleri</p>
                                 </div>
                             ))
                             ) : (
                             <div className="text-center text-gray-400 py-8">
-                                No services listed yet
+                                Henüz hizmet listelenmemiş
                             </div>
                             )}
                         </div>
@@ -840,7 +869,7 @@ export default function ProfileClientPage({ params, initialData }) {
                         className="space-y-6"
                     >
                         <div>
-                        <h3 className="text-xl font-bold mb-6 text-white">Service Packages</h3>
+                        <h3 className="text-xl font-bold mb-6 text-white">Hizmet Paketleri</h3>
                         {profile.packages && profile.packages.length > 0 ? (
                             <div className="grid gap-6">
                             {profile.packages.map((pkg, index) => (
@@ -852,7 +881,7 @@ export default function ProfileClientPage({ params, initialData }) {
                                 {index === 0 && (
                                     <div className="absolute -top-3 left-6">
                                     <span className="px-3 py-1 bg-gradient-to-r from-primary-500 to-primary-400 text-xs font-bold rounded-full text-black shadow-lg">
-                                        POPULAR
+                                        POPÜLER
                                     </span>
                                     </div>
                                 )}
@@ -867,7 +896,7 @@ export default function ProfileClientPage({ params, initialData }) {
                                         </div>
                                         <div className="text-right mt-4 md:mt-0">
                                         <div className="text-3xl font-bold text-primary-500 mb-1">₺{calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}</div>
-                                        <div className="text-sm text-gray-400">{pkg.deliveryTime} delivery</div>
+                                        <div className="text-sm text-gray-400">{pkg.deliveryTime} teslimat</div>
                                         </div>
                                     </div>
 
@@ -883,9 +912,9 @@ export default function ProfileClientPage({ params, initialData }) {
                                         </div>
                                     )}
 
-                                    {/* Order Button */}
+                                    {/* Sipariş Butonu */}
                                     <button className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg text-black">
-                                        Order Now - ₺{calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}
+                                        Şimdi Sipariş Ver - ₺{calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}
                                     </button>
                                     </div>
                                 </div>
@@ -896,8 +925,8 @@ export default function ProfileClientPage({ params, initialData }) {
                             <div className="text-center py-12">
                             <div className="text-gray-400 mb-4">
                                 <Music size={48} className="mx-auto mb-4 opacity-50" />
-                                <p className="text-lg">No packages available</p>
-                                <p className="text-sm">This provider hasn't created any service packages yet</p>
+                                <p className="text-lg">Mevcut paket yok</p>
+                                <p className="text-sm">Bu sağlayıcı henüz herhangi bir hizmet paketi oluşturmamış</p>
                             </div>
                             </div>
                         )}
@@ -944,17 +973,17 @@ export default function ProfileClientPage({ params, initialData }) {
                             <div className="p-5">
                                 <h4 className="font-bold text-lg mb-2 text-white">{file.name}</h4>
                                 <p className="text-gray-400 text-sm">
-                                {file.type === 'image' && profile.serviceType === 'recording_studio' && 'Studio Photo'}
-                                {file.type === 'image' && profile.serviceType === 'album_cover_artist' && 'Album Cover Design'}
-                                {file.type === 'audio' && 'Music Sample'}
-                                {file.type === 'video' && 'Video Teaser'}
+                                {file.type === 'image' && profile.serviceType === 'recording_studio' && 'Stüdyo Fotoğrafı'}
+                                {file.type === 'image' && profile.serviceType === 'album_cover_artist' && 'Albüm Kapağı Tasarımı'}
+                                {file.type === 'audio' && 'Müzik Örneği'}
+                                {file.type === 'video' && 'Video Tanıtımı'}
                                 </p>
                             </div>
                             </div>
                         ))
                         ) : (
                         <div className="col-span-full text-center text-gray-400 py-8">
-                            No portfolio items available yet
+                            Henüz portfolyo öğesi mevcut değil
                         </div>
                         )}
                     </motion.div>
@@ -967,7 +996,7 @@ export default function ProfileClientPage({ params, initialData }) {
                         className="space-y-6"
                     >
                         <div className="text-center text-gray-400 py-8">
-                        Reviews feature coming soon
+                        Değerlendirmeler özelliği yakında geliyor
                         </div>
                     </motion.div>
                     )}
