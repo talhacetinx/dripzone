@@ -9,7 +9,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { debounce } from 'lodash';
 
-export const CategoryComponent = ({categorySlug}) => {
+export const CategoryComponent = ({categorySlug, userCookie}) => {
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -22,11 +22,15 @@ export const CategoryComponent = ({categorySlug}) => {
   // Proje sayısı filtresi
   const [projectCountFilter, setProjectCountFilter] = useState('all');
   const [experienceFilter, setExperienceFilter] = useState('all');
+
+  const cookie = userCookie?.cookie || null;
+
+  console.log("kullanıcı kategori oturumu:",  cookie);
   
   // Pagination states
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-
+  
   // serviceType mapping - slug'ları serviceType'lara çevir
   const slugToServiceType = {
     'recording-studios': 'recording_studio',

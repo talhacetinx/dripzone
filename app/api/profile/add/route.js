@@ -71,6 +71,8 @@ export async function POST(req) {
         genres = [],
         profile_title,
         background_image,
+        youtubeLink,
+        spotifyLink,
       } = body;
 
       if (!photos) return NextResponse.json({ error: "Fotoğraf eksik" }, { status: 400 });
@@ -122,6 +124,14 @@ export async function POST(req) {
         });
       }
 
+      // Platform linklerini otherData alanında JSON olarak kaydet
+      const otherDataJson = {
+        platformLinks: {
+          youtube: youtubeLink || '',
+          spotify: spotifyLink || ''
+        }
+      };
+
       await prisma.artistProfile.upsert({
         where: { userId },
         update: {
@@ -132,6 +142,7 @@ export async function POST(req) {
           experiences: Array.isArray(experiences) ? experiences : [],
           genres: Array.isArray(genres) ? genres.join(",") : String(genres || ""),
           title: profile_title,
+          otherData: otherDataJson,
           slug: `/profile/${session.user_name}`,
         },
         create: {
@@ -143,6 +154,7 @@ export async function POST(req) {
           experiences: Array.isArray(experiences) ? experiences : [],
           genres: Array.isArray(genres) ? genres.join(",") : String(genres || ""),
           title: profile_title,
+          otherData: otherDataJson,
           slug: `/profile/${session.user_name}`,
         },
       });
@@ -168,6 +180,8 @@ export async function POST(req) {
         provider_portfolio_files = [],
         genres = [],
         background_image,
+        youtubeLink,
+        spotifyLink,
         // Yeni hizmet tipi verileri
         studioPhotos = [],
         musicProjects = [],
@@ -402,6 +416,14 @@ export async function POST(req) {
           });
         }
 
+        // Platform linklerini otherData alanında JSON olarak kaydet
+        const providerOtherDataJson = {
+          platformLinks: {
+            youtube: youtubeLink || '',
+            spotify: spotifyLink || ''
+          }
+        };
+
         const result = await prisma.providerProfile.upsert({
           where: { userId },
           update: {
@@ -409,6 +431,7 @@ export async function POST(req) {
             about: provider_about || null,
             serviceType: mappedServiceType,
             serviceData: processedServiceData, // Yeni hizmet tipi verileri
+            otherData: providerOtherDataJson,
             avatarUrl,
             backgroundUrl,
             experience: provider_experience ? parseInt(provider_experience) : null,
@@ -427,6 +450,7 @@ export async function POST(req) {
             about: provider_about || null,
             serviceType: mappedServiceType,
             serviceData: processedServiceData, // Yeni hizmet tipi verileri
+            otherData: providerOtherDataJson,
             avatarUrl,
             backgroundUrl,
             experience: provider_experience ? parseInt(provider_experience) : null,

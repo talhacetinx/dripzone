@@ -1,14 +1,17 @@
 import { Header } from "../../../components/Header";
 import { Footer } from "../../../components/Footer";
 import { CategoryComponent } from "../../../components/Category/CategoryComponent";
+import { cookies } from "next/headers";
+import { jwtVerify } from "jose";
 
 export default async function CategorySlugPage({ params }) {
     const { slug } = await params;
-    
+    const cookieStore = cookies();
+
     return (
         <>
             <Header />
-            <CategoryComponent categorySlug={slug} />
+            <CategoryComponent userCookie={cookieStore} categorySlug={slug} />
             <Footer />
         </>
     );

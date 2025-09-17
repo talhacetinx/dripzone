@@ -20,7 +20,6 @@ export const Header = () => {
 
   const { currentLanguage, changeLanguage, languages, isTranslating, forceUpdate } = useLanguage();
 
-  // Aktif dili en başa al (her yerde aynı mantık)
   const getSortedLanguages = (langs, activeCode) => {
     if (!langs) return [];
     const active = langs.find(l => l.code === activeCode);
@@ -29,26 +28,15 @@ export const Header = () => {
   };
   const sortedLanguages = getSortedLanguages(languages, currentLanguage);
 
-  // Debug log
   useEffect(() => {
-    // console.log("🌐 Header Language Context:", {
-    //   currentLanguage,
-    //   sortedLanguages,
-    //   isTranslating,
-    //   forceUpdate,
-    //   flag: sortedLanguages[0]?.flag
-    // });
   }, [currentLanguage, forceUpdate, sortedLanguages]);
 
-  // Socket mesaj bildirimi dinleyicisi
   useEffect(() => {
     if (!socket || !AuthUser) return;
 
     const handleNewMessage = (messageData) => {
-      // Sadece kendi mesajımız değilse bildirim göster
       if (messageData.senderId !== AuthUser.id) {
         setUnreadMessages(prev => prev + 1);
-        console.log('🔔 Yeni mesaj bildirimi:', messageData.content);
       }
     };
 
@@ -60,10 +48,8 @@ export const Header = () => {
   }, [socket, AuthUser]);
 
   const handleLanguageChange = (langCode) => {
-    // console.log("🔄 Changing language to:", langCode);
     changeLanguage(langCode);
     setShowLanguageMenu(false);
-    // sortedLanguages zaten currentLanguage değişince güncellenecek
   };
 
   const isLoggedIn = !!AuthUser && !loading;
@@ -79,7 +65,7 @@ export const Header = () => {
   const handleSignOut = async () => {
     await logout();
   };
-
+  
   return (
     <>
       <ToastContainer position="top-right" autoClose={5000} theme="dark" />
@@ -103,9 +89,9 @@ export const Header = () => {
             {/* Desktop */}
             <div className="hidden lg:flex items-center space-x-6">
               {isLoggedIn ? (
+                
                 <>
-                  <Link href="/dashboard" className="text-white hover:text-primary-400">Kontrol Paneli</Link>
-                  
+                  <Link href={profile.user_type === "admin" ? "/admin" : "/dashboard"}  className="text-white hover:text-primary-400">Kontrol Paneli</Link>
                   {/* Mesajlar - Bildirim ile */}
                   <Link 
                     href="/dashboard/messages" 
@@ -121,12 +107,7 @@ export const Header = () => {
                     )}
                   </Link>
                   
-                  {profile.user_type === "artist" && (
-                    <Link href="/orders" className="text-white hover:text-primary-400">Siparişler</Link>
-                  )}
-                  
-                  {/* Dashboard Link - Her zaman görünür */}
-                  <Link href="/dashboard" className="px-4 py-2 bg-primary-600 text-black rounded-lg hover:bg-primary-700 transition-colors font-semibold">
+                  <Link href={profile.user_type === "admin" ? "/admin" : "/dashboard"} className="px-4 py-2 bg-primary-600 text-black rounded-lg hover:bg-primary-700 transition-colors font-semibold">
                     Dashboard
                   </Link>
 
@@ -197,23 +178,6 @@ export const Header = () => {
                           exit={{ opacity: 0, y: 10 }}
                           className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-xl shadow-lg py-2"
                         >
-                          <Link
-                            href="/profile"
-                            className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            <User className="w-4 h-4" />
-                            <span>Profil</span>
-                          </Link>
-                          <Link
-                            href="/settings"
-                            className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            <Settings className="w-4 h-4" />
-                            <span>Ayarlar</span>
-                          </Link>
-                          <hr className="my-2 border-gray-700" />
                           <button
                             onClick={handleSignOut}
                             className="flex items-center space-x-2 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-gray-800 w-full text-left"

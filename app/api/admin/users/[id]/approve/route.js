@@ -38,20 +38,22 @@ export async function POST(req, { params }) {
 
         console.log("✅ Admin yetkisi doğrulandı, kullanıcı onaylanıyor...");
 
-        // Kullanıcıyı onayla (userPending = true yap)
+        // Kullanıcıyı onayla (userPending = false, isApproved = true yap)
         try {
             const updatedUser = await prisma.user.update({
                 where: {
                     id: params.id
                 },
                 data: {
-                    userPending: true
+                    userPending: false,
+                    isApproved: true
                 },
                 select: {
                     id: true,
                     name: true,
                     email: true,
-                    userPending: true
+                    userPending: true,
+                    isApproved: true
                 }
             });
 

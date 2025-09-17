@@ -43,8 +43,10 @@ export async function GET() {
             bio: true,
             backgroundUrl: true,
             experience: true,
+            experiences: true,
             genres: true,
             title: true,
+            otherData: true,
           }
         } : false,
         providerProfile: role === "PROVIDER" ? {
@@ -53,6 +55,7 @@ export async function GET() {
             about: true,
             serviceType: true,
             serviceData: true, // Service data'yı da include et
+            otherData: true,
             backgroundUrl: true,
             experience: true,
             projectCount: true,
@@ -78,8 +81,12 @@ export async function GET() {
           avatarUrl: user.user_photo,
           backgroundUrl: p.backgroundUrl,
           experience: p.experience,
+          experiences: p.experiences,
           genres: p.genres ? (Array.isArray(p.genres) ? p.genres : p.genres.split(",")) : [],
           title: p.title,
+          // otherData'dan platform linklerini çıkar
+          youtubeLink: p.otherData?.platformLinks?.youtube || '',
+          spotifyLink: p.otherData?.platformLinks?.spotify || '',
         } : null
       };
       
@@ -115,6 +122,9 @@ export async function GET() {
           specialties: p.specialties ? (Array.isArray(p.specialties) ? p.specialties : p.specialties.split(",")) : [],
           importantClients: p.importantClients ? (Array.isArray(p.importantClients) ? p.importantClients : p.importantClients.split(",")) : [],
           genres: p.genres ? (Array.isArray(p.genres) ? p.genres : p.genres.split(",")) : [],
+          // otherData'dan platform linklerini çıkar
+          youtubeLink: p.otherData?.platformLinks?.youtube || '',
+          spotifyLink: p.otherData?.platformLinks?.spotify || '',
         } : null
       };
       

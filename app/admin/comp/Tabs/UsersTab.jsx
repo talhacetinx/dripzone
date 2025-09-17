@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, MoreVertical, Check, Trash2, X, AlertTriangle } from "lucide-react";
+import { Search, Filter, MoreVertical, Check, Trash2, X, AlertTriangle, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 const UsersTab = () => {
     const [users, setUsers] = useState([]);
@@ -13,12 +14,15 @@ const UsersTab = () => {
     const [dropdownOpen, setDropdownOpen] = useState(null);
     const [deleteModal, setDeleteModal] = useState({ open: false, user: null });
     const [processing, setProcessing] = useState(false);
-
+    
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [usersPerPage] = useState(15);
+    
     useEffect(() => {
         fetchUsers();
     }, []);
 
-    // Dropdown'ı dışarı tıklayınca kapat
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownOpen && !event.target.closest('.dropdown-container')) {
@@ -32,21 +36,21 @@ const UsersTab = () => {
 
     const fetchUsers = async () => {
         try {
-            console.log("🔍 API çağrısı başlatılıyor: /api/admin/users");
             const response = await fetch("/api/admin/users");
-            console.log("🔍 API Response status:", response.status);
             
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error("❌ API Error:", errorText);
-                throw new Error("Kullanıcılar yüklenirken hata oluştu");
             }
             
             const data = await response.json();
-            console.log("✅ API'den gelen data:", data);
+            
+            data.users?.forEach(user => {
+                console.log(`👤 ${user.name} (${user.user_name}): userPending = ${user.userPending} (${user.userPending ? 'Onay Bekliyor' : 'Onaylandı'})`);
+            });
+            
             setUsers(data.users || []);
+
         } catch (err) {
-            console.error("❌ Fetch error:", err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -134,6 +138,22 @@ const UsersTab = () => {
         return matchesSearch && matchesRole;
     });
 
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+    const indexOfLastUser = currentPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+    // Reset to first page when search/filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterRole]);
+
+    const goToPage = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        setDropdownOpen(null); // Close any open dropdowns when changing pages
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center py-12">
@@ -156,6 +176,8 @@ const UsersTab = () => {
         );
     }
 
+    console.log("al sana data:" ,users);
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -164,7 +186,14 @@ const UsersTab = () => {
                     <h2 className="text-xl font-semibold text-white mb-1">
                         Kullanıcılar ({filteredUsers.length})
                     </h2>
-                    <p className="text-gray-400 text-sm">Tüm platform kullanıcılarını yönetin</p>
+                    <p className="text-gray-400 text-sm">
+                        Tüm platform kullanıcılarını yönetin 
+                        {totalPages > 1 && (
+                            <span className="ml-2">
+                                • Sayfa {currentPage} / {totalPages}
+                            </span>
+                        )}
+                    </p>
                 </div>
                 <button
                     onClick={fetchUsers}
@@ -227,13 +256,16 @@ const UsersTab = () => {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Durum
                                     </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Profil Sayfası
+                                    </th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         İşlemler
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-700">
-                                {filteredUsers.map((user, index) => (
+                                {currentUsers.map((user, index) => (
                                     <motion.tr 
                                         key={user.id}
                                         initial={{ opacity: 0, y: 10 }}
@@ -280,11 +312,30 @@ const UsersTab = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                                 !user.userPending 
-                                                    ? 'bg-yellow-100 text-yellow-800' 
-                                                    : 'bg-green-100 text-green-800'
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-yellow-100 text-yellow-800'
                                             }`}>
-                                                {!user.userPending ? 'Beklemede' : 'Onaylı'}
+                                                {!user.userPending ? 'Onaylandı' : 'Onay Bekliyor'}
                                             </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {user.user_name ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <Link 
+                                                        href={`/profile/${user.user_name}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors text-sm font-medium hover:underline"
+                                                    >
+                                                        <span>Profile Git</span>
+                                                        <ExternalLink className="w-3 h-3" />
+                                                    </Link>
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-500 text-sm">
+                                                    Profil yok
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative dropdown-container">
                                             <button 
@@ -297,16 +348,15 @@ const UsersTab = () => {
                                             {dropdownOpen === user.id && (
                                                 <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
                                                     <div className="py-1">
-                                                        {!user.userPending && (
-                                                            <button
-                                                                onClick={() => approveUser(user.id)}
-                                                                disabled={processing}
-                                                                className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-gray-700 transition-colors flex items-center gap-2"
-                                                            >
-                                                                <Check className="w-4 h-4" />
-                                                                Kullanıcıyı Onayla
-                                                            </button>
-                                                        )}
+                                                        {/* Geçici: Her kullanıcı için onay butonunu göster (test için) */}
+                                                        <button
+                                                            onClick={() => approveUser(user.id)}
+                                                            disabled={processing}
+                                                            className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-gray-700 transition-colors flex items-center gap-2"
+                                                        >
+                                                            <Check className="w-4 h-4" />
+                                                            Kullanıcıyı Onayla
+                                                        </button>
                                                         <button
                                                             onClick={() => {
                                                                 setDeleteModal({ open: true, user });
@@ -327,6 +377,50 @@ const UsersTab = () => {
                             </tbody>
                         </table>
                     </div>
+                    
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="px-6 py-4 border-t border-gray-700 flex items-center justify-between">
+                            <div className="text-sm text-gray-400">
+                                {indexOfFirstUser + 1}-{Math.min(indexOfLastUser, filteredUsers.length)} / {filteredUsers.length} kullanıcı gösteriliyor
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <ChevronLeft className="w-4 h-4 mr-1" />
+                                    Önceki
+                                </button>
+                                
+                                <div className="flex items-center space-x-1">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                        <button
+                                            key={pageNumber}
+                                            onClick={() => goToPage(pageNumber)}
+                                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                                currentPage === pageNumber
+                                                    ? 'bg-primary-600 text-black'
+                                                    : 'text-gray-300 bg-gray-800 border border-gray-600 hover:bg-gray-700'
+                                            }`}
+                                        >
+                                            {pageNumber}
+                                        </button>
+                                    ))}
+                                </div>
+                                
+                                <button
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Sonraki
+                                    <ChevronRight className="w-4 h-4 ml-1" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

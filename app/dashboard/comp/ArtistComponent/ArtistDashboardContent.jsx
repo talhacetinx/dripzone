@@ -5,9 +5,6 @@ import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { Modal } from '../../../components/ui/Modal'
 import { OverviewArtistTab } from './Tabs/Overview'
-import { ServicesArtistTab } from './Tabs/Services'
-import { OrdersArtistTab } from './Tabs/Orders'
-import { RevenueArtistTab } from './Tabs/Revenue'
 import { ProfileTab } from './Tabs/Profile'
 
 // Mock Data
@@ -40,6 +37,66 @@ const mockOrders = [
     service: {
       title: 'Albüm Kapağı Tasarımı'
     }
+  },
+  {
+    id: '202',
+    status: 'pending',
+    provider_amount: 120,
+    total_amount: 150,
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    artist: {
+      full_name: 'Zeynep Kaya',
+      email: 'zeynep@example.com',
+      avatar_url: 'https://randomuser.me/api/portraits/women/32.jpg'
+    },
+    service: {
+      title: 'Logo Tasarımı'
+    }
+  },
+  {
+    id: '203',
+    status: 'in_progress',
+    provider_amount: 200,
+    total_amount: 250,
+    created_at: new Date(Date.now() - 172800000).toISOString(),
+    artist: {
+      full_name: 'Mehmet Özkan',
+      email: 'mehmet@example.com',
+      avatar_url: 'https://randomuser.me/api/portraits/men/55.jpg'
+    },
+    service: {
+      title: 'Poster Tasarımı'
+    }
+  },
+  {
+    id: '204',
+    status: 'completed',
+    provider_amount: 300,
+    total_amount: 375,
+    created_at: new Date(Date.now() - 259200000).toISOString(),
+    artist: {
+      full_name: 'Ayşe Türk',
+      email: 'ayse@example.com',
+      avatar_url: 'https://randomuser.me/api/portraits/women/67.jpg'
+    },
+    service: {
+      title: 'Marka Kimliği Tasarımı'
+    }
+  },
+  {
+    id: '205',
+    status: 'cancelled',
+    provider_amount: 80,
+    total_amount: 100,
+    created_at: new Date(Date.now() - 345600000).toISOString(),
+    artist: {
+      full_name: 'Can Yılmaz',
+      email: 'can@example.com',
+      avatar_url: 'https://randomuser.me/api/portraits/men/22.jpg'
+    },
+    service: {
+      title: 'İllüstrasyon'
+    }
   }
 ]
 
@@ -50,6 +107,52 @@ const mockConversations = [
 
 export const ArtistDashboardContent = ({ user }) => {
   const [activeTab, setActiveTab] = useState('overview')
+  const [profileCache, setProfileCache] = useState(null); // Profil cache
+  const [profileLoading, setProfileLoading] = useState(false);
+  
+  // Profile cache temizleme fonksiyonu
+  const clearProfileCache = () => {
+    console.log("🗑️ Artist Profile cache temizleniyor");
+    setProfileCache(null);
+  };
+  
+  // Tab değiştirme fonksiyonu - Profile tabına geçerken loading başlat
+  const handleTabChange = (newTab) => {
+    console.log(`🔄 Artist Tab değiştiriliyor: ${activeTab} → ${newTab}`);
+    setActiveTab(newTab);
+    
+    // Profile tabına geçiş yapılıyorsa loading başlat
+    if (newTab === 'profile') {
+      console.log("🎨 Artist Profile tabına geçiş - loading başlatılıyor");
+      // ProfileTab component'i mount edildiğinde loading başlayacak
+    }
+  }
+
+  // Dashboard açılır açılmaz profil verilerini pre-load et
+  const preloadProfileData = async () => {
+    if (profileCache || profileLoading) return; // Zaten yüklendi veya yükleniyor
+    
+    setProfileLoading(true);
+    try {
+      console.log("🎨 Artist - Pre-loading profile data...");
+      
+      const profileResponse = await fetch('/api/profile/get', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        setProfileCache(profileData);
+        console.log("✅ Artist Profile data pre-loaded and cached", profileData);
+      }
+    } catch (error) {
+      console.error("❌ Artist Profile pre-load failed:", error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+  
   const [services, setServices] = useState([])
   const [orders, setOrders] = useState([])
   const [conversations, setConversations] = useState([])
@@ -62,16 +165,18 @@ export const ArtistDashboardContent = ({ user }) => {
       setServices(mockServices)
       setOrders(mockOrders)
       setConversations(mockConversations)
+      
+      // Artist profil verilerini pre-load et
+      if (user?.role === "ARTIST") {
+        preloadProfileData();
+      }
     }, 500)
 
     return () => clearTimeout(timeout)
-  }, [])
+  }, [user])
 
   const tabs = [
     { id: 'overview', label: 'Genel Bakış' },
-    { id: 'services', label: 'Hizmetlerim' },
-    { id: 'orders', label: 'Siparişler' },
-    { id: 'revenue', label: 'Gelir' },
     { id: 'profile', label: 'Profil' }
   ]
 
@@ -94,7 +199,7 @@ export const ArtistDashboardContent = ({ user }) => {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`pb-2 text-sm font-semibold whitespace-nowrap ${
                 activeTab === tab.id ? 'text-primary-500 border-b-2 border-primary-500' : 'text-gray-400'
               }`}
@@ -105,10 +210,7 @@ export const ArtistDashboardContent = ({ user }) => {
         </div>
 
       {activeTab === 'overview' && <OverviewArtistTab orders={orders} />}
-      {activeTab === 'services' && <ServicesArtistTab services={services} />}
-      {activeTab === 'orders' && <OrdersArtistTab orders={orders} />}
-      {activeTab === 'revenue' && <RevenueArtistTab orders={orders} />}
-      {activeTab === 'profile' && <ProfileTab orders={orders} userInfo={user} />}
+      {activeTab === 'profile' && <ProfileTab orders={orders} userInfo={user} profileCache={profileCache} clearProfileCache={clearProfileCache} />}
       </div>
 
       {/* Modal */}

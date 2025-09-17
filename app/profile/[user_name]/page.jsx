@@ -1,18 +1,53 @@
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
+import { jwtVerify } from "jose";
 import prisma from "../../api/lib/prisma";
 import ProfileClientPage from "./ProfileClient";
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
+  
+  // Admin kontrolü için token'ı kontrol et
+  const cookieStore = cookies();
+  const token = cookieStore.get('token')?.value;
+  let isAdmin = false;
+
+  if (token) {
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret');
+      const { payload } = await jwtVerify(token, secret);
+      isAdmin = payload.role === 'ADMIN';
+    } catch (error) {
+      isAdmin = false;
+    }
+  }
+
   const user = await prisma.user.findFirst({
     where: { user_name: resolvedParams.user_name },
     include: {
-      artistProfile: true,
+      artistProfile: {
+        select: {
+          id: true,
+          title: true,
+          bio: true,
+          avatarUrl: true,
+          backgroundUrl: true,
+          genres: true,
+          experiences: true,
+          experience: true,
+          otherData: true,
+          slug: true,
+          createdAt: true,
+          updatedAt: true,
+        }
+      },
       providerProfile: true,
     },
   });
 
+  console.log("kullanıcı kısmı icin:", user);
 
+  // Kullanıcı yoksa veya hiç profil yoksa
   if (!user || (!user.artistProfile && !user.providerProfile)) {
     return {
       title: "Profile Not Found",
@@ -20,7 +55,8 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  if (user.userPending === false) {
+  // Kullanıcı onaylanmamışsa (userPending: true) ve oturum açan kullanıcı admin değilse
+  if (user.userPending === true && !isAdmin) {
     return {
       title: "Profile Not Found",
       description: "The requested profile could not be found.",
@@ -40,10 +76,43 @@ export async function generateMetadata({ params }) {
 
 export default async function ProfilePage({ params }) {
   const resolvedParams = await params;
+  
+  // Admin kontrolü için token'ı kontrol et
+  const cookieStore = cookies();
+  const token = cookieStore.get('token')?.value;
+  let isAdmin = false;
+  let currentUser = null;
+
+  if (token) {
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret');
+      const { payload } = await jwtVerify(token, secret);
+      isAdmin = payload.role === 'ADMIN';
+      currentUser = payload;
+    } catch (error) {
+      isAdmin = false;
+    }
+  }
+
   const user = await prisma.user.findFirst({
     where: { user_name: resolvedParams.user_name },
     include: {
-      artistProfile: true,
+      artistProfile: {
+        select: {
+          id: true,
+          title: true,
+          bio: true,
+          avatarUrl: true,
+          backgroundUrl: true,
+          genres: true,
+          experiences: true,
+          experience: true,
+          otherData: true,
+          slug: true,
+          createdAt: true,
+          updatedAt: true,
+        }
+      },
       providerProfile: true,
     },
   });
@@ -52,10 +121,10 @@ export default async function ProfilePage({ params }) {
     notFound();
   }
 
-  // Onaylanmamış profiller için 404
-  if (user.userPending === false) {
+  // Kullanıcı onaylanmamışsa (userPending: true) ve oturum açan kullanıcı admin değilse
+  if (user.userPending === true && !isAdmin) {
     notFound();
   }
 
-  return <ProfileClientPage params={resolvedParams} initialData={user} />;
+  return <ProfileClientPage params={resolvedParams} initialData={user} isAdmin={isAdmin} currentUser={currentUser} />;
 }

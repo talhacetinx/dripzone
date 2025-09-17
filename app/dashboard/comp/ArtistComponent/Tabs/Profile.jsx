@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { useAuth } from "../../../../context/AuthContext";
 
-export const ProfileTab = ({ userInfo }) => {
+export const ProfileTab = ({ userInfo, profileCache, clearProfileCache }) => {
   const { checkAuth } = useAuth(); // AuthContext'ten checkAuth'i al
   const [fileName, setFileName] = useState("Resminizi Yükleyiniz");
   const [preview, setPreview] = useState(null);
@@ -21,17 +21,281 @@ export const ProfileTab = ({ userInfo }) => {
   const [experiences, setExperiences] = useState([]);
   const [showExperienceDetail, setShowExperienceDetail] = useState(true);
   const [selectedGenres, setSelectedGenres] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false); 
+  
+  const [selectedPlatforms, setSelectedPlatforms] = useState([]);
+  const [youtubeLink, setYoutubeLink] = useState("");
+  const [spotifyLink, setSpotifyLink] = useState("");
+  
   const [formData2, setFormData2] = useState({
     profile_description: "",
     profile_experience: "",
     profile_title: "",
   });
-  const genres = ["Rock", "Pop", "Jazz", "Rap"];
+  const genres = [
+    "Rock",
+    "Pop", 
+    "Hip-Hop / Rap",
+    "R&B / Soul",
+    "Jazz",
+    "Klasik (Classical)",
+    "Elektronik / EDM",
+    "Folk",
+    "Reggae / Ska",
+    "Film / Oyun Müzikleri",
+    "Ambient / Chill / Downtempo",
+    "World Music",
+    "Spiritual / Dini",
+    "Türk Müziği",
+    "Blues",
+    "Experimental / Avant-Garde",
+    "Metal",
+    "Latin",
+    "Urban",
+    "8-bit / Chip Tune"
+  ];
+
+  // Profil verilerini yükleme fonksiyonu
+  const loadProfile = async () => {
+    try {
+      // State'leri başlangıçta temizle
+      setSelectedPlatforms([]);
+      setYoutubeLink("");
+      setSpotifyLink("");
+      setSelectedGenres([]);
+      
+      // Önce cache'den kontrol et
+      if (profileCache && profileCache.profile) {
+        console.log("🎨 Artist - Using cached profile data:", profileCache.profile);
+        const profile = profileCache.profile;
+        
+        // Form verilerini doldur
+        setFormData2({
+          profile_description: profile.bio || "",
+          profile_experience: profile.experience || "",
+          profile_title: profile.title || "",
+        });
+        console.log("✅ Artist - Cached form data set:", {
+          profile_description: profile.bio || "",
+          profile_experience: profile.experience || "",
+          profile_title: profile.title || "",
+        });
+
+        // Avatar
+        if (profile.avatarUrl) {
+          setPreview(profile.avatarUrl);
+          setFileName("Mevcut profil fotoğrafı");
+        }
+
+        // Background image
+        if (profile.backgroundUrl) {
+          setBackgroundPreview(profile.backgroundUrl);
+          setBackgroundFileName("Mevcut arkaplan fotoğrafı");
+        }
+
+        // Uzmanlıklar
+        if (profile.experiences) {
+          setExperiences(profile.experiences);
+        }
+
+        // Türler
+        if (profile.genres) {
+          console.log("🎵 Artist - Loading cached genres:", profile.genres);
+          const genresArray = Array.isArray(profile.genres) ? profile.genres : profile.genres.split(",").filter(g => g.trim());
+          setSelectedGenres(genresArray);
+        }
+
+        // Platform linkleri cache'den
+        let newPlatforms = [];
+        if (profile.youtubeLink) {
+          console.log("📺 Artist - Loading cached YouTube link:", profile.youtubeLink);
+          setYoutubeLink(profile.youtubeLink);
+          newPlatforms.push('youtube');
+        }
+        if (profile.spotifyLink) {
+          console.log("🎵 Artist - Loading cached Spotify link:", profile.spotifyLink);
+          setSpotifyLink(profile.spotifyLink);
+          newPlatforms.push('spotify');
+        }
+        if (newPlatforms.length > 0) {
+          setSelectedPlatforms(newPlatforms);
+          console.log("✅ Artist - Set platforms:", newPlatforms);
+        }
+        
+        return; // Cache'den yüklendi, API çağrısı yapma
+      }
+
+      // Cache yoksa API'den yükle
+      console.log("🎨 Artist - No cache, loading from API...");
+      
+      const res = await fetch("/api/profile/get", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      
+      console.log("🎨 Artist - API Response status:", res.status);
+      console.log("🎨 Artist - API Response ok:", res.ok);
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log("🎨 Artist - Full API Response:", JSON.stringify(data, null, 2));
+        
+        if (data.profile) {
+          const profile = data.profile;
+          console.log("🎨 Artist Profil bulundu:", profile);
+          
+          // Form verilerini doldur
+          setFormData2({
+            profile_description: profile.bio || "",
+            profile_experience: profile.experience || "",
+            profile_title: profile.title || "",
+          });
+          console.log("✅ Artist - Form data set:", {
+            profile_description: profile.bio || "",
+            profile_experience: profile.experience || "",
+            profile_title: profile.title || "",
+          });
+          
+          // Form data state'ini kontrol et
+          setTimeout(() => {
+            console.log("🔍 Artist - Current formData2 state:", formData2);
+          }, 100);
+
+          // Avatar
+          if (profile.avatarUrl) {
+            console.log("✅ Artist Avatar URL bulundu:", profile.avatarUrl);
+            setPreview(profile.avatarUrl);
+            setFileName("Mevcut profil fotoğrafı");
+          }
+
+          // Background image
+          if (profile.backgroundUrl) {
+            setBackgroundPreview(profile.backgroundUrl);
+            setBackgroundFileName("Mevcut arkaplan fotoğrafı");
+          }
+
+          // Uzmanlıklar
+          if (profile.experiences) {
+            setExperiences(profile.experiences);
+          }
+
+          // Türler
+          if (profile.genres) {
+            console.log("🎵 Artist - Loading API genres:", profile.genres);
+            const genresArray = Array.isArray(profile.genres) ? profile.genres : profile.genres.split(",").filter(g => g.trim());
+            setSelectedGenres(genresArray);
+          }
+
+          // Platform linklerini otherData'dan yükle
+          console.log("🔗 Artist - Platform links from otherData:", {
+            youtubeLink: profile.youtubeLink,
+            spotifyLink: profile.spotifyLink
+          });
+          
+          let newPlatforms = [];
+          if (profile.youtubeLink) {
+            console.log("📺 Artist - Loading YouTube link:", profile.youtubeLink);
+            setYoutubeLink(profile.youtubeLink);
+            newPlatforms.push('youtube');
+          }
+          if (profile.spotifyLink) {
+            console.log("🎵 Artist - Loading Spotify link:", profile.spotifyLink);
+            setSpotifyLink(profile.spotifyLink);
+            newPlatforms.push('spotify');
+          }
+          if (newPlatforms.length > 0) {
+            setSelectedPlatforms(newPlatforms);
+            console.log("✅ Artist - Set platforms from API:", newPlatforms);
+          }
+        } else {
+          console.log("❌ Artist - No profile data found in API response");
+        }
+      } else {
+        console.log("❌ Artist - API request failed with status:", res.status);
+        const errorData = await res.text();
+        console.log("❌ Artist - Error response:", errorData);
+      }
+    } catch (error) {
+      console.error("Profil yüklenirken hata:", error);
+      toast.error("Profil verileri yüklenemedi");
+    }
+  };
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
+        // State'leri başlangıçta temizle
+        setSelectedPlatforms([]);
+        setYoutubeLink("");
+        setSpotifyLink("");
+        setSelectedGenres([]);
+        
+        // Önce cache'den kontrol et
+        if (profileCache && profileCache.profile) {
+          console.log("🎨 Artist - Using cached profile data:", profileCache.profile);
+          const profile = profileCache.profile;
+          
+          // Form verilerini doldur
+          setFormData2({
+            profile_description: profile.bio || "",
+            profile_experience: profile.experience || "",
+            profile_title: profile.title || "",
+          });
+
+          // Avatar
+          if (profile.avatarUrl) {
+            console.log("✅ Artist - Cached Avatar URL bulundu:", profile.avatarUrl);
+            setPreview(profile.avatarUrl);
+            setFileName("Mevcut profil fotoğrafı");
+          }
+
+          // Background image
+          if (profile.backgroundUrl) {
+            setBackgroundPreview(profile.backgroundUrl);
+            setBackgroundFileName("Mevcut arkaplan fotoğrafı");
+          }
+
+          // Uzmanlıklar
+          if (profile.experiences) {
+            setExperiences(profile.experiences);
+          }
+
+          // Türler - virgülle ayrılmış string'i array'e çevir
+          if (profile.genres) {
+            console.log("🎵 Artist - Loading cached genres:", profile.genres);
+            const genresArray = Array.isArray(profile.genres) ? profile.genres : profile.genres.split(",").filter(g => g.trim());
+            setSelectedGenres(genresArray);
+          }
+
+          // Platform linklerini yükle
+          let newPlatforms = [];
+          if (profile.youtubeLink) {
+            console.log("📺 Artist - Loading cached YouTube link:", profile.youtubeLink);
+            setYoutubeLink(profile.youtubeLink);
+            newPlatforms.push('youtube');
+          }
+          if (profile.spotifyLink) {
+            console.log("🎵 Artist - Loading cached Spotify link:", profile.spotifyLink);
+            setSpotifyLink(profile.spotifyLink);
+            newPlatforms.push('spotify');
+          }
+          if (newPlatforms.length > 0) {
+            setSelectedPlatforms(newPlatforms);
+            console.log("✅ Artist - Set platforms:", newPlatforms);
+          }
+          
+          return; // Cache'den yüklendi, API çağrısı yapma
+        }
+
+        // Cache yoksa API'den yükle
+        console.log("🎨 Artist - No cache, loading from API...");
+        
+        // State'leri API yüklemeden önce de temizle
+        setSelectedPlatforms([]);
+        setYoutubeLink("");
+        setSpotifyLink("");
+        setSelectedGenres([]);
+        
         const res = await fetch("/api/profile/get", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -74,8 +338,31 @@ export const ProfileTab = ({ userInfo }) => {
 
             // Türler - virgülle ayrılmış string'i array'e çevir
             if (profile.genres) {
-              const genresArray = profile.genres.split(",").filter(g => g.trim());
+              console.log("🎵 Artist - Loading API genres:", profile.genres);
+              const genresArray = Array.isArray(profile.genres) ? profile.genres : profile.genres.split(",").filter(g => g.trim());
               setSelectedGenres(genresArray);
+            }
+
+            // Platform linklerini otherData'dan yükle
+            console.log("🔗 Artist - Platform links from otherData:", {
+              youtubeLink: profile.youtubeLink,
+              spotifyLink: profile.spotifyLink
+            });
+            
+            let newPlatforms = [];
+            if (profile.youtubeLink) {
+              console.log("📺 Artist - Loading YouTube link from otherData:", profile.youtubeLink);
+              setYoutubeLink(profile.youtubeLink);
+              newPlatforms.push('youtube');
+            }
+            if (profile.spotifyLink) {
+              console.log("🎵 Artist - Loading Spotify link from otherData:", profile.spotifyLink);
+              setSpotifyLink(profile.spotifyLink);
+              newPlatforms.push('spotify');
+            }
+            if (newPlatforms.length > 0) {
+              setSelectedPlatforms(newPlatforms);
+              console.log("✅ Artist - Set platforms from otherData:", newPlatforms);
             }
           }
         }
@@ -88,7 +375,7 @@ export const ProfileTab = ({ userInfo }) => {
     if (userInfo?.role === "ARTIST") {
       loadProfile();
     }
-  }, [userInfo]);
+  }, [userInfo, profileCache]); // profileCache dependency eklendi
 
   const handlePhotoChange = (e) => {
     if (e.target.files.length > 0) {
@@ -136,39 +423,118 @@ export const ProfileTab = ({ userInfo }) => {
     }
   };
   const handleGenreClick = (genre) => {
-    setSelectedGenres((p) =>
-      p.includes(genre) ? p.filter((g) => g !== genre) : [...p, genre]
-    );
+    console.log("🎵 Genre clicked:", genre);
+    console.log("📋 Current selectedGenres:", selectedGenres);
+    
+    setSelectedGenres((p) => {
+      const newGenres = p.includes(genre) ? p.filter((g) => g !== genre) : [...p, genre];
+      console.log("🎵 New selectedGenres:", newGenres);
+      return newGenres;
+    });
+  };
+
+  const handlePlatformClick = (platform) => {
+    console.log("🔘 Platform clicked:", platform);
+    console.log("📋 Current selectedPlatforms:", selectedPlatforms);
+    
+    setSelectedPlatforms((prev) => {
+      if (prev.includes(platform)) {
+        console.log("❌ Removing platform:", platform);
+        // Platform kaldırılıyorsa link'ini de temizle
+        if (platform === 'youtube') setYoutubeLink("");
+        if (platform === 'spotify') setSpotifyLink("");
+        return prev.filter((p) => p !== platform);
+      } else {
+        console.log("✅ Adding platform:", platform);
+        return [...prev, platform];
+      }
+    });
   };
 
   const isProfileComplete = () => {
-    return (
+    // API'den gelen cache verisini kontrol et
+    if (profileCache && profileCache.profile) {
+      const profile = profileCache.profile;
+      const isComplete = (
+        profile.bio &&
+        profile.experience &&
+        profile.title &&
+        profile.avatarUrl && 
+        profile.experiences && profile.experiences.length > 0
+      );
+      
+      console.log("🔍 Profile completion check (from cache):", {
+        bio: !!profile.bio,
+        experience: !!profile.experience,
+        title: !!profile.title,
+        avatarUrl: !!profile.avatarUrl,
+        experiences: profile.experiences?.length > 0,
+        isComplete
+      });
+      
+      return isComplete;
+    }
+    
+    // Cache yoksa form state'ini kontrol et (fallback)
+    const isComplete = (
       formData2.profile_description &&
       formData2.profile_experience &&
       formData2.profile_title &&
       preview && 
       experiences.length > 0
     );
+    
+    console.log("🔍 Profile completion check (from form state):", {
+      profile_description: !!formData2.profile_description,
+      profile_experience: !!formData2.profile_experience,
+      profile_title: !!formData2.profile_title,
+      preview: !!preview,
+      experiences: experiences.length > 0,
+      isComplete
+    });
+    
+    return isComplete;
   };
 
   const handleProfilePage = async (e) => {
     e.preventDefault();
     setIsLoading(true); 
     
+    // Debug: Gönderilecek verileri logla
+    console.log("💾 Form submission data:");
+    console.log("📋 selectedGenres:", selectedGenres);
+    console.log("📋 selectedPlatforms:", selectedPlatforms);
+    console.log("📺 youtubeLink:", youtubeLink);
+    console.log("🎵 spotifyLink:", spotifyLink);
+    console.log("🎯 experiences:", experiences);
+    
     const values = Object.fromEntries(new FormData(e.currentTarget));
+    
+    const submitData = {
+      ...values,
+      photos: preview,
+      userPhotoName: fileName,
+      background_image: backgroundPreview,
+      experiences: experiences,
+      genres: selectedGenres,
+      youtubeLink: youtubeLink || '',
+      spotifyLink: spotifyLink || '',
+      userInfo, 
+    };
+    
+    console.log("📤 Final submit data:", submitData);
+    console.log("🔍 Platform links being sent:", {
+      youtubeLink: submitData.youtubeLink,
+      spotifyLink: submitData.spotifyLink,
+      hasYoutube: !!submitData.youtubeLink,
+      hasSpotify: !!submitData.spotifyLink
+    });
+    
     try {
       const res = await fetch("/api/profile/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          photos: preview,
-          userPhotoName: fileName,
-          background_image: backgroundPreview, // Arkaplan fotoğrafı eklendi
-          experiences: experiences,
-          genres: selectedGenres,
-          userInfo, 
-        }),
+        body: JSON.stringify(submitData),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -177,6 +543,16 @@ export const ProfileTab = ({ userInfo }) => {
         toast.success(data.message || "Profil başarıyla güncellendi!");
         // Header'daki profil fotoğrafını güncellemek için AuthContext'i refresh et
         await checkAuth();
+        
+        // Profil cache'ini temizle ve profil verilerini yeniden yükle
+        if (clearProfileCache) {
+          console.log("🔄 Clearing profile cache after successful update");
+          clearProfileCache();
+        }
+        
+        // Profil verilerini yeniden yükle
+        console.log("🔄 Reloading profile data after successful update");
+        await loadProfile();
       }
     } catch (err) {
       toast.error("Sunucu hatası");
@@ -187,6 +563,11 @@ export const ProfileTab = ({ userInfo }) => {
 
   return (
     <form onSubmit={handleProfilePage}>
+      {/* Debug: Form rendering */}
+      {console.log("🎨 Form rendering - formData2:", formData2)}
+      {console.log("🎨 Form rendering - preview:", preview)}
+      {console.log("🎨 Form rendering - experiences:", experiences)}
+      
       <div className="flex gap-6">
         <div className="w-full md:w-1/2">
           <div className="w-full mb-9">
@@ -347,6 +728,81 @@ export const ProfileTab = ({ userInfo }) => {
               placeholder="Ünvanı Giriniz"
               required
             />
+          </div>
+
+          {/* Sanatçı Profili Nerede Bölümü */}
+          <div className="w-full mb-6">
+            <div className="pb-3 text-xl font-bold">Sanatçı profilin nerede?</div>
+            <div className="flex flex-wrap gap-4 mb-4">
+              <div
+                onClick={() => handlePlatformClick('youtube')}
+                className={`cursor-pointer px-6 py-3 rounded-lg border transition-all flex items-center gap-3 ${
+                  selectedPlatforms.includes('youtube')
+                    ? "border-red-500 bg-red-100/10 text-red-400"
+                    : "bg-gradient-to-r from-gray-800/50 to-gray-700/30 border border-gray-600 text-gray-300 hover:border-gray-500"
+                }`}
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+                YouTube
+              </div>
+              <div
+                onClick={() => handlePlatformClick('spotify')}
+                className={`cursor-pointer px-6 py-3 rounded-lg border transition-all flex items-center gap-3 ${
+                  selectedPlatforms.includes('spotify')
+                    ? "border-green-500 bg-green-100/10 text-green-400"
+                    : "bg-gradient-to-r from-gray-800/50 to-gray-700/30 border border-gray-600 text-gray-300 hover:border-gray-500"
+                }`}
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                </svg>
+                Spotify
+              </div>
+            </div>
+
+            {/* YouTube Link Input */}
+            {selectedPlatforms.includes('youtube') && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-4"
+              >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  YouTube Kanal Linki
+                </label>
+                <input
+                  type="url"
+                  value={youtubeLink}
+                  onChange={(e) => setYoutubeLink(e.target.value)}
+                  className="w-full py-3 px-4 bg-gray-800/50 border border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent text-white"
+                  placeholder="https://youtube.com/@your-channel"
+                />
+              </motion.div>
+            )}
+
+            {/* Spotify Link Input */}
+            {selectedPlatforms.includes('spotify') && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-4"
+              >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Spotify Sanatçı Linki
+                </label>
+                <input
+                  type="url"
+                  value={spotifyLink}
+                  onChange={(e) => setSpotifyLink(e.target.value)}
+                  className="w-full py-3 px-4 bg-gray-800/50 border border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-white"
+                  placeholder="https://open.spotify.com/artist/your-id"
+                />
+              </motion.div>
+            )}
           </div>
 
           {/* Profil Fotoğrafı - Register'dan taşınan geliştirilmiş UI */}

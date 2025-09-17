@@ -53,6 +53,11 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
   // Video Yönetmenleri için state (YouTube linkleri)
   const [musicVideos, setMusicVideos] = useState([]);
 
+      {/* Platform linkleri için state'ler */}
+  const [youtubeLink, setYoutubeLink] = useState("");
+  const [spotifyLink, setSpotifyLink] = useState("");
+  const [selectedPlatforms, setSelectedPlatforms] = useState([]);
+
   const serviceTypes = [
     { id: "recording_studio", name: "Kayıt Stüdyoları" },
     { id: "music_producer", name: "Müzik Yapımcıları" },
@@ -460,6 +465,20 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
           provider_studio_name: profile.studioName || "",
         });
 
+        // Platform linklerini set et
+        console.log("🔗 Platform links from profile:", {
+          youtubeLink: profile.youtubeLink,
+          spotifyLink: profile.spotifyLink
+        });
+        setYoutubeLink(profile.youtubeLink || "");
+        setSpotifyLink(profile.spotifyLink || "");
+        
+        // Platform seçimlerini belirle
+        const platforms = [];
+        if (profile.youtubeLink) platforms.push('youtube');
+        if (profile.spotifyLink) platforms.push('spotify');
+        setSelectedPlatforms(platforms);
+
         // Avatar
         if (profile.avatarUrl) {
           setPreview(profile.avatarUrl);
@@ -650,6 +669,15 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
     );
   };
 
+  // Platform seçimi için handler
+  const handlePlatformClick = (platform) => {
+    setSelectedPlatforms((prev) => 
+      prev.includes(platform) 
+        ? prev.filter((p) => p !== platform)
+        : [...prev, platform]
+    );
+  };
+
   // Profil tamamlanmış mı kontrol et
   const isProfileComplete = () => {
     const basicFields = (
@@ -771,6 +799,10 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
       photos: preview,
       userPhotoName: fileName,
       background_image: backgroundPreview, // Arkaplan fotoğrafı eklendi
+
+      // Platform linkleri
+      youtubeLink: youtubeLink,
+      spotifyLink: spotifyLink,
 
       // arrays
       provider_specialties: experiences,
@@ -1593,6 +1625,85 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
             )}
           </div>
 
+        <div className="w-full mb-9  border border-primary-500/20 rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Sosyal Medya Platformları</h3>
+        
+        {/* Platform Selection */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {/* YouTube Button */}
+          <div
+            onClick={() => handlePlatformClick('youtube')}
+            className={`cursor-pointer px-6 py-3 rounded-lg border transition-all flex items-center gap-3 ${
+              selectedPlatforms.includes('youtube')
+                ? "border-red-500 bg-red-100/10 text-red-400"
+                : "bg-gradient-to-r from-gray-800/50 to-gray-700/30 border border-gray-600 text-gray-300 hover:border-gray-500"
+            }`}
+          >
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+            YouTube
+          </div>
+
+          {/* Spotify Button */}
+          <div
+            onClick={() => handlePlatformClick('spotify')}
+            className={`cursor-pointer px-6 py-3 rounded-lg border transition-all flex items-center gap-3 ${
+              selectedPlatforms.includes('spotify')
+                ? "border-green-500 bg-green-100/10 text-green-400"
+                : "bg-gradient-to-r from-gray-800/50 to-gray-700/30 border border-gray-600 text-gray-300 hover:border-gray-500"
+            }`}
+          >
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+            </svg>
+            Spotify
+          </div>
+        </div>
+
+        {/* YouTube Link Input */}
+        {selectedPlatforms.includes('youtube') && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4"
+          >
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              YouTube Kanal Linki
+            </label>
+            <input
+              type="url"
+              value={youtubeLink}
+              onChange={(e) => setYoutubeLink(e.target.value)}
+              className="w-full py-3 px-4 bg-gray-800/50 border border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent text-white"
+              placeholder="https://youtube.com/@your-channel"
+            />
+          </motion.div>
+        )}
+
+        {/* Spotify Link Input */}
+        {selectedPlatforms.includes('spotify') && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4"
+          >
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Spotify Profil Linki
+            </label>
+            <input
+              type="url"
+              value={spotifyLink}
+              onChange={(e) => setSpotifyLink(e.target.value)}
+              className="w-full py-3 px-4 bg-gray-800/50 border border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-white"
+              placeholder="https://open.spotify.com/artist/..."
+            />
+          </motion.div>
+        )}
+      </div>
+
           {/* Türler opsiyonel */}
           <div className="w-full mb-9 flex flex-col gap-4 items-start">
             <div className="w-full flex flex-1 flex-col">
@@ -1616,6 +1727,7 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
           </div>
         </div>
       </div>
+
 
       <button
         type="submit"

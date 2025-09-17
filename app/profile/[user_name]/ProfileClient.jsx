@@ -13,16 +13,22 @@ import { Footer } from "../../components/Footer";
 
 import { useRouter } from 'next/navigation';
 
-export default function ProfileClientPage({ params, initialData }) {
+export default function ProfileClientPage({ params, initialData, isAdmin = false, currentUser = null }) {
   const [user] = useState(initialData);
   const [activeTab, setActiveTab] = useState('overview');
   
+  // isArtist tanımını en başta yap
+  const isArtist = Boolean(user.artistProfile);
+  
   // Debug: Log the data to see if serviceData is coming through
   console.log('ProfileClient - Full user data:', user);
+  console.log('ProfileClient - ArtistProfile:', user?.artistProfile);
   console.log('ProfileClient - ProviderProfile:', user?.providerProfile);
   console.log('ProfileClient - ServiceData:', user?.providerProfile?.serviceData);
   console.log('ProfileClient - MusicProjects:', user?.providerProfile?.serviceData?.musicProjects);
   console.log('ProfileClient - ServiceType:', user?.providerProfile?.serviceType);
+  console.log('ProfileClient - Admin Status:', isAdmin);
+  console.log('ProfileClient - Current User:', currentUser);
 
   const calculateTotalPrice = (basePrice) => {
     const commission = basePrice * 0.20;
@@ -45,9 +51,37 @@ export default function ProfileClientPage({ params, initialData }) {
   }
 
   const profile = user.artistProfile || user.providerProfile;
-  console.log(profile);
   
-  // Parse serviceData if it's a string
+  // Platform linklerini otherData'dan çıkar
+  let youtubeLink = '';
+  let spotifyLink = '';
+  
+  if (profile?.otherData?.platformLinks) {
+    youtubeLink = profile.otherData.platformLinks.youtube || '';
+    spotifyLink = profile.otherData.platformLinks.spotify || '';
+  }
+  
+  // Profile nesnesine platform linklerini ekle (API ile tutarlılık için)
+  if (profile && (youtubeLink || spotifyLink)) {
+    profile.youtubeLink = youtubeLink;
+    profile.spotifyLink = spotifyLink;
+  }
+  
+  console.log('ProfileClient - Profile object:', profile);
+  console.log('ProfileClient - YouTube Link from otherData:', youtubeLink);
+  console.log('ProfileClient - Spotify Link from otherData:', spotifyLink);
+  console.log('ProfileClient - otherData object:', profile?.otherData);
+  console.log('ProfileClient - Raw otherData:', JSON.stringify(profile?.otherData, null, 2));
+  console.log('ProfileClient - Genres:', profile?.genres);
+  
+  console.log('ProfileClient - isArtist:', isArtist);
+  console.log('ProfileClient - Platform links check:', {
+    isArtist,
+    hasYoutube: !!youtubeLink,
+    hasSpotify: !!spotifyLink,
+    shouldShow: isArtist && (youtubeLink || spotifyLink)
+  });
+  
   if (profile && profile.serviceData && typeof profile.serviceData === 'string') {
     try {
       profile.serviceData = JSON.parse(profile.serviceData);
@@ -59,7 +93,6 @@ export default function ProfileClientPage({ params, initialData }) {
   }
   console.log('🏗️ Profile ServiceData studioPhotos:', profile?.serviceData?.studioPhotos);
   
-  // Additional debugging for recording studio
   if (profile && profile.serviceType === 'recording_studio') {
     console.log('🎵 Recording Studio Profile Debug:');
     console.log('- serviceType:', profile.serviceType);
@@ -77,7 +110,13 @@ export default function ProfileClientPage({ params, initialData }) {
     console.log('- RAW serviceData from DB:', user.providerProfile?.serviceData);
   }
   
-  const isArtist = Boolean(user.artistProfile);
+  console.log('ProfileClient - isArtist:', isArtist);
+  console.log('ProfileClient - Platform links check:', {
+    isArtist,
+    hasYoutube: !!youtubeLink,
+    hasSpotify: !!spotifyLink,
+    shouldShow: isArtist && (youtubeLink || spotifyLink)
+  });
 
   const getCategoryIcon = (isArtist) => {
     return isArtist ? <Music className="w-5 h-5" /> : <Mic className="w-5 h-5" />;
@@ -105,6 +144,21 @@ export default function ProfileClientPage({ params, initialData }) {
     <>
     <Header />
         <div className="min-h-screen bg-black">
+        
+        {/* Admin Banner - Sadece admin görebilir ve profil onaylanmamışsa */}
+        {isAdmin && user.userPending && (
+            <div className="bg-red-600/20 border-b border-red-500/30 py-3">
+                <div className="container mx-auto px-6">
+                    <div className="flex items-center justify-center space-x-3 text-red-400">
+                        <ExternalLink className="w-5 h-5" />
+                        <span className="font-semibold">
+                            Bu profil henüz onaylanmamış. Sadece admin olarak görüntülüyorsunuz.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        )}
+        
         {/* Hero Section */}
         <section className="relative">
             <div 
@@ -146,6 +200,15 @@ export default function ProfileClientPage({ params, initialData }) {
                                     {profile.serviceType ? profile.serviceType.replace(/_/g, ' ') : (isArtist ? 'Artist' : 'Provider')}
                                 </span>
                             </div>
+                            {/* Admin için onay durumu uyarısı */}
+                            {isAdmin && user.userPending && (
+                                <div className="flex items-center space-x-2 px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-full">
+                                    <ExternalLink className="w-4 h-4 text-red-400" />
+                                    <span className="text-red-400 font-semibold text-sm">
+                                        Onaylanmamış Profil
+                                    </span>
+                                </div>
+                            )}
                         </div>  
                         <p className="text-xl text-gray-300 mb-3">@{user.user_name}</p>
                         
@@ -315,6 +378,49 @@ export default function ProfileClientPage({ params, initialData }) {
                         </div>
                         </div>
 
+                        {/* Platform Links - Artist profiles only */}
+                        {isArtist && (profile.youtubeLink || profile.spotifyLink) && (
+                        <div>
+                            <h3 className="text-xl font-bold mb-4 text-white">Platform Linkleri</h3>
+                            <div className="flex flex-wrap gap-4">
+                            {profile.youtubeLink && (
+                                <a
+                                href={profile.youtubeLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-600/20 to-red-500/10 border border-red-500/30 rounded-xl hover:border-red-500/50 transition-all duration-300 group"
+                                >
+                                <svg className="w-6 h-6 text-red-400 group-hover:text-red-300 transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                                <div className="flex flex-col">
+                                    <span className="text-white font-semibold">YouTube</span>
+                                    <span className="text-red-400 text-sm group-hover:text-red-300 transition-colors">Kanalımı Ziyaret Et</span>
+                                </div>
+                                <ExternalLink className="w-4 h-4 text-red-400 group-hover:text-red-300 transition-colors" />
+                                </a>
+                            )}
+                            {profile.spotifyLink && (
+                                <a
+                                href={profile.spotifyLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-600/20 to-green-500/10 border border-green-500/30 rounded-xl hover:border-green-500/50 transition-all duration-300 group"
+                                >
+                                <svg className="w-6 h-6 text-green-400 group-hover:text-green-300 transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                                </svg>
+                                <div className="flex flex-col">
+                                    <span className="text-white font-semibold">Spotify</span>
+                                    <span className="text-green-400 text-sm group-hover:text-green-300 transition-colors">Müziklerimi Dinle</span>
+                                </div>
+                                <ExternalLink className="w-4 h-4 text-green-400 group-hover:text-green-300 transition-colors" />
+                                </a>
+                            )}
+                            </div>
+                        </div>
+                        )}
+
                         {/* Önemli Müşteriler (Provider'lar için) */}
                         {!isArtist && (
                         <div>
@@ -331,6 +437,49 @@ export default function ProfileClientPage({ params, initialData }) {
                                 ))
                             ) : (
                                 <span className="text-gray-400 col-span-full">Önemli müşteri listelenmedi</span>
+                            )}
+                            </div>
+                        </div>
+                        )}
+
+                        {/* Platform Links - Provider profiles */}
+                        {!isArtist && (profile.youtubeLink || profile.spotifyLink) && (
+                        <div>
+                            <h3 className="text-xl font-bold mb-4 text-white">Platform Linkleri</h3>
+                            <div className="flex flex-wrap gap-4">
+                            {profile.youtubeLink && (
+                                <a
+                                href={profile.youtubeLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-600/20 to-red-500/10 border border-red-500/30 rounded-xl hover:border-red-500/50 transition-all duration-300 group"
+                                >
+                                <svg className="w-6 h-6 text-red-400 group-hover:text-red-300 transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                                <div className="flex flex-col">
+                                    <span className="text-white font-semibold">YouTube</span>
+                                    <span className="text-red-400 text-sm group-hover:text-red-300 transition-colors">Kanalımı Ziyaret Et</span>
+                                </div>
+                                <ExternalLink className="w-4 h-4 text-red-400 group-hover:text-red-300 transition-colors" />
+                                </a>
+                            )}
+                            {profile.spotifyLink && (
+                                <a
+                                href={profile.spotifyLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-600/20 to-green-500/10 border border-green-500/30 rounded-xl hover:border-green-500/50 transition-all duration-300 group"
+                                >
+                                <svg className="w-6 h-6 text-green-400 group-hover:text-green-300 transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                                </svg>
+                                <div className="flex flex-col">
+                                    <span className="text-white font-semibold">Spotify</span>
+                                    <span className="text-green-400 text-sm group-hover:text-green-300 transition-colors">Müziklerimi Dinle</span>
+                                </div>
+                                <ExternalLink className="w-4 h-4 text-green-400 group-hover:text-green-300 transition-colors" />
+                                </a>
                             )}
                             </div>
                         </div>

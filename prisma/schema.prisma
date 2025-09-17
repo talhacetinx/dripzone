@@ -62,6 +62,7 @@ model ArtistProfile {
   genres      String?
   experiences String[] @default([])
   experience  Int?
+  otherData   Json?    // Platform linkleri ve diğer veriler için JSON alanı
   slug      String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -92,6 +93,9 @@ model ProviderProfile {
 
   // Paket sistemi - JSON array olarak saklanacak
   packages         Json[]    @default([])
+  
+  // Platform linkleri ve diğer veriler için JSON alanı
+  otherData        Json?
 
   slug             String    @unique
   createdAt        DateTime  @default(now())
