@@ -37,7 +37,7 @@ export const Footer = () => {
                 href="https://www.instagram.com/dripzonemusic/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 text-gray-400 hover:text-primary-400 transition-colors duration-300"
+                className="text-gray-400 hover:text-primary-400 transition-colors duration-300"
               >
                 <Instagram className="w-5 h-5" />
               </a>
