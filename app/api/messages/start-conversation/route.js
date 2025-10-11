@@ -1,157 +1,153 @@
-import { NextResponse } from "next/server";
-import { getAuthUser } from "../../lib/auth";
-import prisma from "../../lib/prisma";
+const { createServer } = require('http');
+const { parse } = require('url');
+const next = require('next');
+const { Server } = require('socket.io');
 
-export async function POST(request) {
-  try {
-    console.log('🚀 Start conversation API called');
+const dev = process.env.NODE_ENV !== 'production';
+const hostname = dev ? 'localhost' : '0.0.0.0';
+const port = process.env.PORT || 3000;
+
+const app = next({ dev, hostname, port });
+const handle = app.getRequestHandler();
+
+let setSocketIO = null;
+
+const onlineUsers = new Map();
+
+app.prepare().then(() => {
+  const server = createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url, true);
+      await handle(req, res, parsedUrl);
+    } catch (err) {
+      console.error('Error occurred handling', req.url, err);
+      res.statusCode = 500;
+      res.end('internal server error');
+    }
+  });
+
+  // Socket.io setup
+  const io = new Server(server, {
+    cors: {
+      origin: dev 
+        ? ['http://localhost:3000', 'http://localhost:3001']
+        : [
+            process.env.PROD_URL,
+            'https://dripzonemusic.com/',
+          ].filter(Boolean),
+      methods: ['GET', 'POST'],
+      credentials: true,
+      allowEIO3: true
+    },
+    transports: dev ? ['websocket', 'polling'] : ['polling', 'websocket'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    allowEIO3: true,
+    ...(dev ? {} : {
+      cookie: false,
+      serveClient: false,
+      upgrade: false, // Vercel için upgrade'i kapat
+      rememberUpgrade: false,
+      allowUpgrades: false // Vercel WebSocket upgrade'ini engelle
+    })
+  });
+
+  global.socketIO = io;
+
+  io.on('connection', (socket) => {
+    console.log('✅ Yeni kullanıcı bağlandı:', socket.id, 'Transport:', socket.conn.transport.name);
     
-    // Session kontrolü
-    const session = await getAuthUser();
-    if (!session) {
-      console.log('❌ No session found');
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
-    console.log('✅ Session found:', session.id);
-
-    const { recipientUsername } = await request.json();
-    console.log('📝 Recipient username:', recipientUsername);
-
-    if (!recipientUsername) {
-      console.log('❌ No recipient username provided');
-      return NextResponse.json(
-        { error: "Recipient username is required" },
-        { status: 400 }
-      );
-    }
-
-    // Kullanıcıları bul
-    console.log('🔍 Finding users...');
-    const currentUser = await prisma.user.findUnique({
-      where: { id: session.id },
+    socket.conn.on('upgrade', () => {
+      console.log('🔄 Transport upgraded to:', socket.conn.transport.name);
     });
 
-    const recipientUser = await prisma.user.findFirst({
-      where: { user_name: recipientUsername },
-    });
-
-    console.log('👤 Current user:', currentUser?.user_name);
-    console.log('👤 Recipient user:', recipientUser?.user_name);
-
-    if (!currentUser) {
-      console.log('❌ Current user not found');
-      return NextResponse.json(
-        { error: "Current user not found" },
-        { status: 404 }
-      );
-    }
-
-    if (!recipientUser) {
-      console.log('❌ Recipient user not found');
-      return NextResponse.json(
-        { error: "Recipient user not found" },
-        { status: 404 }
-      );
-    }
-
-    // Kendi kendine mesaj atmasını engelle
-    if (currentUser.id === recipientUser.id) {
-      console.log('❌ User trying to message themselves');
-      return NextResponse.json(
-        { error: "Cannot start conversation with yourself" },
-        { status: 400 }
-      );
-    }
-
-    // Mevcut konuşma var mı kontrol et
-    console.log('🔍 Checking for existing conversation...');
-    const existingConversation = await prisma.conversation.findFirst({
-      where: {
-        AND: [
-          { participants: { has: currentUser.id } },
-          { participants: { has: recipientUser.id } }
-        ]
-      },
-      include: {
-        messages: {
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
-        },
-      },
-    });
-
-    console.log('🔍 Existing conversation found:', !!existingConversation);
-
-    if (existingConversation) {
-      console.log('✅ Returning existing conversation:', existingConversation.id);
+    socket.on('user_online', (userId) => {
+      console.log('👤 Kullanıcı online:', userId, 'Socket:', socket.id);
+      onlineUsers.set(userId, socket.id);
+      socket.userId = userId;
       
-      // Diğer kullanıcının bilgilerini getir (recipient user)
-      const otherUser = {
-        id: recipientUser.id,
-        name: recipientUser.name,
-        user_name: recipientUser.user_name,
-        user_photo: recipientUser.user_photo,
-        role: recipientUser.role
-      };
+      socket.broadcast.emit('user_connected', userId);
+      
+      const onlineUsersList = Array.from(onlineUsers.keys());
+      io.emit('users_online', onlineUsersList);
+      console.log('📊 Online kullanıcılar:', onlineUsersList);
+    });
 
-      // Mevcut konuşmayı döndür
-      return NextResponse.json({
-        success: true,
-        conversation: {
-          id: existingConversation.id,
-          otherUser,
-          participants: [currentUser.id, recipientUser.id],
-          lastMessage: existingConversation.messages[0]?.content || null,
-          lastMessageAt: existingConversation.messages[0]?.createdAt || existingConversation.createdAt,
-          unreadCount: 0,
-        },
+    socket.on('join_conversation', (conversationId) => {
+      console.log('💬 Konuşmaya katıldı:', conversationId);
+      socket.join(conversationId);
+    });
+
+    socket.on('send_message', async (data) => {
+      console.log('📨 Mesaj gönderiliyor:', data.conversationId, 'Sender:', data.senderId);
+      try {
+        const messageData = {
+          id: data.id || Date.now(),
+          content: data.content,
+          senderId: data.senderId,
+          conversationId: data.conversationId,
+          createdAt: new Date(),
+          sender: data.sender
+        };
+        
+        socket.to(data.conversationId).emit('new_message', messageData);
+        
+        if (data.receiverId && onlineUsers.has(data.receiverId)) {
+          const receiverSocketId = onlineUsers.get(data.receiverId);
+          io.to(receiverSocketId).emit('new_message', messageData);
+        }
+        
+        socket.emit('message_sent', { success: true, messageId: data.id });
+        console.log('✅ Mesaj başarıyla gönderildi');
+      } catch (error) {
+        console.error('❌ Mesaj gönderme hatası:', error);
+        socket.emit('message_sent', { success: false, error: error.message });
+      }
+    });
+
+    socket.on('typing_start', (data) => {
+      socket.to(data.conversationId).emit('user_typing', {
+        userId: data.userId,
+        conversationId: data.conversationId
       });
-    }
-
-    // Yeni konuşma oluştur
-    console.log('🆕 Creating new conversation...');
-    const newConversation = await prisma.conversation.create({
-      data: {
-        participants: [currentUser.id, recipientUser.id],
-      },
     });
 
-    console.log('✅ New conversation created:', newConversation.id);
-
-    // Diğer kullanıcının bilgilerini getir (recipient user)
-    const otherUser = {
-      id: recipientUser.id,
-      name: recipientUser.name,
-      user_name: recipientUser.user_name,
-      user_photo: recipientUser.user_photo,
-      role: recipientUser.role
-    };
-
-    return NextResponse.json({
-      success: true,
-      conversation: {
-        id: newConversation.id,
-        otherUser,
-        participants: [currentUser.id, recipientUser.id],
-        lastMessage: null,
-        lastMessageAt: newConversation.createdAt,
-        unreadCount: 0,
-      },
+    socket.on('typing_stop', (data) => {
+      socket.to(data.conversationId).emit('user_stop_typing', {
+        userId: data.userId,
+        conversationId: data.conversationId
+      });
     });
 
-  } catch (error) {
-    console.error("❌ Start conversation error:", error);
-    console.error("❌ Error stack:", error.stack);
-    return NextResponse.json(
-      { 
-        error: "Internal server error",
-        details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      },
-      { status: 500 }
-    );
-  }
-}
+    socket.on('disconnect', (reason) => {
+      console.log('❌ Kullanıcı ayrıldı:', socket.id, 'Sebep:', reason, 'UserId:', socket.userId);
+      
+      if (socket.userId) {
+        onlineUsers.delete(socket.userId);
+        socket.broadcast.emit('user_disconnected', socket.userId);
+        
+        const onlineUsersList = Array.from(onlineUsers.keys());
+        io.emit('users_online', onlineUsersList);
+        console.log('📊 Güncel online kullanıcılar:', onlineUsersList);
+      }
+    });
+    
+    socket.on('connect_error', (error) => {
+      console.error('🔥 Socket bağlantı hatası:', error);
+    });
+    
+    socket.on('ping', () => {
+      socket.emit('pong');
+    });
+  });
+
+  server
+    .once('error', (err) => {
+      console.error('Server error:', err);
+      process.exit(1);
+    })
+    .listen(port, () => {
+      console.log(`🚀 Sunucu hazır: http://${hostname}:${port}`);
+      console.log('🔌 Socket.io etkin');
+    });
+});
