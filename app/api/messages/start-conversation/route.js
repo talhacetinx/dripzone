@@ -1,7 +1,7 @@
-const { createServer } = require('http');
-const { parse } = require('url');
-const next = require('next');
-const { Server } = require('socket.io');
+import { createServer } from 'http';
+import { parse } from 'url';
+import next from 'next';
+import { Server } from 'socket.io';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = dev ? 'localhost' : '0.0.0.0';
@@ -9,8 +9,6 @@ const port = process.env.PORT || 3000;
 
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
-
-let setSocketIO = null;
 
 const onlineUsers = new Map();
 
@@ -26,127 +24,63 @@ app.prepare().then(() => {
     }
   });
 
-  // Socket.io setup
   const io = new Server(server, {
     cors: {
-      origin: dev 
+      origin: dev
         ? ['http://localhost:3000', 'http://localhost:3001']
-        : [
-            process.env.PROD_URL,
-            'https://dripzonemusic.com/',
-          ].filter(Boolean),
+        : [process.env.PROD_URL, 'https://dripzonemusic.com'].filter(Boolean),
       methods: ['GET', 'POST'],
-      credentials: true,
-      allowEIO3: true
+      credentials: true
     },
-    transports: dev ? ['websocket', 'polling'] : ['polling', 'websocket'],
+    transports: ['websocket', 'polling'],
     pingTimeout: 60000,
-    pingInterval: 25000,
-    allowEIO3: true,
-    ...(dev ? {} : {
-      cookie: false,
-      serveClient: false,
-      upgrade: false, // Vercel için upgrade'i kapat
-      rememberUpgrade: false,
-      allowUpgrades: false // Vercel WebSocket upgrade'ini engelle
-    })
+    pingInterval: 25000
   });
 
-  global.socketIO = io;
+  global.io = io;
 
   io.on('connection', (socket) => {
-    console.log('✅ Yeni kullanıcı bağlandı:', socket.id, 'Transport:', socket.conn.transport.name);
-    
-    socket.conn.on('upgrade', () => {
-      console.log('🔄 Transport upgraded to:', socket.conn.transport.name);
-    });
+    console.log('✅ Yeni kullanıcı bağlandı:', socket.id);
 
     socket.on('user_online', (userId) => {
-      console.log('👤 Kullanıcı online:', userId, 'Socket:', socket.id);
       onlineUsers.set(userId, socket.id);
       socket.userId = userId;
-      
       socket.broadcast.emit('user_connected', userId);
-      
-      const onlineUsersList = Array.from(onlineUsers.keys());
-      io.emit('users_online', onlineUsersList);
-      console.log('📊 Online kullanıcılar:', onlineUsersList);
+      io.emit('users_online', Array.from(onlineUsers.keys()));
     });
 
     socket.on('join_conversation', (conversationId) => {
-      console.log('💬 Konuşmaya katıldı:', conversationId);
       socket.join(conversationId);
     });
 
-    socket.on('send_message', async (data) => {
-      console.log('📨 Mesaj gönderiliyor:', data.conversationId, 'Sender:', data.senderId);
-      try {
-        const messageData = {
-          id: data.id || Date.now(),
-          content: data.content,
-          senderId: data.senderId,
-          conversationId: data.conversationId,
-          createdAt: new Date(),
-          sender: data.sender
-        };
-        
-        socket.to(data.conversationId).emit('new_message', messageData);
-        
-        if (data.receiverId && onlineUsers.has(data.receiverId)) {
-          const receiverSocketId = onlineUsers.get(data.receiverId);
-          io.to(receiverSocketId).emit('new_message', messageData);
-        }
-        
-        socket.emit('message_sent', { success: true, messageId: data.id });
-        console.log('✅ Mesaj başarıyla gönderildi');
-      } catch (error) {
-        console.error('❌ Mesaj gönderme hatası:', error);
-        socket.emit('message_sent', { success: false, error: error.message });
+    socket.on('send_message', (data) => {
+      const messageData = {
+        id: data.id || Date.now(),
+        content: data.content,
+        senderId: data.senderId,
+        conversationId: data.conversationId,
+        createdAt: new Date(),
+        sender: data.sender
+      };
+
+      socket.to(data.conversationId).emit('new_message', messageData);
+
+      if (data.receiverId && onlineUsers.has(data.receiverId)) {
+        io.to(onlineUsers.get(data.receiverId)).emit('new_message', messageData);
       }
+
+      socket.emit('message_sent', { success: true });
     });
 
-    socket.on('typing_start', (data) => {
-      socket.to(data.conversationId).emit('user_typing', {
-        userId: data.userId,
-        conversationId: data.conversationId
-      });
-    });
-
-    socket.on('typing_stop', (data) => {
-      socket.to(data.conversationId).emit('user_stop_typing', {
-        userId: data.userId,
-        conversationId: data.conversationId
-      });
-    });
-
-    socket.on('disconnect', (reason) => {
-      console.log('❌ Kullanıcı ayrıldı:', socket.id, 'Sebep:', reason, 'UserId:', socket.userId);
-      
+    socket.on('disconnect', () => {
       if (socket.userId) {
         onlineUsers.delete(socket.userId);
-        socket.broadcast.emit('user_disconnected', socket.userId);
-        
-        const onlineUsersList = Array.from(onlineUsers.keys());
-        io.emit('users_online', onlineUsersList);
-        console.log('📊 Güncel online kullanıcılar:', onlineUsersList);
+        io.emit('users_online', Array.from(onlineUsers.keys()));
       }
-    });
-    
-    socket.on('connect_error', (error) => {
-      console.error('🔥 Socket bağlantı hatası:', error);
-    });
-    
-    socket.on('ping', () => {
-      socket.emit('pong');
     });
   });
 
-  server
-    .once('error', (err) => {
-      console.error('Server error:', err);
-      process.exit(1);
-    })
-    .listen(port, () => {
-      console.log(`🚀 Sunucu hazır: http://${hostname}:${port}`);
-    });
+  server.listen(port, hostname, () => {
+    console.log(`🚀 Server ready at http://${hostname}:${port}`);
+  });
 });
