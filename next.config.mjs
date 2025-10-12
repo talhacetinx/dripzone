@@ -75,9 +75,7 @@ const nextConfig = {
   // swcMinify removed - already default in Next.js 15
   
   // WebSocket ve server konfigürasyonu
-  experimental: {
-    serverComponentsExternalPackages: ['socket.io', 'socket.io-client']
-  },
+serverExternalPackages: ['socket.io', 'socket.io-client'],
   
   // WebSocket proxy development için
   ...(process.env.NODE_ENV === 'development' && {
