@@ -14,11 +14,9 @@ export async function POST(req) {
   }
 
   try {
-    // JSON formatında veri al
     const data = await req.json();
     const { firstName, lastName, user_name, email, phone, password, confirmPassword, country, user_type, agreeTerms } = data;
 
-    // Input sanitization
     const sanitizedData = {
       firstName: sanitizeInput(firstName),
       lastName: sanitizeInput(lastName),

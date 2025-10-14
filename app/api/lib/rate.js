@@ -1,6 +1,6 @@
 import { LRUCache } from "lru-cache"
 
-export const ALLOWED_ORIGINS = ["http://localhost:3000", "https://dripzonemusic.com/"];
+export const ALLOWED_ORIGINS = ["https://dripzonemusic.com/"];
 
 const rateLimitOptions = {
   max: 100, // 25'ten 100'e çıkardık
