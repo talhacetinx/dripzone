@@ -1,6 +1,14 @@
 import { LRUCache } from "lru-cache"
 
-export const ALLOWED_ORIGINS = ["https://dripzonemusic.com/"];
+export const ALLOWED_ORIGINS = [
+  "https://dripzonemusic.com",
+  "https://dripzonemusic.com/",
+  "https://www.dripzonemusic.com",
+  "https://www.dripzonemusic.com/",
+  "http://localhost:3000",
+  "http://localhost:3000/",
+  process.env.NEXT_PUBLIC_BASE_URL // Environment variable'dan da okuyalım
+].filter(Boolean); // undefined değerleri filtrele
 
 const rateLimitOptions = {
   max: 100, // 25'ten 100'e çıkardık

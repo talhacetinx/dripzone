@@ -38,8 +38,16 @@ export async function POST(req) {
   }
 
   const origin = req.headers.get("origin") || "";
-  if (!ALLOWED_ORIGINS.includes(origin)) {
-    return NextResponse.json({ message: "Yetkisiz istek." }, { status: 403 });
+  console.log("🔍 Request origin:", origin);
+  console.log("🔍 Allowed origins:", ALLOWED_ORIGINS);
+  
+  if (process.env.NODE_ENV === 'production' && !ALLOWED_ORIGINS.includes(origin)) {
+    console.log("❌ Origin not allowed:", origin);
+    return NextResponse.json({ 
+      message: "Yetkisiz istek.", 
+      origin,
+      allowedOrigins: ALLOWED_ORIGINS 
+    }, { status: 403 });
   }
 
   let body;
@@ -116,7 +124,6 @@ export async function POST(req) {
         where: { userId }
       });
 
-      // User tablosundaki user_photo'yu güncelle
       if (avatarUrl) {
         await prisma.user.update({
           where: { id: userId },
@@ -124,7 +131,6 @@ export async function POST(req) {
         });
       }
 
-      // Platform linklerini otherData alanında JSON olarak kaydet
       const otherDataJson = {
         platformLinks: {
           youtube: youtubeLink || '',
