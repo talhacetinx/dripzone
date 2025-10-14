@@ -203,14 +203,11 @@ export async function POST(req) {
         return NextResponse.json({ error: "Hizmet tipi seçilmemiş" }, { status: 400 });
       }
 
-      // Service type mapping - dashboard'dan gelen değerler ile backend'deki değerleri eşleştir
-      // Dashboard'da producer olarak saklanıyor ama API'de music_producer bekliyor
       const serviceTypeMap = {
         'producer': 'music_producer',
         'album_cover_designer': 'album_cover_artist', 
         'music_video_director': 'music_video_director',
         'recording_studio': 'recording_studio',
-        // Backward compatibility için eski değerler
         'music_producer': 'music_producer',
         'album_cover_artist': 'album_cover_artist'
       };
