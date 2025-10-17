@@ -21,7 +21,17 @@ export const ServicesProviderTab = ({ userInfo }) => {
   // Özellik ekleme için
   const [featureInput, setFeatureInput] = useState("");
 
-  // Profil verilerini yükle
+  // Fiyat hesaplama fonksiyonları
+  const calculateCommission = (basePrice) => {
+    const price = parseFloat(basePrice) || 0;
+    return Math.round(price * 0.20);
+  };
+
+  const calculateTotalPrice = (basePrice) => {
+    const price = parseFloat(basePrice) || 0;
+    const commission = calculateCommission(price);
+    return Math.round(price + commission);
+  };
   useEffect(() => {
     const loadPackages = async () => {
       try {
@@ -253,15 +263,46 @@ export const ServicesProviderTab = ({ userInfo }) => {
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Fiyat (₺)
+                Sizin Alacağınız Fiyat (₺)
               </label>
               <input
                 type="number"
                 value={packageForm.price}
-                onChange={(e) => setPackageForm(prev => ({ ...prev, price: e.target.value }))}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setPackageForm(prev => ({ ...prev, price: value }));
+                }}
                 className="w-full py-3 px-4 bg-gray-900/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white"
                 placeholder="Örn: 5000"
+                min="0"
+                step="1"
               />
+              
+              {/* Komisyon ve Toplam Gösterimi */}
+              {packageForm.price && parseFloat(packageForm.price) > 0 && (
+                <div className="mt-3 p-3 bg-gray-800/50 rounded-lg border border-gray-600 space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Sizin Kazancınız:</span>
+                    <span className="text-green-400 font-semibold">
+                      ₺{parseFloat(packageForm.price).toLocaleString('tr-TR')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Platform Komisyonu (%20):</span>
+                    <span className="text-orange-400 font-semibold">
+                      ₺{calculateCommission(packageForm.price).toLocaleString('tr-TR')}
+                    </span>
+                  </div>
+                  <div className="pt-2 border-t border-gray-600">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-semibold">Müşterinin Ödeyeceği:</span>
+                      <span className="text-primary-400 font-bold text-lg">
+                        ₺{calculateTotalPrice(packageForm.price).toLocaleString('tr-TR')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div>
@@ -411,14 +452,20 @@ export const ServicesProviderTab = ({ userInfo }) => {
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <span className="text-xs text-gray-400 uppercase tracking-wide">Fiyat</span>
-                      <p className="text-lg font-semibold text-green-400">₺{pkg.price}</p>
+                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                      <span className="text-xs text-gray-400 uppercase tracking-wide block mb-1">Sizin Kazancınız</span>
+                      <p className="text-lg font-semibold text-green-400">₺{pkg.price.toLocaleString('tr-TR')}</p>
                     </div>
-                    <div>
-                      <span className="text-xs text-gray-400 uppercase tracking-wide">Teslim Süresi</span>
-                      <p className="text-white">{pkg.deliveryTime}</p>
+                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                      <span className="text-xs text-gray-400 uppercase tracking-wide block mb-1">Müşteri Ödemesi</span>
+                      <p className="text-lg font-semibold text-primary-400">₺{calculateTotalPrice(pkg.price).toLocaleString('tr-TR')}</p>
+                      <span className="text-xs text-gray-500">(%20 komisyon dahil)</span>
                     </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Teslim Süresi</span>
+                    <p className="text-white">{pkg.deliveryTime}</p>
                   </div>
 
                   <div>

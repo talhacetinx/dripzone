@@ -12,7 +12,7 @@ export async function POST(req) {
         const body = await req.json();
         const { email, password, accessKey } = body;
         const envAccessKey = process.env.ADMIN_ACCESS_KEY;
-
+        
         if (accessKey !== envAccessKey) {
             return NextResponse.json({ error: "Erişim anahtarı hatalı." }, { status: 400 });
         }
