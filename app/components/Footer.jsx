@@ -103,10 +103,6 @@ export const Footer = () => {
                 <span className="text-gray-300 text-sm">info@dripzonemusic.com</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Phone className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300 text-sm">+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center space-x-3">
                 <MapPin className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-300 text-sm">Dünya Çapında</span>
               </div>
