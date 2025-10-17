@@ -18,22 +18,18 @@ export const LanguageProvider = ({ children }) => {
   const [forceUpdate, setForceUpdate] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Debug için state değişikliklerini logla
   useEffect(() => {
     console.log("🔄 Language state changed:", currentLanguage);
   }, [currentLanguage]);
 
-  // Sayfa yüklendiğinde mevcut dil durumunu tespit et - sadece bir kez
   useEffect(() => {
     if (isInitialized) return;
     
     const detectCurrentLanguage = () => {
       if (typeof window !== 'undefined') {
-        // Google Translate cookie'sini kontrol et
         const cookies = document.cookie;
         const googTransMatch = cookies.match(/googtrans=([^;]*)/);
         
-        // Body class'ını kontrol et
         const bodyTranslated = document.body.className.includes('translated-ltr');
         
         console.log("🔍 Initial language detection:", {
@@ -42,9 +38,8 @@ export const LanguageProvider = ({ children }) => {
           currentState: currentLanguage
         });
         
-        let detectedLang = 'tr'; // Default
+        let detectedLang = 'tr'; 
         
-        // Cookie'den dil tespit et
         if (googTransMatch) {
           const cookieValue = googTransMatch[1];
           if (cookieValue.includes('/en') || cookieValue === '/tr/en') {
@@ -53,13 +48,11 @@ export const LanguageProvider = ({ children }) => {
           }
         }
         
-        // Body class'ından tespit et (daha güvenilir)
         if (bodyTranslated) {
           detectedLang = 'en';
           console.log("🌐 English detected from body class");
         }
         
-        // State'i güncelle (sadece farklıysa)
         if (detectedLang !== currentLanguage) {
           console.log(`🔄 Initial language set: ${currentLanguage} → ${detectedLang}`);
           setCurrentLanguage(detectedLang);
@@ -69,7 +62,6 @@ export const LanguageProvider = ({ children }) => {
       }
     };
     
-    // İlk yükleme
     detectCurrentLanguage();
   }, []);
 
@@ -88,7 +80,6 @@ export const LanguageProvider = ({ children }) => {
           
           script.onload = () => {
             console.log("📜 Google Translate script loaded successfully");
-            // Script yüklendikten sonra elementleri gizle
             setTimeout(hideGoogleTranslateElements, 1000);
           };
           
@@ -112,7 +103,6 @@ export const LanguageProvider = ({ children }) => {
                 }, 'google_translate_element');
                 console.log("✅ Google Translate element created successfully");
                 
-                // Element oluşturulduktan sonra gizle
                 setTimeout(hideGoogleTranslateElements, 500);
                 
                 setTimeout(() => {
@@ -133,7 +123,6 @@ export const LanguageProvider = ({ children }) => {
       }
     };
 
-    // Google Translate elementlerini gizleyen fonksiyon
     const hideGoogleTranslateElements = () => {
       console.log("🙈 Hiding Google Translate UI elements...");
       
@@ -158,7 +147,6 @@ export const LanguageProvider = ({ children }) => {
         });
       });
       
-      // Body'den Google Translate stil override'larını temizle
       document.body.style.position = 'static';
       document.body.style.top = 'auto';
       document.body.style.marginTop = '0';
@@ -166,14 +154,11 @@ export const LanguageProvider = ({ children }) => {
     };
 
     const setupTranslateObserver = () => {
-      console.log("🔍 Setting up Google Translate observer...");
       
-      // MutationObserver ile yeni eklenen Google Translate elementlerini gizle
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === 1) { // Element node
-              // Google Translate elementlerini kontrol et
+            if (node.nodeType === 1) { 
               if (node.classList && (
                 node.classList.contains('goog-te-banner-frame') ||
                 node.classList.contains('goog-te-menu-frame') ||
@@ -185,7 +170,6 @@ export const LanguageProvider = ({ children }) => {
                 node.style.visibility = 'hidden';
               }
               
-              // Içerisinde Google Translate elementleri olan konteynerları kontrol et
               const gtElements = node.querySelectorAll && node.querySelectorAll('[class*="goog-te"], [id*="goog-gt"]');
               if (gtElements) {
                 gtElements.forEach(el => {

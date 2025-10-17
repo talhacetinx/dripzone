@@ -103,5 +103,5 @@ app.prepare().then(() => {
   server.listen(port, () => {
     console.log(`🚀 Sunucu hazır: http://${hostname}:${port}`);
     console.log('🔌 Socket.io etkin');
-  });
+  });  
 });
