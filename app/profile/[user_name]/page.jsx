@@ -112,10 +112,6 @@ export default async function ProfilePage({ params }) {
     },
   });
 
-  if (!user || (!user.artistProfile && !user.providerProfile)) {
-    notFound();
-  }
-
   if (user.userPending === true && !isAdmin) {
     notFound();
   }
