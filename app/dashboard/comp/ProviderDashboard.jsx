@@ -259,16 +259,6 @@ export const ProviderDashboard = ({AuthUser}) => {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Hoş geldin, {AuthUser?.name}!</h1>
-          <button
-            onClick={() => setShowServiceModal(true)}
-            className="flex items-center space-x-2 bg-primary-600 text-black px-4 py-2 rounded-md hover:bg-primary-700 transition"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Yeni Hizmet</span>
-          </button>
-        </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, i) => (

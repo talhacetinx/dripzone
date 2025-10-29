@@ -78,16 +78,16 @@ export default async function ProfilePage({ params }) {
   let isAdmin = false;
   let currentUser = null;
 
-  if (token) {
-    try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret');
-      const { payload } = await jwtVerify(token, secret);
-      isAdmin = payload.role === 'ADMIN';
-      currentUser = payload;
-    } catch (error) {
-      isAdmin = false;
-    }
-  }
+  // if (token) {
+  //   try {
+  //     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret');
+  //     const { payload } = await jwtVerify(token, secret);
+  //     isAdmin = payload.role === 'ADMIN';
+  //     currentUser = payload;
+  //   } catch (error) {
+  //     isAdmin = false;
+  //   }
+  // }
 
   const user = await prisma.user.findFirst({
     where: { user_name: resolvedParams.user_name },
