@@ -112,7 +112,7 @@ export default async function ProfilePage({ params }) {
     },
   });
 
-  if (user.userPending === true && !isAdmin) {
+  if (user.userPending != true && !isAdmin) {
     notFound();
   }
 
