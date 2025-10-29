@@ -218,7 +218,7 @@ export const AboutComponent = () => {
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <a
-                  href="/auth/register"
+                  href="/register"
                   className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl transition-all duration-300 shadow-lg"
                 >
                   <span>Bugün Başlayın</span>

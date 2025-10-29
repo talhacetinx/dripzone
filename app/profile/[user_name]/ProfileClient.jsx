@@ -17,19 +17,8 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
   const [user] = useState(initialData);
   const [activeTab, setActiveTab] = useState('overview');
   
-  // isArtist tanımını en başta yap
   const isArtist = Boolean(user.artistProfile);
   
-  // Debug: Log the data to see if serviceData is coming through
-  console.log('ProfileClient - Full user data:', user);
-  console.log('ProfileClient - ArtistProfile:', user?.artistProfile);
-  console.log('ProfileClient - ProviderProfile:', user?.providerProfile);
-  console.log('ProfileClient - ServiceData:', user?.providerProfile?.serviceData);
-  console.log('ProfileClient - MusicProjects:', user?.providerProfile?.serviceData?.musicProjects);
-  console.log('ProfileClient - ServiceType:', user?.providerProfile?.serviceType);
-  console.log('ProfileClient - Admin Status:', isAdmin);
-  console.log('ProfileClient - Current User:', currentUser);
-
   const calculateTotalPrice = (basePrice) => {
     const commission = basePrice * 0.20;
     return Math.round(basePrice + commission);
@@ -52,7 +41,6 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
 
   const profile = user.artistProfile || user.providerProfile;
   
-  // Platform linklerini otherData'dan çıkar
   let youtubeLink = '';
   let spotifyLink = '';
   
@@ -61,7 +49,6 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
     spotifyLink = profile.otherData.platformLinks.spotify || '';
   }
   
-  // Profile nesnesine platform linklerini ekle (API ile tutarlılık için)
   if (profile && (youtubeLink || spotifyLink)) {
     profile.youtubeLink = youtubeLink;
     profile.spotifyLink = spotifyLink;
@@ -91,32 +78,7 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
       profile.serviceData = {};
     }
   }
-  console.log('🏗️ Profile ServiceData studioPhotos:', profile?.serviceData?.studioPhotos);
-  
-  if (profile && profile.serviceType === 'recording_studio') {
-    console.log('🎵 Recording Studio Profile Debug:');
-    console.log('- serviceType:', profile.serviceType);
-    console.log('- serviceData type:', typeof profile.serviceData);
-    console.log('- serviceData content:', profile.serviceData);
-    console.log('- studioPhotos:', profile.serviceData?.studioPhotos);
-    console.log('- studioPhotos length:', profile.serviceData?.studioPhotos?.length);
-    if (profile.serviceData?.studioPhotos?.length > 0) {
-      console.log('- first photo:', profile.serviceData.studioPhotos[0]);
-    }
-    
-    // Check raw database data
-    console.log('- RAW user data:', user);
-    console.log('- RAW providerProfile:', user.providerProfile);
-    console.log('- RAW serviceData from DB:', user.providerProfile?.serviceData);
-  }
-  
-  console.log('ProfileClient - isArtist:', isArtist);
-  console.log('ProfileClient - Platform links check:', {
-    isArtist,
-    hasYoutube: !!youtubeLink,
-    hasSpotify: !!spotifyLink,
-    shouldShow: isArtist && (youtubeLink || spotifyLink)
-  });
+
 
   const getCategoryIcon = (isArtist) => {
     return isArtist ? <Music className="w-5 h-5" /> : <Mic className="w-5 h-5" />;
@@ -124,17 +86,16 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
 
   const tabs = [
     { id: 'overview', label: 'Genel Bakış' },
-    { id: 'reviews', label: 'Değerlendirmeler' }
+    // { id: 'reviews', label: 'Değerlendirmeler' }
   ];
 
-  // Portfolio tab'ını sadece artist'ler veya recording_studio olmayan provider'lar için ekle
   if (isArtist || (profile.serviceType && profile.serviceType !== 'recording_studio')) {
     tabs.splice(1, 0, { id: 'portfolio', label: 'Portföy' });
   }
 
   if (!isArtist) {
-    const insertIndex = tabs.length - 1; // reviews'dan önce
-    tabs.splice(insertIndex, 0, { id: 'services', label: 'Hizmetler' });
+    const insertIndex = tabs.length - 1; 
+    // tabs.splice(insertIndex, 0, { id: 'services', label: 'Hizmetler' });
     tabs.splice(insertIndex + 1, 0, { id: 'packages', label: 'Paketler' });
   }
 
@@ -145,7 +106,6 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
     <Header />
         <div className="min-h-screen bg-black">
         
-        {/* Admin Banner - Sadece admin görebilir ve profil onaylanmamışsa */}
         {isAdmin && user.userPending && (
             <div className="bg-red-600/20 border-b border-red-500/30 py-3">
                 <div className="container mx-auto px-6">

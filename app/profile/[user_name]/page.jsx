@@ -7,7 +7,6 @@ import ProfileClientPage from "./ProfileClient";
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   
-  // Admin kontrolü için token'ı kontrol et
   const cookieStore = cookies();
   const token = cookieStore.get('token')?.value;
   let isAdmin = false;
@@ -45,9 +44,7 @@ export async function generateMetadata({ params }) {
     },
   });
 
-  console.log("kullanıcı kısmı icin:", user);
 
-  // Kullanıcı yoksa veya hiç profil yoksa
   if (!user || (!user.artistProfile && !user.providerProfile)) {
     return {
       title: "Profile Not Found",
@@ -55,7 +52,6 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  // Kullanıcı onaylanmamışsa (userPending: true) ve oturum açan kullanıcı admin değilse
   if (user.userPending === true && !isAdmin) {
     return {
       title: "Profile Not Found",
@@ -77,7 +73,6 @@ export async function generateMetadata({ params }) {
 export default async function ProfilePage({ params }) {
   const resolvedParams = await params;
   
-  // Admin kontrolü için token'ı kontrol et
   const cookieStore = cookies();
   const token = cookieStore.get('token')?.value;
   let isAdmin = false;
@@ -121,7 +116,6 @@ export default async function ProfilePage({ params }) {
     notFound();
   }
 
-  // Kullanıcı onaylanmamışsa (userPending: true) ve oturum açan kullanıcı admin değilse
   if (user.userPending === true && !isAdmin) {
     notFound();
   }
