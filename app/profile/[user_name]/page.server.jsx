@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 export const dynamic = 'force-dynamic';
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
-import prisma from "../../../api/lib/prisma";
+import prisma from "../../api/lib/prisma"
 import ProfileClientPage from "./ProfileClient";
 
 export async function generateMetadata({ params }) {
