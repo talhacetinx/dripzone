@@ -1,40 +1,92 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { getAuthUser } from '../../lib/auth'
+import prisma from '../../lib/prisma'
 
 export async function POST(req) {
   try {
-    const body = await req.json()
-    const { senderId, receiverId, content } = body
-
-    const conversation = await prisma.conversation.upsert({
-      where: {
-        participants: {
-          hasEvery: [senderId, receiverId]
-        }
-      },
-      update: {},
-      create: {
-        participants: [senderId, receiverId],
-      },
-    })
-
-    const message = await prisma.message.create({
-      data: {
-        content,
-        senderId,
-        conversationId: conversation.id,
-      },
-    })
-
-    if (global.io) {
-      global.io.emit('new_message', message)
+    const session = await getAuthUser()
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    return NextResponse.json({ success: true, message })
+    const body = await req.json()
+    const { recipientUsername } = body
+    if (!recipientUsername) {
+      return NextResponse.json({ error: 'recipientUsername is required' }, { status: 400 })
+    }
+
+    // Find recipient user by username
+    const recipient = await prisma.user.findFirst({ where: { user_name: recipientUsername } })
+    if (!recipient) {
+      return NextResponse.json({ error: 'Recipient not found' }, { status: 404 })
+    }
+
+    // Check for existing conversation between the two users
+    const existing = await prisma.conversation.findFirst({
+      where: {
+        participants: {
+          hasEvery: [session.id, recipient.id]
+        }
+      },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        }
+      }
+    })
+
+    if (existing) {
+      const otherUser = {
+        id: recipient.id,
+        name: recipient.name,
+        user_name: recipient.user_name,
+        user_photo: recipient.user_photo,
+        role: recipient.role
+      }
+
+      const lastMessage = existing.messages[0]?.content || null
+      const lastMessageAt = existing.messages[0]?.createdAt || existing.updatedAt
+
+      return NextResponse.json({
+        success: true,
+        conversation: {
+          id: existing.id,
+          otherUser,
+          lastMessage,
+          lastMessageAt,
+          unreadCount: 0
+        }
+      })
+    }
+
+    // Create a new conversation
+    const conversation = await prisma.conversation.create({
+      data: {
+        participants: [session.id, recipient.id]
+      }
+    })
+
+    const otherUser = {
+      id: recipient.id,
+      name: recipient.name,
+      user_name: recipient.user_name,
+      user_photo: recipient.user_photo,
+      role: recipient.role
+    }
+
+    return NextResponse.json({
+      success: true,
+      conversation: {
+        id: conversation.id,
+        otherUser,
+        lastMessage: null,
+        lastMessageAt: conversation.createdAt,
+        unreadCount: 0
+      }
+    })
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    console.error('Start conversation API error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

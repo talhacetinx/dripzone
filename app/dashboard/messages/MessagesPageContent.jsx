@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuthContext } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -91,47 +91,68 @@ export default function MessagesPageContent() {
   const startConversationWithUser = useCallback(async (targetUsername) => {
     if (!targetUsername || !user) return;
 
-    try {
-      console.log('🔄 Yeni konuşma başlatılıyor:', targetUsername);
-      console.log('📝 Mevcut konuşmalar:', conversations);
-      
-      // Önce mevcut konuşmalarda bu kullanıcı var mı kontrol et
-      const existingConv = conversations.find(conv => 
-        conv?.otherUser?.user_name === targetUsername
-      );
+    // Prevent concurrent starts for the same username
+    if (!startConversationWithUser.startingRef) startConversationWithUser.startingRef = new Set();
+    if (startConversationWithUser.startingRef.has(targetUsername)) {
+      console.log('⚠️ Conversation start already in progress for', targetUsername);
+      return;
+    }
 
+    startConversationWithUser.startingRef.add(targetUsername);
+
+    try {
+      console.log('🔄 Yeni konuşma başlatılıyor (server-refresh):', targetUsername);
+
+      // Refresh conversations from server to avoid creating duplicates
+      try {
+        const listResp = await fetch('/api/messages/conversations');
+        if (listResp.ok) {
+          const listData = await listResp.json();
+          if (listData?.conversations) {
+            setConversations(listData.conversations);
+            console.log('🔁 Konuşmalar sunucudan yenilendi, count=', listData.conversations.length);
+          }
+        } else {
+          console.warn('⚠️ Konuşma listesi yenilenemedi, status=', listResp.status);
+        }
+      } catch (e) {
+        console.warn('⚠️ Konuşma listesi yenileme hatası:', e);
+      }
+
+      // Check again locally after refresh
+      const existingConv = conversations.find(conv => conv?.otherUser?.user_name === targetUsername);
       if (existingConv) {
-        console.log('✅ Mevcut konuşma bulundu:', existingConv);
+        console.log('✅ Mevcut konuşma bulundu (post-refresh):', existingConv.id);
         setSelectedConversation(existingConv);
         return;
       }
 
       console.log('🆕 Mevcut konuşma bulunamadı, yeni konuşma başlatılıyor...');
 
-      // Yeni konuşma başlat
       const response = await fetch('/api/messages/start-conversation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          recipientUsername: targetUsername
-        })
+        body: JSON.stringify({ recipientUsername: targetUsername })
       });
 
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Yeni konuşma başlatıldı:', data);
-        
+
         if (data.conversation) {
           handleNewConversation(data.conversation);
         }
       } else {
-        const errorData = await response.json();
+        let errorData = null;
+        try { errorData = await response.json(); } catch (e) { errorData = null; }
         console.error('❌ Konuşma başlatılamadı:', response.status, errorData);
       }
     } catch (error) {
       console.error('❌ Konuşma başlatma hatası:', error);
+    } finally {
+      startConversationWithUser.startingRef.delete(targetUsername);
     }
   }, [conversations, user, handleNewConversation]);
 
@@ -145,7 +166,8 @@ export default function MessagesPageContent() {
   // URL'den 'to' parametresini kontrol et ve otomatik konuşma başlat
   useEffect(() => {
     const toParam = searchParams.get('to');
-    if (toParam && user && conversations.length > 0 && !isLoading) {
+    // start even if conversations array is empty; the API will create a new conversation
+    if (toParam && user && !isLoading) {
       console.log('🎯 URL\'den to parametresi alındı:', toParam);
       console.log('📊 Konuşmalar yüklendi, konuşma başlatılıyor...');
       

@@ -12,6 +12,7 @@ import { Header } from "../../components/Header";
 import { Footer } from "../../components/Footer";
 
 import { useRouter } from 'next/navigation';
+import { useAuth } from "../../context/AuthContext";
 
 export default function ProfileClientPage({ params, initialData, isAdmin = false, currentUser = null }) {
   const [user] = useState(initialData);
@@ -99,7 +100,30 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
     tabs.splice(insertIndex + 1, 0, { id: 'packages', label: 'Paketler' });
   }
 
-    const router = useRouter();
+        const router = useRouter();
+        const { user: AuthUser, loading: authLoading } = useAuth();
+
+        const handleContactClick = () => {
+            try {
+                // If not logged in, send to login and then back to this profile
+                if (!AuthUser) {
+                    const next = `/profile/${user.user_name}`;
+                    router.push(`/login?next=${encodeURIComponent(next)}`);
+                    return;
+                }
+
+                // Prevent messaging yourself; instead open inbox
+                if (AuthUser.user_name === user.user_name) {
+                    router.push('/dashboard/messages');
+                    return;
+                }
+
+                // Open messages and start conversation with this user
+                router.push(`/dashboard/messages?to=${encodeURIComponent(user.user_name)}`);
+            } catch (e) {
+                console.error('Failed to open messages:', e);
+            }
+        };
 
     return (
     <>
@@ -193,7 +217,11 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                     {/* Action Buttons */}
                     <div className="w-full flex-1 lg:flex lg:justify-end">
                     <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                        <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                                <button
+                                                    onClick={handleContactClick}
+                                                    disabled={AuthUser?.user_name === user.user_name}
+                                                    className={`flex items-center justify-center space-x-2 px-6 py-3 ${AuthUser?.user_name === user.user_name ? 'opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black'} font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg`}
+                                                >
                         <MessageCircle className="w-4 h-4" />
                         <span>İletişim</span>
                         </button>

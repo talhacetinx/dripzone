@@ -112,9 +112,9 @@ export default async function ProfilePage({ params }) {
     },
   });
 
-  if (user.userPending != true) {
-    notFound();
-  }
+  // if (user.userPending != true) {
+  //   notFound();
+  // }
 
   return <ProfileClientPage params={resolvedParams} initialData={user} isAdmin={isAdmin} currentUser={currentUser} />;
 }
