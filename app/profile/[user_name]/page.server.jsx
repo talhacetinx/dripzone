@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+export const dynamic = 'force-dynamic';
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import prisma from "../../../api/lib/prisma";
@@ -20,13 +21,24 @@ export async function generateMetadata({ params }) {
     }
   }
 
-  const user = await prisma.user.findFirst({
-    where: { user_name: params.user_name },
-    include: {
-      artistProfile: true,
-      providerProfile: true,
-    },
-  });
+  let user = null;
+  try {
+    user = await prisma.user.findFirst({
+      where: { user_name: params.user_name },
+      include: {
+        artistProfile: true,
+        providerProfile: true,
+      },
+    });
+  } catch (err) {
+    // Log the error so we can see DB/connectivity issues in production logs
+    console.error('generateMetadata: failed to fetch user from Prisma:', err?.message || err);
+    // Fallback: return generic metadata instead of failing with a 404 at metadata stage
+    return {
+      title: `Profil | @${params.user_name}`,
+      description: `Kullanıcı profili yüklenemiyor.`,
+    };
+  }
 
   if (!user || (!user.artistProfile && !user.providerProfile)) {
     if (!isAdmin) {
@@ -77,13 +89,21 @@ export default async function ProfilePage({ params }) {
     }
   }
 
-  const user = await prisma.user.findFirst({
-    where: { user_name: params.user_name },
-    include: {
-      artistProfile: true,
-      providerProfile: true,
-    },
-  });
+  let user = null;
+  try {
+    user = await prisma.user.findFirst({
+      where: { user_name: params.user_name },
+      include: {
+        artistProfile: true,
+        providerProfile: true,
+      },
+    });
+  } catch (err) {
+    // If DB/Prisma fails in production, surface a 500 with logs instead of returning 404 for every profile
+    console.error('ProfilePage: Prisma error while fetching user:', err?.message || err);
+    // Throw to produce a 500 and have the error logged in production platform
+    throw new Error('DATABASE_FETCH_ERROR: ' + (err?.message || err));
+  }
 
   if (!user || (!user.artistProfile && !user.providerProfile)) {
     if (!isAdmin) {

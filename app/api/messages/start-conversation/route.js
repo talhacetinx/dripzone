@@ -15,13 +15,11 @@ export async function POST(req) {
       return NextResponse.json({ error: 'recipientUsername is required' }, { status: 400 })
     }
 
-    // Find recipient user by username
     const recipient = await prisma.user.findFirst({ where: { user_name: recipientUsername } })
     if (!recipient) {
       return NextResponse.json({ error: 'Recipient not found' }, { status: 404 })
     }
 
-    // Check for existing conversation between the two users
     const existing = await prisma.conversation.findFirst({
       where: {
         participants: {

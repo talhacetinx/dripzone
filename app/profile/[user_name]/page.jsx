@@ -4,6 +4,8 @@ import { jwtVerify } from "jose";
 import prisma from "../../api/lib/prisma";
 import ProfileClientPage from "./ProfileClient";
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   
