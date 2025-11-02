@@ -159,6 +159,8 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                         alt={user.name}
                         width={96}
                         height={96}
+                        unoptimized={true}
+                        priority={true}
                         className="w-24 h-24 rounded-full object-cover border-4 border-primary-500 shadow-2xl"
                         />
                         <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">

@@ -10,6 +10,21 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      }
+    ],
+    unoptimized: true,
+    domains: ['*'],
+  },
+
   // Google Translate ve diğer kaynaklar için güvenlik başlıkları
   async headers() {
     return [
