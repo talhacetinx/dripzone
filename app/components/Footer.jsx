@@ -34,7 +34,7 @@ export const Footer = () => {
             </p>
             <div className="flex items-center justify-start">
               <a
-                href="https://www.instagram.com/dripzonemusic/"
+                href="https://www.instagram.com/dripzonemusictr/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-primary-400 transition-colors duration-300"
