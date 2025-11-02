@@ -91,7 +91,6 @@ export const Header = () => {
               {isLoggedIn ? (
                 
                 <>
-                  <Link href={profile.user_type === "admin" ? "/admin" : "/dashboard"}  className="text-white hover:text-primary-400">Kontrol Paneli</Link>
                   {/* Mesajlar - Bildirim ile */}
                   <Link 
                     href="/dashboard/messages" 
@@ -278,10 +277,6 @@ export const Header = () => {
                         <div className="text-sm text-gray-400 capitalize">{profile.user_type}</div>
                       </div>
                     </div>
-
-                    <Link href="/dashboard" className="block px-4 py-3 text-white hover:text-primary-400" onClick={() => setIsMenuOpen(false)}>
-                      Kontrol Paneli
-                    </Link>
                     
                     {/* Mesajlar - Mobil */}
                     <Link 
