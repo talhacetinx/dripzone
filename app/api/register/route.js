@@ -59,7 +59,12 @@ export async function POST(req) {
       return NextResponse.json({ message: "Kullanıcı adı en az 3 karakter olmalı" }, { status: 400 });
     }
 
-    const existingUsername = await prisma.user.findUnique({ where: { user_name: sUserName } });
+    const existingUsername = await prisma.user.findFirst({ 
+      where: { 
+        user_name: sUserName 
+      } 
+    });
+    
     if (existingUsername) {
       return NextResponse.json({ message: "Bu kullanıcı adı zaten alınmış" }, { status: 400 });
     }

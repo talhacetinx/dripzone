@@ -12,7 +12,7 @@ model User {
   email       String   @unique
   password    String
   name        String
-  user_name   String?
+  user_name   String   @unique
   phone       String?
   country     String?
   role        Role?
