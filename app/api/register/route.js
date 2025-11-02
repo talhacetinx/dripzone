@@ -4,6 +4,25 @@ import { sanitizeInput } from "../lib/sanitize";
 import bcrypt from 'bcryptjs'
 import prisma from '../lib/prisma'
 
+// Türkçe karakterleri İngilizce karakterlere çevirme fonksiyonu
+function convertTurkishToEnglish(text) {
+  const turkishChars = {
+    'ç': 'c', 'Ç': 'C',
+    'ğ': 'g', 'Ğ': 'G',
+    'ı': 'i', 'İ': 'I',
+    'ö': 'o', 'Ö': 'O',
+    'ş': 's', 'Ş': 'S',
+    'ü': 'u', 'Ü': 'U',
+  };
+  
+  return text
+    .split('')
+    .map(char => turkishChars[char] || char)
+    .join('')
+    .replace(/[^a-zA-Z0-9_\-\.]/g, '') // Sadece alfanumerik karakterler, tire, nokta ve alt çizgi
+    .toLowerCase(); // Kullanıcı adını küçük harfe çevir
+}
+
 export async function POST(req) {
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
   
@@ -17,10 +36,13 @@ export async function POST(req) {
     const data = await req.json();
     const { firstName, lastName, user_name, email, phone, password, confirmPassword, country, user_type, agreeTerms } = data;
 
+    // Kullanıcı adını Türkçe karakterlerden temizle
+    const convertedUsername = convertTurkishToEnglish(user_name);
+
     const sanitizedData = {
       firstName: sanitizeInput(firstName),
       lastName: sanitizeInput(lastName),
-      user_name: sanitizeInput(user_name),
+      user_name: sanitizeInput(convertedUsername), 
       email: sanitizeInput(email),
       phone: sanitizeInput(phone),
       country: sanitizeInput(country),
@@ -33,11 +55,19 @@ export async function POST(req) {
       return NextResponse.json({ message: "Gerekli alanlar doldurulmalı" }, { status: 400 });
     }
 
+    if (sUserName.length < 3) {
+      return NextResponse.json({ message: "Kullanıcı adı en az 3 karakter olmalı" }, { status: 400 });
+    }
+
+    const existingUsername = await prisma.user.findUnique({ where: { user_name: sUserName } });
+    if (existingUsername) {
+      return NextResponse.json({ message: "Bu kullanıcı adı zaten alınmış" }, { status: 400 });
+    }
+
     if (!agreeTerms) {
       return NextResponse.json({ message: "Kullanıcı onay metnini onaylayın" }, { status: 400 });
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(sEmail)) {
       return NextResponse.json({ message: "Yanlış E-mail Formatı" }, { status: 400 });

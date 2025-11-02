@@ -453,7 +453,6 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
   );
 };
 
-// Provider Card Component - Database verilerine uygun - Memoized for performance
 const ProviderCard = ({ provider }) => {
   const getServiceTypeDisplay = (serviceType) => {
     const typeMap = {
