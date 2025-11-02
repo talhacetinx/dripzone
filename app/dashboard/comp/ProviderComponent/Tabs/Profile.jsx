@@ -99,34 +99,15 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
 
   const handleServiceTypeChange = (newServiceType) => {
     const profileComplete = isProfileComplete();
-    console.log(`🔄 Service type change attempt:`, {
-      current: serviceType,
-      new: newServiceType,
-      profileComplete,
-      basicFields: {
-        about: !!formData2.provider_about,
-        experience: !!formData2.provider_experience,
-        projectCount: !!formData2.provider_project_count,
-        responseTime: !!formData2.provider_response_time,
-        avatar: !!preview,
-        experiences: experiences.length > 0,
-        serviceType: !!serviceType
-      }
-    });
-    
     // Eğer profil tamamlanmışsa ve farklı bir service type seçilmeye çalışılıyorsa
     if (serviceType && 
         serviceType !== 'none' && 
         serviceType !== newServiceType && 
         profileComplete) {
-      console.log("🚫 Blocking service type change - profile is complete");
       setPendingServiceType(newServiceType);
       setShowServiceTypeWarning(true);
       return;
     }
-    
-    // Profil henüz tamamlanmamışsa veya ilk seçim ise serbestçe değiştir
-    console.log(`✅ Allowing service type change: ${serviceType} → ${newServiceType}`);
     setServiceType(newServiceType);
   };
 
@@ -154,7 +135,6 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
           isNew: true // Yeni dosya olduğunu işaretle
         };
         setStudioPhotos(newPhotos);
-        console.log(`📸 Stüdyo fotoğrafı ${index + 1} değiştirildi:`, newPhotos[index]);
       };
       reader.readAsDataURL(file);
     } else {
@@ -166,7 +146,6 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
     const newPhotos = [...studioPhotos];
     newPhotos[index] = null;
     setStudioPhotos(newPhotos);
-    console.log(`🗑️ Stüdyo fotoğrafı ${index + 1} silindi`);
   };
 
   const editStudioPhoto = (index) => {
@@ -298,17 +277,13 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
     const controller = new AbortController();
 
     // Component mount edildiğinde hemen loading başlat
-    console.log("🚀 Profile tab mounted - loading başlıyor");
     setIsProfileLoading(true);
 
     // ServiceData'yı ayrı olarak yükle - service type'a göre
     const loadServiceData = async (signal, serviceType) => {
       if (!serviceType || serviceType === 'none') {
-        console.log("No service type, skipping service data load");
         return;
       }
-
-      console.log("🔄 loadServiceData başlıyor, serviceType:", serviceType);
       setIsServiceDataLoading(true);
       
       try {
@@ -333,11 +308,8 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
             endpoint = '/api/profile/services/recording-studio';
             break;
           default:
-            console.log(`Desteklenmeyen service type: ${serviceType}`);
             return;
         }
-
-        console.log(`Fetching service data from: ${endpoint}`);
         
         const res = await fetch(endpoint, {
           method: "GET",
@@ -351,12 +323,10 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
             const errorData = await res.json();
             errorMsg = errorData.error || errorMsg;
           } catch {}
-          console.error(errorMsg);
           return;
         }
 
         const data = await res.json();
-        console.log("✅ Service data loaded:", data);
 
         if (data.serviceData) {
           // Service type'a göre state'leri set et
@@ -394,9 +364,6 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
           }
           
           if (serviceType === "recording_studio" && data.serviceData.studioPhotos) {
-            console.log("🏗️ Recording studio data received:", data.serviceData);
-            console.log("🏗️ Studio photos:", data.serviceData.studioPhotos);
-            
             const photos = data.serviceData.studioPhotos.slice(0, 3).map(photo => ({
               file: null,
               preview: null,
@@ -420,7 +387,6 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
     };
 
     const loadProfile = async () => {
-      console.log("🔄 loadProfile başlıyor, checking cache...");
       setIsProfileLoading(true);
       
       try {
@@ -428,11 +394,9 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
         
         // Önce cache'i kontrol et
         if (profileCache && profileCache.profile) {
-          console.log("📦 Using cached profile data");
           data = profileCache;
         } else {
           // Cache yoksa API'den çek
-          console.log("🌐 Fetching fresh profile data from API");
           const res = await fetch("/api/profile/get", {
             method: "GET",
             headers: { "Content-Type": "application/json" },

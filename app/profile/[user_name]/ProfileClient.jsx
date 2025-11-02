@@ -8,16 +8,23 @@ import {
   Award, TrendingUp, Calendar, Play, ExternalLink, Users,
   Music, Camera, Palette, Mic, Eye
 } from 'lucide-react';
+import Lightbox from "yet-another-react-lightbox";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+
 import { Header } from "../../components/Header";
 import { Footer } from "../../components/Footer";
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from "../../context/AuthContext";
 
+
 export default function ProfileClientPage({ params, initialData, isAdmin = false, currentUser = null }) {
   const [user] = useState(initialData);
   const [activeTab, setActiveTab] = useState('overview');
-  
+    const [open, setOpen] = useState(false);
+  const [index, setIndex] = useState(0);
   const isArtist = Boolean(user.artistProfile);
   
   const calculateTotalPrice = (basePrice) => {
@@ -55,21 +62,7 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
     profile.spotifyLink = spotifyLink;
   }
   
-  console.log('ProfileClient - Profile object:', profile);
-  console.log('ProfileClient - YouTube Link from otherData:', youtubeLink);
-  console.log('ProfileClient - Spotify Link from otherData:', spotifyLink);
-  console.log('ProfileClient - otherData object:', profile?.otherData);
-  console.log('ProfileClient - Raw otherData:', JSON.stringify(profile?.otherData, null, 2));
-  console.log('ProfileClient - Genres:', profile?.genres);
-  
-  console.log('ProfileClient - isArtist:', isArtist);
-  console.log('ProfileClient - Platform links check:', {
-    isArtist,
-    hasYoutube: !!youtubeLink,
-    hasSpotify: !!spotifyLink,
-    shouldShow: isArtist && (youtubeLink || spotifyLink)
-  });
-  
+
   if (profile && profile.serviceData && typeof profile.serviceData === 'string') {
     try {
       profile.serviceData = JSON.parse(profile.serviceData);
@@ -486,34 +479,51 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                             </div>
                             )}
                             <h3 className="text-xl font-bold mb-6 text-white">Stüdyo Fotoğrafları</h3>
-                            {profile.serviceData?.studioPhotos && profile.serviceData.studioPhotos.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {profile.serviceData.studioPhotos.map((photo, index) => (
-                                <div
-                                    key={index}
+                            {photos && photos.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {photos.map((photo, i) => (
+                                    <div
+                                    key={i}
                                     className="relative bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl overflow-hidden hover:border-primary-500/50 transition-all duration-300 group"
-                                >
+                                    >
                                     <div className="aspect-square relative">
-                                    <Image
+                                        <Image
                                         src={photo.url}
-                                        alt={photo.name || `Stüdyo fotoğrafı ${index + 1}`}
+                                        alt={photo.name || `Stüdyo fotoğrafı ${i + 1}`}
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                        <button className="p-2 bg-white/20 backdrop-blur rounded-full">
-                                        <Eye className="w-5 h-5 text-white" />
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                        <button
+                                            onClick={() => {
+                                            setIndex(i);
+                                            setOpen(true);
+                                            }}
+                                            className="p-2 bg-white/20 backdrop-blur rounded-full"
+                                        >
+                                            <Eye className="w-5 h-5 text-white" />
                                         </button>
+                                        </div>
                                     </div>
                                     </div>
-                                </div>
                                 ))}
-                            </div>
+                                </div>
                             ) : (
-                            <div className="text-center text-gray-400 py-8">
+                                <div className="text-center text-gray-400 py-8">
                                 <Camera className="w-12 h-12 mx-auto mb-2 opacity-50" />
                                 <p>Henüz stüdyo fotoğrafı eklenmedi</p>
-                            </div>
+                                </div>
+                            )}
+
+                            {/* Lightbox */}
+                            {photos.length > 0 && (
+                                <Lightbox
+                                open={open}
+                                close={() => setOpen(false)}
+                                index={index}
+                                slides={photos.map((p) => ({ src: p.url }))}
+                                plugins={[Thumbnails]}
+                                />
                             )}
                         </div>
                         )}
@@ -652,46 +662,64 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                             )}
                         </div>
                         ) : !isArtist && (profile.serviceType === 'album_cover_artist' || profile.serviceType === 'album_cover_designer') ? (
-                        // Albüm kapağı tasarımcıları için kapaklar
                         <div>
                             <h3 className="text-xl font-bold mb-6 text-white">Albüm Kapağı Tasarımları</h3>
                             {profile.serviceData?.albumCovers && profile.serviceData.albumCovers.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {profile.serviceData.albumCovers.map((cover, index) => (
-                                <div
+                                    <div
                                     key={index}
                                     className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl overflow-hidden hover:border-primary-500/50 transition-all duration-300 group"
-                                >
-                                    <div className="aspect-square relative">
-                                    <Image
+                                    >
+                                    <div
+                                        className="aspect-square relative cursor-pointer"
+                                        onClick={() => {
+                                        setIndex(index);
+                                        setOpen(true);
+                                        }}
+                                    >
+                                        <Image
                                         src={cover.url}
                                         alt={cover.name || `Albüm kapağı ${index + 1}`}
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
+                                        />
                                     </div>
+
                                     {cover.songLink && (
-                                    <div className="p-4">
+                                        <div className="p-4">
                                         <a
-                                        href={cover.songLink}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center space-x-2 text-primary-400 hover:text-primary-300 transition-colors"
+                                            href={cover.songLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center space-x-2 text-primary-400 hover:text-primary-300 transition-colors"
                                         >
-                                        <Play className="w-4 h-4" />
-                                        <span>Şarkıyı Dinle</span>
+                                            <Play className="w-4 h-4" />
+                                            <span>Şarkıyı Dinle</span>
                                         </a>
-                                    </div>
+                                        </div>
                                     )}
-                                </div>
+                                    </div>
                                 ))}
-                            </div>
+                                </div>
                             ) : (
-                            <div className="text-center text-gray-400 py-12">
+                                <div className="text-center text-gray-400 py-12">
                                 <Palette className="w-16 h-16 mx-auto mb-4 opacity-50" />
                                 <p>Henüz albüm kapağı tasarımı eklenmedi</p>
-                            </div>
-                            )}
+                                </div>
+                            )}    
+
+                          {profile.serviceData?.albumCovers?.length > 0 && (
+                            <Lightbox
+                            open={open}
+                            close={() => setOpen(false)}
+                            index={index}
+                            slides={profile.serviceData.albumCovers.map((cover) => ({
+                                src: cover.url,
+                            }))}
+                            plugins={[Thumbnails]}
+                            />
+                        )}
                         </div>
                         ) : !isArtist && profile.serviceType === 'music_video_director' ? (
                         // Video yönetmenleri için video kapakları
