@@ -14,6 +14,7 @@ export const ServicesProviderTab = ({ userInfo }) => {
     features: [],
     deliveryTime: "",
     price: "",
+    isPublic: true, // Varsayılan olarak herkese açık
   });
   const [editingPackageId, setEditingPackageId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -94,7 +95,8 @@ export const ServicesProviderTab = ({ userInfo }) => {
         description: packageForm.description,
         features: packageForm.features,
         deliveryTime: packageForm.deliveryTime,
-        price: parseFloat(packageForm.price)
+        price: parseFloat(packageForm.price),
+        isPublic: packageForm.isPublic
       };
       
       const updatedPackages = [...packages, newPackage];
@@ -111,7 +113,7 @@ export const ServicesProviderTab = ({ userInfo }) => {
         
         if (res.ok) {
           setPackages(updatedPackages);
-          setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
+          setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '', isPublic: true });
           toast.success('Paket başarıyla eklendi!');
         } else {
           toast.error('Paket eklenirken hata oluştu!');
@@ -132,7 +134,8 @@ export const ServicesProviderTab = ({ userInfo }) => {
       description: packageData.description,
       features: [...packageData.features],
       deliveryTime: packageData.deliveryTime,
-      price: packageData.price.toString()
+      price: packageData.price.toString(),
+      isPublic: packageData.isPublic ?? true
     });
     setEditingPackageId(packageData.id);
   };
@@ -147,7 +150,8 @@ export const ServicesProviderTab = ({ userInfo }) => {
         description: packageForm.description,
         features: packageForm.features,
         deliveryTime: packageForm.deliveryTime,
-        price: parseFloat(packageForm.price)
+        price: parseFloat(packageForm.price),
+        isPublic: packageForm.isPublic
       };
       
       const updatedPackages = packages.map(pkg => pkg.id === editingPackageId ? updatedPackage : pkg);
@@ -164,7 +168,7 @@ export const ServicesProviderTab = ({ userInfo }) => {
         
         if (res.ok) {
           setPackages(updatedPackages);
-          setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
+          setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '', isPublic: true });
           setEditingPackageId(null);
           toast.success('Paket başarıyla güncellendi!');
         } else {
@@ -305,6 +309,20 @@ export const ServicesProviderTab = ({ userInfo }) => {
               )}
             </div>
             
+            {/* Görünürlük Ayarı */}
+            <div className="mb-4">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={packageForm.isPublic}
+                  onChange={(e) => setPackageForm(prev => ({ ...prev, isPublic: e.target.checked }))}
+                  className="w-4 h-4 rounded border-gray-600 text-primary-600 focus:ring-primary-500 bg-gray-900/50"
+                />
+                <span>Herkese Açık</span>
+                <span className="ml-1 text-xs text-gray-400">{packageForm.isPublic ? '(Herkes görebilir)' : '(Sadece siz görebilirsiniz)'}</span>
+              </label>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Teslim Süresi
@@ -428,7 +446,20 @@ export const ServicesProviderTab = ({ userInfo }) => {
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1">
-                      <h5 className="text-xl font-bold text-white mb-2">{pkg.title}</h5>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h5 className="text-xl font-bold text-white">{pkg.title}</h5>
+                        {pkg.isPublic ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-900/50 text-green-400 border border-green-900">
+                            <Eye size={12} className="mr-1" />
+                            Herkese Açık
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-900/50 text-gray-400 border border-gray-700">
+                            <Eye size={12} className="mr-1" />
+                            Gizli
+                          </span>
+                        )}
+                      </div>
                       <p className="text-gray-300 text-sm mb-3">{pkg.description}</p>
                     </div>
                     <div className="flex gap-2 ml-4">

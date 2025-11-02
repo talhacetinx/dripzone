@@ -479,9 +479,9 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                             </div>
                             )}
                             <h3 className="text-xl font-bold mb-6 text-white">Stüdyo Fotoğrafları</h3>
-                            {photos && photos.length > 0 ? (
+                            {profile.serviceData?.studioPhotos && profile.serviceData.studioPhotos.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {photos.map((photo, i) => (
+                                {profile.serviceData.studioPhotos.map((photo, i) => (
                                     <div
                                     key={i}
                                     className="relative bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl overflow-hidden hover:border-primary-500/50 transition-all duration-300 group"
@@ -516,12 +516,12 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                             )}
 
                             {/* Lightbox */}
-                            {photos.length > 0 && (
+                            {profile.serviceData?.studioPhotos && profile.serviceData.studioPhotos.length > 0 && (
                                 <Lightbox
                                 open={open}
                                 close={() => setOpen(false)}
                                 index={index}
-                                slides={photos.map((p) => ({ src: p.url }))}
+                                slides={profile.serviceData.studioPhotos.map((p) => ({ src: p.url }))}
                                 plugins={[Thumbnails]}
                                 />
                             )}
@@ -1027,78 +1027,131 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                     </motion.div>
                     )}
 
+                    {/* Packages Tab */}
                     {activeTab === 'packages' && !isArtist && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="space-y-6"
-                    >
-                        <div>
-                        <h3 className="text-xl font-bold mb-6 text-white">Hizmet Paketleri</h3>
-                        {profile.packages && profile.packages.length > 0 ? (
-                            <div className="grid gap-6">
-                            {profile.packages.map((pkg, index) => (
-                                <div
-                                key={pkg.id || index}
-                                className="relative bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6 hover:border-primary-500/50 transition-all duration-300"
-                                >
-                                {/* Paket Badge */}
-                                {index === 0 && (
-                                    <div className="absolute -top-3 left-6">
-                                    <span className="px-3 py-1 bg-gradient-to-r from-primary-500 to-primary-400 text-xs font-bold rounded-full text-black shadow-lg">
-                                        POPÜLER
-                                    </span>
-                                    </div>
-                                )}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-6"
+                        >
+                            <div>
+                            <h3 className="text-xl font-bold mb-6 text-white">Hizmet Paketleri</h3>
 
-                                <div className="flex flex-col md:flex-row gap-6">
-                                    {/* Paket Bilgileri */}
-                                    <div className="flex-1">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                                        <div>
-                                        <h4 className="text-xl font-bold mb-2 text-white">{pkg.title}</h4>
-                                        <p className="text-gray-400">{pkg.description}</p>
-                                        </div>
-                                        <div className="text-right mt-4 md:mt-0">
-                                        <div className="text-3xl font-bold text-primary-500 mb-1">₺{calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}</div>
-                                        <div className="text-sm text-gray-400">{pkg.deliveryTime} teslimat</div>
-                                        </div>
-                                    </div>
+                            {(() => {
+                                const visiblePackages =
+                                profile.packages?.filter(
+                                    (pkg) =>
+                                    pkg.isPublic ||
+                                    isAdmin ||
+                                    (currentUser && currentUser.userId === user.id)
+                                ) || [];
 
-                                    {/* Özellikler */}
-                                    {pkg.features && pkg.features.length > 0 && (
-                                        <div className="grid md:grid-cols-2 gap-4 mb-6">
-                                        {pkg.features.map((feature, featureIndex) => (
-                                            <div key={featureIndex} className="flex items-center space-x-2">
-                                            <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                                            <span className="text-gray-300 text-sm">{feature}</span>
+                                if (visiblePackages.length === 0) {
+                                return (
+                                    <div className="text-center py-12">
+                                    <div className="text-gray-400 mb-4">
+                                        <Music size={48} className="mx-auto mb-4 opacity-50" />
+                                        {isAdmin || (currentUser && currentUser.userId === user.id) ? (
+                                        <>
+                                            <p className="text-lg">Henüz paket oluşturulmamış</p>
+                                            <p className="text-sm mt-2">
+                                            Hizmet paketlerinizi yönetmek için kontrol panelinizi
+                                            kullanabilirsiniz.
+                                            </p>
+                                        </>
+                                        ) : profile.packages && profile.packages.length > 0 ? (
+                                        <>
+                                            <p className="text-lg">Görüntülenebilir paket bulunmuyor</p>
+                                            <p className="text-sm mt-2">
+                                            Bu sağlayıcının hizmet paketleri şu an görüntülenemiyor.
+                                            </p>
+                                        </>
+                                        ) : (
+                                        <>
+                                            <p className="text-lg">Mevcut paket yok</p>
+                                            <p className="text-sm mt-2">
+                                            Bu sağlayıcı henüz herhangi bir hizmet paketi oluşturmamış.
+                                            </p>
+                                        </>
+                                        )}
+                                    </div>
+                                    </div>
+                                );
+                                }
+
+                                // Eğer paket varsa grid render edilir
+                                return (
+                                <div className="grid gap-6">
+                                    {visiblePackages.map((pkg, index) => (
+                                    <div
+                                        key={pkg.id || index}
+                                        className="relative bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6 hover:border-primary-500/50 transition-all duration-300"
+                                    >
+                                        {/* POPÜLER etiketi */}
+                                        {index === 0 && (
+                                        <div className="absolute -top-3 left-6">
+                                            <span className="px-3 py-1 bg-gradient-to-r from-primary-500 to-primary-400 text-xs font-bold rounded-full text-black shadow-lg">
+                                            POPÜLER
+                                            </span>
+                                        </div>
+                                        )}
+
+                                        <div className="flex flex-col md:flex-row gap-6">
+                                        <div className="flex-1">
+                                            {/* Üst Bilgi */}
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                            <div>
+                                                <h4 className="text-xl font-bold mb-2 text-white">
+                                                {pkg.title}
+                                                </h4>
+                                                <p className="text-gray-400">{pkg.description}</p>
                                             </div>
-                                        ))}
+                                            <div className="text-right mt-4 md:mt-0">
+                                                <div className="text-3xl font-bold text-primary-500 mb-1">
+                                                ₺
+                                                {calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}
+                                                </div>
+                                                <div className="text-sm text-gray-400">
+                                                {pkg.deliveryTime} teslim süresi
+                                                </div>
+                                            </div>
+                                            </div>
+
+                                            {/* Özellikler */}
+                                            {pkg.features && pkg.features.length > 0 && (
+                                            <div className="grid md:grid-cols-2 gap-4 mb-6">
+                                                {pkg.features.map((feature, featureIndex) => (
+                                                <div
+                                                    key={featureIndex}
+                                                    className="flex items-center space-x-2"
+                                                >
+                                                    <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                                    <span className="text-gray-300 text-sm">
+                                                    {feature}
+                                                    </span>
+                                                </div>
+                                                ))}
+                                            </div>
+                                            )}
+
+                                            {/* Buton */}
+                                            <button className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg text-black">
+                                            Şimdi Sipariş Ver - ₺
+                                            {calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}
+                                            </button>
                                         </div>
-                                    )}
-
-                                    {/* Sipariş Butonu */}
-                                    <button className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg text-black">
-                                        Şimdi Sipariş Ver - ₺{calculateTotalPrice(pkg.basePrice || pkg.price)?.toLocaleString()}
-                                    </button>
+                                        </div>
                                     </div>
+                                    ))}
                                 </div>
-                                </div>
-                            ))}
+                                );
+                            })()}
                             </div>
-                        ) : (
-                            <div className="text-center py-12">
-                            <div className="text-gray-400 mb-4">
-                                <Music size={48} className="mx-auto mb-4 opacity-50" />
-                                <p className="text-lg">Mevcut paket yok</p>
-                                <p className="text-sm">Bu sağlayıcı henüz herhangi bir hizmet paketi oluşturmamış</p>
-                            </div>
-                            </div>
+                        </motion.div>
                         )}
-                        </div>
-                    </motion.div>
-                    )}
 
+
+                    {/* Portfolio Tab */}
                     {activeTab === 'portfolio' && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

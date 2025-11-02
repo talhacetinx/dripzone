@@ -13,6 +13,7 @@ export const ServicesTab = ({ userInfo }) => {
     features: [],
     deliveryTime: "",
     price: "",
+    isPublic: false,
   });
   const [editingPackageId, setEditingPackageId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -127,13 +128,14 @@ export const ServicesTab = ({ userInfo }) => {
         basePrice: basePrice, // Provider'ın alacağı fiyat
         price: totalPrice, // Müşterinin ödeyeceği toplam fiyat (komisyon dahil)
         commission: calculateCommission(basePrice), // Komisyon miktarı
+        isPublic: packageForm.isPublic, // Paketin görünürlük durumu
       };
       
       const updatedPackages = [...packages, newPackage];
       
       const success = await savePackages(updatedPackages);
       if (success) {
-        setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
+        setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '', isPublic: true });
         toast.success('Paket başarıyla eklendi!');
       }
       
@@ -150,6 +152,7 @@ export const ServicesTab = ({ userInfo }) => {
       features: [...packageData.features],
       deliveryTime: packageData.deliveryTime,
       price: (packageData.basePrice || packageData.price).toString(), // Base price'ı göster
+      isPublic: packageData.isPublic ?? true, // Varsayılan olarak true
     });
     setEditingPackageId(packageData.id);
   };
@@ -170,13 +173,14 @@ export const ServicesTab = ({ userInfo }) => {
         basePrice: basePrice, // Provider'ın alacağı fiyat
         price: totalPrice, // Müşterinin ödeyeceği toplam fiyat (komisyon dahil)
         commission: calculateCommission(basePrice), // Komisyon miktarı
+        isPublic: packageForm.isPublic, // Paketin görünürlük durumu
       };
       
       const updatedPackages = packages.map(pkg => pkg.id === editingPackageId ? updatedPackage : pkg);
       
       const success = await savePackages(updatedPackages);
       if (success) {
-        setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
+        setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '', isPublic: true });
         setEditingPackageId(null);
         toast.success('Paket başarıyla güncellendi!');
       }
@@ -201,7 +205,7 @@ export const ServicesTab = ({ userInfo }) => {
   };
 
   const cancelEditPackage = () => {
-    setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '' });
+    setPackageForm({ title: '', description: '', features: [], deliveryTime: '', price: '', isPublic: true });
     setEditingPackageId(null);
   };
 
@@ -284,6 +288,9 @@ export const ServicesTab = ({ userInfo }) => {
               )}
             </div>
             
+            {/* Görünürlük Ayarı */}
+
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Teslim Süresi
@@ -295,6 +302,47 @@ export const ServicesTab = ({ userInfo }) => {
                 className="w-full py-3 px-4 bg-gray-900/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white"
                 placeholder="Örn: 7 gün"
               />
+            </div>
+                        <div className="col-span-2">
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 mb-4 transition-all duration-300 hover:border-primary-500/50">
+                <label className="flex items-start gap-4 cursor-pointer group">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={packageForm.isPublic}
+                      onChange={(e) => setPackageForm(prev => ({ ...prev, isPublic: e.target.checked }))}
+                      className="peer sr-only"
+                    />
+                    <div className="w-10 h-6 bg-gray-700 rounded-full transition-colors duration-300 
+                                  peer-checked:bg-primary-600 peer-focus:ring-2 peer-focus:ring-primary-500/50">
+                    </div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 
+                                  peer-checked:translate-x-4 peer-checked:bg-white">
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-white group-hover:text-primary-400 transition-colors">
+                        Paket Görünürlüğü
+                      </span>
+                      {packageForm.isPublic ? (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
+                          Herkese Açık
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-700/50 text-gray-400 rounded-full border border-gray-600">
+                          Gizli
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-400">
+                      {packageForm.isPublic 
+                        ? 'Bu paket herkese açık olacak ve müşteriler sipariş verebilecek.'
+                        : 'Bu paket gizli kalacak ve sadece siz görebileceksiniz.'}
+                    </p>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -408,7 +456,20 @@ export const ServicesTab = ({ userInfo }) => {
                   <div className="flex justify-between items-start mb-4">
                     {/* Sol Taraf - Başlık ve Açıklama */}
                     <div className="flex-1">
-                      <h5 className="text-xl font-bold text-white mb-2">{pkg.title}</h5>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h5 className="text-xl font-bold text-white">{pkg.title}</h5>
+                        {pkg.isPublic ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-900/50 text-green-400 border border-green-900">
+                            <Eye size={12} className="mr-1" />
+                            Herkese Açık
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-900/50 text-gray-400 border border-gray-700">
+                            <Eye size={12} className="mr-1" />
+                            Gizli
+                          </span>
+                        )}
+                      </div>
                       <p className="text-gray-300 text-sm mb-3">{pkg.description}</p>
                     </div>
                     

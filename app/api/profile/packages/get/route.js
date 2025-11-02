@@ -17,7 +17,34 @@ export async function GET(req) {
     return NextResponse.json({ message: "Yetkisiz istek." }, { status: 403 });
   }
 
+  // URL'den provider_id parametresini al
+  const { searchParams } = new URL(req.url);
+  const providerId = searchParams.get('provider_id');
+
   const session = await getAuthUser();
+  
+  // providerId verilmişse, o provider'ın paketlerini getir (sadece public olanları)
+  if (providerId) {
+    try {
+      const providerProfile = await prisma.providerProfile.findFirst({
+        where: { userId: providerId },
+        select: { packages: true }
+      });
+
+      if (!providerProfile) {
+        return NextResponse.json({ packages: [] }, { status: 200 });
+      }
+
+      // Sadece public paketleri filtrele
+      const publicPackages = (providerProfile.packages || []).filter(pkg => pkg.isPublic);
+      return NextResponse.json({ packages: publicPackages }, { status: 200 });
+    } catch (err) {
+      console.error("Paket getirme hatası:", err);
+      return NextResponse.json({ error: err.message || "Sunucu hatası" }, { status: 500 });
+    }
+  }
+
+  // providerId yoksa, oturum kontrolü yap
   if (!session) {
     return NextResponse.json(
       { error: "Oturum verisi eksik, lütfen oturum açınız." },

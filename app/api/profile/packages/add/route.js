@@ -68,6 +68,10 @@ export async function POST(req) {
           error: "Paket fiyatı pozitif bir sayı olmalıdır" 
         }, { status: 400 });
       }
+
+      if (typeof pkg.isPublic !== 'boolean') {
+        pkg.isPublic = false;
+      }
     }
 
     const providerProfile = await prisma.providerProfile.findUnique({
