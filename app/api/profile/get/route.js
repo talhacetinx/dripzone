@@ -21,7 +21,6 @@ export async function GET() {
     const { id: userId, role } = session;
     const cacheKey = `${userId}-${role}`;
 
-    // Cache kontrol
     const cached = profileCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       console.log(`✅ Cache hit for user ${userId} - ${Date.now() - startTime}ms`);
@@ -32,7 +31,6 @@ export async function GET() {
       });
     }
 
-    // Basit profil verisi - cache yok
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -54,7 +52,7 @@ export async function GET() {
             studioName: true,
             about: true,
             serviceType: true,
-            serviceData: true, // Service data'yı da include et
+            serviceData: true, 
             otherData: true,
             backgroundUrl: true,
             experience: true,
@@ -72,7 +70,6 @@ export async function GET() {
       return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 });
     }
 
-    // 🎤 Artist profil
     if (role === "ARTIST") {
       const p = user.artistProfile;
       const responseData = {
@@ -104,7 +101,6 @@ export async function GET() {
       });
     }
 
-    // 🏢 Provider profil - serviceData dahil değil
     if (role === "PROVIDER") {
       const p = user.providerProfile;
       
@@ -134,7 +130,6 @@ export async function GET() {
         timestamp: Date.now()
       });
       
-      console.log(`✅ Provider profile loaded - ${Date.now() - startTime}ms`);
       return NextResponse.json({
         ...responseData,
         _cached: false,

@@ -38,8 +38,6 @@ export async function POST(req) {
   }
 
   const origin = req.headers.get("origin") || "";
-  console.log("🔍 Request origin:", origin);
-  console.log("🔍 Allowed origins:", ALLOWED_ORIGINS);
   
   if (process.env.NODE_ENV === 'production' && !ALLOWED_ORIGINS.includes(origin)) {
     console.log("❌ Origin not allowed:", origin);

@@ -1,31 +1,34 @@
 /** @type {import('next').NextConfig} */
+
+const isProd = process.env.NODE_ENV === "production";
+
+if (isProd) {
+  ["log", "warn", "error", "info", "debug"].forEach(method => {
+    console[method] = () => {};
+  });
+}
+
 const nextConfig = {
-  // TypeScript hata kontrolünü devre dışı bırak
+  reactStrictMode: true,
+  poweredByHeader: false,
+
   typescript: {
     ignoreBuildErrors: true,
   },
-
-  // ESLint hata kontrolünü devre dışı bırak
   eslint: {
     ignoreDuringBuilds: true,
   },
 
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-      {
-        protocol: 'http',
-        hostname: '**',
-      }
-    ],
     unoptimized: true,
-    domains: ['*'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'translate.googleapis.com' },
+      { protocol: 'https', hostname: 'www.gstatic.com' },
+      { protocol: 'https', hostname: 'dripzone-topaz.vercel.app' },
+      { protocol: 'https', hostname: 'dripzonemusic.com' },
+    ],
   },
 
-  // Google Translate ve diğer kaynaklar için güvenlik başlıkları
   async headers() {
     return [
       {
@@ -69,37 +72,8 @@ const nextConfig = {
     ];
   },
 
-  // ✅ Görsel optimizasyonunu kapattık
-  images: {
-    unoptimized: true, // 🔥 bu sayede _next/image hatası ortadan kalkar
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'translate.googleapis.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.gstatic.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'dripzone-topaz.vercel.app',
-      },
-      {
-        protocol: 'https',
-        hostname: 'dripzonemusic.com',
-      },
-    ],
-  },
-
-  // Production optimizations
-  poweredByHeader: false,
-  reactStrictMode: true,
-
-  // WebSocket ve server konfigürasyonu
   serverExternalPackages: ['socket.io', 'socket.io-client'],
 
-  // Development proxy ayarı
   ...(process.env.NODE_ENV === 'development' && {
     async rewrites() {
       return [
