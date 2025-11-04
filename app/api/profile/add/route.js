@@ -12,21 +12,28 @@ const allowedTypes = ["png", "jpeg", "jpg", "webp"];
 async function saveBase64Image(dataUrl, folder = "profile-page") {
   const matches = dataUrl?.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
   if (!matches || matches.length !== 3) throw new Error("Geçersiz görsel formatı");
+  
   const mimeType = matches[1];
   const base64Data = matches[2];
   const extension = mimeType.split("/")[1];
+  const allowedTypes = ["png", "jpeg", "jpg", "webp"];
 
   if (!allowedTypes.includes(extension)) throw new Error("Desteklenmeyen dosya türü");
+
   const buffer = Buffer.from(base64Data, "base64");
   if (buffer.length > 5 * 1024 * 1024) throw new Error("Dosya çok büyük");
 
   const uniqueName = `${Date.now()}-${randomBytes(6).toString("hex")}.${extension}`;
-  const uploadDir = path.join(process.cwd(), "public", folder);
-  await fs.mkdir(uploadDir, { recursive: true });
-  const filePath = path.join(uploadDir, uniqueName);
+
+  const uploadRoot = path.join(process.cwd(), "public", "uploads", folder);
+  await fs.mkdir(uploadRoot, { recursive: true });
+
+  const filePath = path.join(uploadRoot, uniqueName);
   await fs.writeFile(filePath, buffer);
-  return `/${folder}/${uniqueName}`;
+
+  return `/uploads/${folder}/${uniqueName}`;
 }
+
 
 export async function POST(req) {
   const ip = req.headers.get("x-forwarded-for") || "unknown";

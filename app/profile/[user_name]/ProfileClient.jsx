@@ -66,9 +66,7 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
   if (profile && profile.serviceData && typeof profile.serviceData === 'string') {
     try {
       profile.serviceData = JSON.parse(profile.serviceData);
-      console.log('🔧 ServiceData parsed from string:', profile.serviceData);
     } catch (e) {
-      console.error('❌ Failed to parse serviceData:', e);
       profile.serviceData = {};
     }
   }
@@ -80,7 +78,6 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
 
   const tabs = [
     { id: 'overview', label: 'Genel Bakış' },
-    // { id: 'reviews', label: 'Değerlendirmeler' }
   ];
 
   if (isArtist || (profile.serviceType && profile.serviceType !== 'recording_studio')) {
@@ -89,7 +86,6 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
 
   if (!isArtist) {
     const insertIndex = tabs.length - 1; 
-    // tabs.splice(insertIndex, 0, { id: 'services', label: 'Hizmetler' });
     tabs.splice(insertIndex + 1, 0, { id: 'packages', label: 'Paketler' });
   }
 
@@ -104,13 +100,11 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                     return;
                 }
 
-                // Prevent messaging yourself; instead open inbox
                 if (AuthUser.user_name === user.user_name) {
                     router.push('/dashboard/messages');
                     return;
                 }
 
-                // Open messages and start conversation with this user
                 router.push(`/dashboard/messages?to=${encodeURIComponent(user.user_name)}`);
             } catch (e) {
                 console.error('Failed to open messages:', e);
