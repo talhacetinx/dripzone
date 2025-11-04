@@ -1,10 +1,8 @@
 /** @type {import('next').NextConfig} */
-
 import path from "path";
 
 const isProd = process.env.NODE_ENV === "production";
 
-// ✅ Production’da console.* fonksiyonlarını devre dışı bırak
 if (isProd) {
   ["log", "warn", "error", "info", "debug"].forEach(method => {
     console[method] = () => {};
@@ -15,11 +13,9 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // ✅ Derleme hatalarını build sırasında durdurmasın
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
 
-  // ✅ Görsel ayarları
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -30,7 +26,6 @@ const nextConfig = {
     ],
   },
 
-  // ✅ Public/uploads içeriği de img-src'ye eklendi
   async headers() {
     return [
       {
@@ -62,7 +57,7 @@ const nextConfig = {
               frame-src 'self'
                 https://translate.googleapis.com
                 https://*.vercel.app;
-              img-src 'self' data: blob: filesystem: https:
+              img-src 'self' data: blob: https:
                 https://translate.googleapis.com
                 https://www.gstatic.com
                 https://*.vercel.app
@@ -75,10 +70,8 @@ const nextConfig = {
     ];
   },
 
-  // ✅ Socket IO dış paketleri
   serverExternalPackages: ["socket.io", "socket.io-client"],
 
-  // ✅ Development ortamında Socket yönlendirmesi
   ...(process.env.NODE_ENV === "development" && {
     async rewrites() {
       return [
@@ -90,10 +83,9 @@ const nextConfig = {
     },
   }),
 
-  // ✅ Ek güvenlik ve upload klasörü kontrolü
   webpack: (config) => {
-    // public/uploads klasörünü build dışında tutar (silinmez)
     config.resolve.alias["@uploads"] = path.resolve("./public/uploads");
+    config.externals.push({ formidable: "commonjs formidable" });
     return config;
   },
 };

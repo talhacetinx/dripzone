@@ -295,7 +295,7 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                     >
                         {/* Bio */}
                         <div>
-                        <h3 className="text-xl font-bold mb-4 text-white">About</h3>
+                        <h3 className="text-xl font-bold mb-4 text-white">Hakkında</h3>
                         <p className="text-gray-300 leading-relaxed">
                             {profile.bio || profile.about || 'No biography available.'}
                         </p>
@@ -304,7 +304,7 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                         {/* Specialties/Genres */}
                         <div>
                         <h3 className="text-xl font-bold mb-4 text-white">
-                            {isArtist ? 'Genres' : 'Specialties'}
+                            {isArtist ? 'Türler' : 'Uzmanlıklar'}
                         </h3>
                         <div className="flex flex-wrap gap-3">
                             {isArtist ? (
