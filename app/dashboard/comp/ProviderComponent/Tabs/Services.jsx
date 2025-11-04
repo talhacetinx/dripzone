@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
 export const ServicesProviderTab = ({ userInfo }) => {
-  // Paket yönetimi
   const [packages, setPackages] = useState([]);
   const [packageForm, setPackageForm] = useState({
     title: "",
