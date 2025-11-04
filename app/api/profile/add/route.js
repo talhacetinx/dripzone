@@ -6,33 +6,7 @@ import prisma from "../../lib/prisma";
 import { getAuthUser } from "../../lib/auth";
 import { checkRateLimit, ALLOWED_ORIGINS } from "../../lib/rate";
 import { saveFile } from "../../../../lib/fileUpload";
-
-const allowedTypes = ["png", "jpeg", "jpg", "webp"];
-
-async function saveBase64Image(dataUrl, folder = "profile-page") {
-  const matches = dataUrl?.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
-  if (!matches || matches.length !== 3) throw new Error("Geçersiz görsel formatı");
-  
-  const mimeType = matches[1];
-  const base64Data = matches[2];
-  const extension = mimeType.split("/")[1];
-  const allowedTypes = ["png", "jpeg", "jpg", "webp"];
-
-  if (!allowedTypes.includes(extension)) throw new Error("Desteklenmeyen dosya türü");
-
-  const buffer = Buffer.from(base64Data, "base64");
-  if (buffer.length > 5 * 1024 * 1024) throw new Error("Dosya çok büyük");
-
-  const uniqueName = `${Date.now()}-${randomBytes(6).toString("hex")}.${extension}`;
-
-  const uploadRoot = path.join(process.cwd(), "public", "uploads", folder);
-  await fs.mkdir(uploadRoot, { recursive: true });
-
-  const filePath = path.join(uploadRoot, uniqueName);
-  await fs.writeFile(filePath, buffer);
-
-  return `/uploads/${folder}/${uniqueName}`;
-}
+import { saveBase64Image } from "../../lib/saveBase64Image";
 
 
 export async function POST(req) {
@@ -291,9 +265,12 @@ export async function POST(req) {
                   if (photo?.file && photo?.preview) {
                     // Yeni yüklenen fotoğraf
                     const saveResult = await saveFile(photo.preview, 'image', `studio/${userId}`);
+                    console.log(`-- saveResult for photo ${i + 1}:`, { success: saveResult?.success, filePath: saveResult?.filePath, error: saveResult?.error });
                     if (saveResult.success) {
                       photoUrl = saveResult.filePath;
                       photoName = photo.name;
+                    } else {
+                      console.warn(`Photo ${i + 1} could not be saved:`, saveResult?.error);
                     }
                   } else if (!photo?.isNew && photo?.url) {
                     // Mevcut fotoğraf (zaten kaydedilmiş)
