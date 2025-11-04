@@ -98,7 +98,6 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
 
         const handleContactClick = () => {
             try {
-                // If not logged in, send to login and then back to this profile
                 if (!AuthUser) {
                     const next = `/profile/${user.user_name}`;
                     router.push(`/login?next=${encodeURIComponent(next)}`);
@@ -179,7 +178,6 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                                     {profile.serviceType ? profile.serviceType.replace(/_/g, ' ') : (isArtist ? 'Artist' : 'Provider')}
                                 </span>
                             </div>
-                            {/* Admin için onay durumu uyarısı */}
                             {isAdmin && user.userPending && (
                                 <div className="flex items-center space-x-2 px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-full">
                                     <ExternalLink className="w-4 h-4 text-red-400" />
@@ -212,17 +210,12 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                     {/* Action Buttons */}
                     <div className="w-full flex-1 lg:flex lg:justify-end">
                     <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                                                <button
-                                                    onClick={handleContactClick}
+                        <button onClick={handleContactClick}
                                                     disabled={AuthUser?.user_name === user.user_name}
                                                     className={`flex items-center justify-center space-x-2 px-6 py-3 ${AuthUser?.user_name === user.user_name ? 'opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black'} font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg`}
                                                 >
                         <MessageCircle className="w-4 h-4" />
                         <span>İletişim</span>
-                        </button>
-                        <button className="flex items-center justify-center space-x-2 px-6 py-3 border-2 border-gray-700 hover:border-primary-500 text-white rounded-xl font-bold transition-all duration-300 backdrop-blur-sm">
-                        <Heart className="w-4 h-4" />
-                        <span>Kaydet</span>
                         </button>
                     </div>
                     </div>
@@ -1227,71 +1220,67 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                 <div className="space-y-6">
                 {/* Contact Card */}
                 <div className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6">
-                    <h3 className="text-lg font-bold mb-4 text-white">Contact Information</h3>
+                    <h3 className="text-lg font-bold mb-4 text-white">İletişim Bilgileri</h3>
                     <div className="space-y-3">
                     <div className="flex items-center space-x-3">
                         <Clock className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-300 text-sm">
-                        Responds within {profile.responseTime || 24} hours
+                        Genellikle {profile.responseTime || 24} saat içinde yanıt verir
                         </span>
                     </div>
                     <div className="flex items-center space-x-3">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-300 text-sm">Available for new projects</span>
+                        <span className="text-gray-300 text-sm">Yeni projeler için müsait</span>
                     </div>
                     <div className="flex items-center space-x-3">
                         <Users className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-300 text-sm">
-                        {profile.projectCount || 0}+ completed projects
+                        {profile.projectCount || 0}+ tamamlanan proje
                         </span>
                     </div>
                     </div>
                 </div>
 
-                {/* Quick Contact */}
+                {/* Hızlı İletişim */}
                 <div className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6">
-                    <h3 className="text-lg font-bold mb-4 text-white">Get in Touch</h3>
+                    <h3 className="text-lg font-bold mb-4 text-white">İletişime Geç</h3>
                     <div className="space-y-4">
                                         <button
                                             className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg text-black text-sm"
-                                            onClick={() => {
-                                                if (user?.user_name) {
-                                                    router.push(`/dashboard/messages?to=${user.user_name}`);
-                                                }
-                                            }}
+                                            onClick={handleContactClick} disabled={AuthUser?.user_name === user.user_name}
                                         >
-                                                Send Message
+                                                Mesaj Gönder
                                         </button>
-                    <button className="w-full py-3 border-2 border-gray-700 hover:border-primary-500 rounded-lg font-bold transition-all duration-300 text-white text-sm">
-                        Request Quote
+                    <button className="w-full py-3 border-2 border-gray-700 hover:border-primary-500 rounded-lg font-bold transition-all duration-300 text-white text-sm" onClick={handleContactClick} disabled={AuthUser?.user_name === user.user_name} >
+                        Teklif İste
                     </button>
                     </div>
                 </div>
 
-                {/* Stats */}
+                {/* İstatistikler */}
                 <div className="bg-black/60 backdrop-blur-xl border border-gray-800/50 rounded-xl p-6">
-                    <h3 className="text-lg font-bold mb-4 text-white">Profile Stats</h3>
+                    <h3 className="text-lg font-bold mb-4 text-white">Profil İstatistikleri</h3>
                     <div className="space-y-4">
                     <div className="flex justify-between">
                         <span className="text-gray-400 text-sm">
-                        {isArtist ? 'Experience' : 'Total Projects'}
+                        {isArtist ? 'Deneyim' : 'Toplam Proje'}
                         </span>
                         <span className="font-bold text-white text-sm">
-                        {isArtist ? `${profile.experience || 0} years` : (profile.projectCount || 0)}
+                        {isArtist ? `${profile.experience || 0} yıl` : (profile.projectCount || 0)}
                         </span>
                     </div>
                     <div className="flex justify-between">
-                        <span className="text-gray-400 text-sm">Member Since</span>
+                        <span className="text-gray-400 text-sm">Üyelik Tarihi</span>
                         <span className="font-bold text-white text-sm">
                         {new Date(profile.createdAt).getFullYear()}
                         </span>
                     </div>
                     <div className="flex justify-between">
-                        <span className="text-gray-400 text-sm">Response Rate</span>
+                        <span className="text-gray-400 text-sm">Yanıt Oranı</span>
                         <span className="font-bold text-emerald-400 text-sm">98%</span>
                     </div>
                     <div className="flex justify-between">
-                        <span className="text-gray-400 text-sm">Satisfaction</span>
+                        <span className="text-gray-400 text-sm">Memnuniyet</span>
                         <span className="font-bold text-primary-500 text-sm">4.8/5.0</span>
                     </div>
                     </div>
