@@ -48,12 +48,6 @@ export async function POST(req) {
             isAdmin: true
         });
 
-        console.log("🎫 Admin token oluşturuldu:", {
-            userId: user.id,
-            role: user.role,
-            isAdmin: true,
-            tokenLength: token.length
-        });
 
         const res = NextResponse.json({ 
             message: "Giriş başarılı",

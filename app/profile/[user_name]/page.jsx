@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import prisma from "../../api/lib/prisma";
 import ProfileClientPage from "./ProfileClient";
+import PendingComponent from "../comp/PendingComponent"
 
 export const dynamic = 'force-dynamic';
 
@@ -114,9 +115,9 @@ export default async function ProfilePage({ params }) {
     },
   });
 
-  // if (user.userPending != true) {
-  //   notFound();
-  // }
+  if (user.isApproved != true) {
+    return <PendingComponent />
+  }
 
   return <ProfileClientPage params={resolvedParams} initialData={user} isAdmin={isAdmin} currentUser={currentUser} />;
 }

@@ -31,7 +31,6 @@ export async function generateMetadata({ params }) {
       },
     });
   } catch (err) {
-    // Fallback: return generic metadata instead of failing with a 404 at metadata stage
     return {
       title: `Profil | @${params.user_name}`,
       description: `Kullanıcı profili yüklenemiyor.`,
@@ -47,14 +46,12 @@ export async function generateMetadata({ params }) {
     }
   }
 
-  const isProfilePending = user.userPending;
+  console.log("Kullanıcı datası" , user);
   
-  if (isProfilePending && !isAdmin) {
-    return {
-      title: "Profil Onaylanmamış",
-      description: "Bu profil henüz onaylanmamış.",
-    };
-  }
+
+  const isProfilePending = user.userPending;
+  console.log("Profile Pending" , isProfilePending);
+  
 
   const profile = user.artistProfile || user.providerProfile;
   const isArtist = Boolean(user.artistProfile);

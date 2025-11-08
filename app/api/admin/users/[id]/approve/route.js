@@ -12,7 +12,6 @@ export async function POST(req, { params }) {
     try {
         console.log("🔍 Kullanıcı onaylama API çağrıldı, ID:", params.id);
         
-        // Admin token kontrolü
         const token = req.cookies.get("token")?.value;
         console.log("🎫 Token bulundu:", !!token);
         
@@ -65,7 +64,6 @@ export async function POST(req, { params }) {
                 user: updatedUser
             });
         } catch (prismaError) {
-            console.error("❌ Prisma onaylama hatası:", prismaError);
             return NextResponse.json({ 
                 error: "Kullanıcı onaylanırken hata oluştu",
                 details: prismaError.message 
@@ -73,7 +71,6 @@ export async function POST(req, { params }) {
         }
 
     } catch (error) {
-        console.error("❌ Kullanıcı onaylama hatası:", error);
         return NextResponse.json({ 
             error: "Sunucu hatası", 
             details: error.message 

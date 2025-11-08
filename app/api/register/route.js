@@ -4,7 +4,6 @@ import { sanitizeInput } from "../lib/sanitize";
 import bcrypt from 'bcryptjs'
 import prisma from '../lib/prisma'
 
-// Türkçe karakterleri İngilizce karakterlere çevirme fonksiyonu
 function convertTurkishToEnglish(text) {
   const turkishChars = {
     'ç': 'c', 'Ç': 'C',
@@ -19,8 +18,8 @@ function convertTurkishToEnglish(text) {
     .split('')
     .map(char => turkishChars[char] || char)
     .join('')
-    .replace(/[^a-zA-Z0-9_\-\.]/g, '') // Sadece alfanumerik karakterler, tire, nokta ve alt çizgi
-    .toLowerCase(); // Kullanıcı adını küçük harfe çevir
+    .replace(/[^a-zA-Z0-9_\-\.]/g, '')
+    .toLowerCase(); 
 }
 
 export async function POST(req) {
