@@ -25,13 +25,10 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
 
   const cookie = userCookie?.cookie || null;
 
-  console.log("kullanıcı kategori oturumu:",  cookie);
   
-  // Pagination states
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   
-  // serviceType mapping - slug'ları serviceType'lara çevir
   const slugToServiceType = {
     'recording-studios': 'recording_studio',
     'producers': 'music_producer',
@@ -68,7 +65,6 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
 
   const category = categoryInfo[categorySlug] || categoryInfo['producers'];
 
-  // Debounced search effect
   const debouncedSearch = useCallback(
     debounce((searchValue) => {
       setDebouncedSearchTerm(searchValue);
@@ -83,7 +79,6 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
     };
   }, [searchTerm, debouncedSearch]);
 
-  // Veritabanından provider'ları çek - Optimize edilmiş
   const fetchProviders = useCallback(async (reset = false) => {
     try {
       const offset = reset ? 0 : providers.length;
@@ -102,13 +97,11 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 saniye timeout
       
       const response = await fetch(`/api/providers/category?serviceType=${serviceType}&limit=${limit}&offset=${offset}`, {
-        // Request optimization
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         signal: controller.signal,
-        // Browser cache optimization
         cache: 'default'
       });
       
@@ -136,7 +129,7 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
       setLoadingMore(false);
       setInitialLoad(false);
     }
-  }, [categorySlug]); // Removed providers dependency to prevent infinite loops
+  }, [categorySlug]); 
 
   useEffect(() => {
     fetchProviders(true);
@@ -177,6 +170,8 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
   // Memoized filtered providers for better performance
   const filteredProviders = useMemo(() => {
     return providers.filter(provider => {
+      // Hide providers whose user is explicitly marked as not approved
+      if (provider?.user?.isApproved === false) return false;
       const matchesSearch = !debouncedSearchTerm || 
         provider.user.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         provider.provider_title?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
@@ -454,6 +449,8 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
 };
 
 const ProviderCard = ({ provider }) => {
+  console.log("providerData" , provider);
+  
   const getServiceTypeDisplay = (serviceType) => {
     const typeMap = {
       'recording_studio': 'Kayıt Stüdyosu',

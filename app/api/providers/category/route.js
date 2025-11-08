@@ -66,6 +66,7 @@ export async function GET(request) {
             id: true,
             name: true,
             user_name: true,
+            isApproved: true,
             user_photo: true,
             country: true
           }
