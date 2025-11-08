@@ -17,7 +17,7 @@ model User {
   country     String?
   role        Role?
   userPending Boolean  @default(false)
-  isApproved  Boolean  @default(true)
+  isApproved  Boolean  @default(false)
   user_photo  String?
   createdAt   DateTime @default(now())
   newPasswordAuth String?
