@@ -61,8 +61,15 @@ export async function generateMetadata({ params }) {
       description: "The requested profile could not be found.",
     };
   }
-
   const profile = user.artistProfile || user.providerProfile;
+
+  const profileIsPublic = profile?.otherData?.isPublic !== false; 
+  if (!profileIsPublic && !isAdmin) {
+    return {
+      title: "Profile Not Found",
+      description: "The requested profile could not be found.",
+    };
+  }
   const isArtist = Boolean(user.artistProfile);
 
   return {
@@ -80,18 +87,20 @@ export default async function ProfilePage({ params }) {
   const token = cookieStore.get('token')?.value;
   let isAdmin = false;
   let currentUser = null;
-
-  // if (token) {
-  //   try {
-  //     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret');
-  //     const { payload } = await jwtVerify(token, secret);
-  //     isAdmin = payload.role === 'ADMIN';
-  //     currentUser = payload;
-  //   } catch (error) {
-  //     isAdmin = false;
-  //   }
-  // }
-
+  if (token) {
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret');
+      const { payload } = await jwtVerify(token, secret);
+      isAdmin = payload.role === 'ADMIN';
+      currentUser = {
+        id: payload.sub || payload.id || null,
+        role: payload.role || null
+      };
+    } catch (error) {
+      isAdmin = false;
+      currentUser = null;
+    }
+  }
   const user = await prisma.user.findFirst({
     where: { user_name: resolvedParams.user_name },
     include: {
@@ -115,7 +124,13 @@ export default async function ProfilePage({ params }) {
     },
   });
 
-  if (user.isApproved != true) {
+  if (user.isApproved !== true && !isAdmin) {
+    return <PendingComponent />
+  }
+
+  const profile = user.artistProfile || user.providerProfile;
+  const profileIsPublic = profile?.otherData?.isPublic !== false;
+  if (!profileIsPublic && !isAdmin) {
     return <PendingComponent />
   }
 

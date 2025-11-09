@@ -114,7 +114,9 @@ export async function POST(req) {
         platformLinks: {
           youtube: youtubeLink || '',
           spotify: spotifyLink || ''
-        }
+        },
+        // New artist profiles default to admin-only visibility; preserve existing when updating
+        isPublic: existingProfile?.otherData?.isPublic ?? false
       };
 
       await prisma.artistProfile.upsert({
@@ -402,11 +404,13 @@ export async function POST(req) {
         }
 
         // Platform linklerini otherData alanında JSON olarak kaydet
+        // New provider profiles default to admin-only visibility; preserve existing when updating
         const providerOtherDataJson = {
           platformLinks: {
             youtube: youtubeLink || '',
             spotify: spotifyLink || ''
-          }
+          },
+          isPublic: existingProfile?.otherData?.isPublic ?? false
         };
 
         const result = await prisma.providerProfile.upsert({

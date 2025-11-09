@@ -310,6 +310,7 @@ const UsersTab = () => {
                                             {formatDate(user.createdAt)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
+                                            {console.log(user.user_name , user.isApproved)}
                                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                                 user.isApproved 
                                                     ? 'bg-green-100 text-green-800' 
