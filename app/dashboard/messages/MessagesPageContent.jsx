@@ -19,9 +19,7 @@ export default function MessagesPageContent() {
   const fetchConversations = useCallback(async () => {
     try {
       setIsLoading(true);
-      console.log('Konuşmalar getiriliyor...');
       const response = await fetch('/api/messages/conversations');
-      console.log('API Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
@@ -65,32 +63,25 @@ export default function MessagesPageContent() {
   }, []);
 
   const handleNewConversation = useCallback((newConversation) => {
-    console.log('🆕 handleNewConversation çağrıldı:', newConversation);
     
     // Yeni konuşmayı listeye ekle
     setConversations(prev => {
       const exists = prev.find(conv => conv.id === newConversation.id);
       if (exists) {
-        console.log('⚠️ Konuşma zaten mevcut:', newConversation.id);
         return prev; // Zaten varsa ekleme
       }
-      console.log('✅ Yeni konuşma listeye ekleniyor:', newConversation.id);
       return [newConversation, ...prev];
     });
     
     // Yeni konuşmayı seç
-    console.log('🎯 Yeni konuşma seçiliyor:', newConversation.id);
     setSelectedConversation(newConversation);
     
-    // Konuşmaları yeniden yükle (opsiyonel, çünkü zaten state güncelledik)
     // fetchConversations();
   }, []);
 
-  // URL'den 'to' parametresi varsa otomatik konuşma başlat
   const startConversationWithUser = useCallback(async (targetUsername) => {
     if (!targetUsername || !user) return;
 
-    // Prevent concurrent starts for the same username
     if (!startConversationWithUser.startingRef) startConversationWithUser.startingRef = new Set();
     if (startConversationWithUser.startingRef.has(targetUsername)) {
       console.log('⚠️ Conversation start already in progress for', targetUsername);
@@ -100,9 +91,7 @@ export default function MessagesPageContent() {
     startConversationWithUser.startingRef.add(targetUsername);
 
     try {
-      console.log('🔄 Yeni konuşma başlatılıyor (server-refresh):', targetUsername);
 
-      // Refresh conversations from server to avoid creating duplicates
       try {
         const listResp = await fetch('/api/messages/conversations');
         if (listResp.ok) {
@@ -121,7 +110,6 @@ export default function MessagesPageContent() {
       // Check again locally after refresh
       const existingConv = conversations.find(conv => conv?.otherUser?.user_name === targetUsername);
       if (existingConv) {
-        console.log('✅ Mevcut konuşma bulundu (post-refresh):', existingConv.id);
         setSelectedConversation(existingConv);
         return;
       }
@@ -138,7 +126,6 @@ export default function MessagesPageContent() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Yeni konuşma başlatıldı:', data);
 
         if (data.conversation) {
           handleNewConversation(data.conversation);
@@ -167,10 +154,6 @@ export default function MessagesPageContent() {
     const toParam = searchParams.get('to');
     // start even if conversations array is empty; the API will create a new conversation
     if (toParam && user && !isLoading) {
-      console.log('🎯 URL\'den to parametresi alındı:', toParam);
-      console.log('📊 Konuşmalar yüklendi, konuşma başlatılıyor...');
-      
-      // Kısa bir gecikme ile konuşma başlat (UI render'ı tamamlansın diye)
       setTimeout(() => {
         startConversationWithUser(toParam);
         
@@ -188,10 +171,8 @@ export default function MessagesPageContent() {
 
     // Yeni mesaj geldiğinde konuşmalar listesini güncelle
     socket.on('new_message', (messageData) => {
-      console.log('🔔 Yeni mesaj alındı:', messageData);
       
       setConversations(prev => {
-        // Mevcut konuşma var mı kontrol et
         const existingConvIndex = prev.findIndex(conv => conv.id === messageData.conversationId);
         
         if (existingConvIndex !== -1) {
@@ -240,7 +221,6 @@ export default function MessagesPageContent() {
     <>
       <Header />
       <div className="min-h-screen bg-black">
-        {/* Container - Ortalanmış ve Dashboard genişliği */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Page Header */}
           <div className="mb-8">
@@ -252,7 +232,7 @@ export default function MessagesPageContent() {
           <div className="bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
             <div className="flex h-[600px] relative">
               {/* Conversations List - Sol Panel (%30) - Her zaman görünür */}
-              <div className="w-[30%] border-r border-gray-800 flex flex-col shrink-0">
+              <div className="w-[100%] border-r border-gray-800 flex flex-col shrink-0 sm:w-[30%]">
                 <ConversationsList
                   conversations={conversations}
                   selectedConversation={selectedConversation}
