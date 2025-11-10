@@ -42,16 +42,8 @@ export async function GET(request) {
     const providers = await prisma.providerProfile.findMany({
       where: {
         serviceType: serviceType,
-        // must be an approved user
         user: {
           isApproved: true
-        },
-        // exclude profiles that explicitly set otherData.isPublic === false (admin-only)
-        NOT: {
-          otherData: {
-            path: ['isPublic'],
-            equals: false
-          }
         }
       },
       select: {
