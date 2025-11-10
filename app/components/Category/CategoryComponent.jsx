@@ -114,7 +114,7 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
       const data = await response.json();
       
       if (data.success) {
-        const newProviders = reset ? data.providers : [...currentProviders, ...data.providers];
+  const newProviders = reset ? data.providers : [...providers, ...data.providers];
         setProviders(newProviders);
         setHasMore(data.pagination?.hasMore || false);
       } else {
@@ -170,8 +170,8 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
   // Memoized filtered providers for better performance
   const filteredProviders = useMemo(() => {
     return providers.filter(provider => {
-      // Hide providers whose user is explicitly marked as not approved
-      if (provider?.user?.isApproved === false) return false;
+      // Hide providers whose user account isn't approved yet
+      if (provider?.user?.isApproved !== true) return false;
       const matchesSearch = !debouncedSearchTerm || 
         provider.user.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         provider.provider_title?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
@@ -405,7 +405,6 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
                 {filteredProviders.map((provider, index) => (
                   <motion.div
                     key={provider.id}
-                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.02 }} // Reduced delay for mobile
                   >
@@ -414,7 +413,7 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
                 ))}
               </div>
 
-              {/* Load More Button */}
+              {/* Load More Button
               {hasMore && !debouncedSearchTerm && priceRange === 'all' && experienceFilter === 'all' && (
                 <div className="flex justify-center mt-8 sm:mt-10 lg:mt-12 px-4">
                   <button
@@ -432,7 +431,7 @@ export const CategoryComponent = ({categorySlug, userCookie}) => {
                     )}
                   </button>
                 </div>
-              )}
+              )} */}
             </>
           )}
 

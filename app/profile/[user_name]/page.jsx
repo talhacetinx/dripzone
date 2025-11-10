@@ -63,7 +63,9 @@ export async function generateMetadata({ params }) {
   }
   const profile = user.artistProfile || user.providerProfile;
 
-  const profileIsPublic = profile?.otherData?.isPublic !== false; 
+  // Consider profile public if otherData.isPublic is not explicitly false,
+  // or if the user account is approved, or if the visitor is an admin.
+  const profileIsPublic = (profile?.otherData?.isPublic !== false) || (user.isApproved === true) || isAdmin;
   if (!profileIsPublic && !isAdmin) {
     return {
       title: "Profile Not Found",
@@ -124,12 +126,13 @@ export default async function ProfilePage({ params }) {
     },
   });
 
+  // If the account itself isn't approved yet, only admins can view
   if (user.isApproved !== true && !isAdmin) {
     return <PendingComponent />
   }
 
   const profile = user.artistProfile || user.providerProfile;
-  const profileIsPublic = profile?.otherData?.isPublic !== false;
+  const profileIsPublic = (profile?.otherData?.isPublic !== false) || (user.isApproved === true) || isAdmin;
   if (!profileIsPublic && !isAdmin) {
     return <PendingComponent />
   }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from 'next/cache';
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 
@@ -51,6 +52,7 @@ export async function POST(req, { params }) {
                     id: true,
                     name: true,
                     email: true,
+                    user_name: true,
                     userPending: true,
                     isApproved: true
                 }
@@ -58,9 +60,35 @@ export async function POST(req, { params }) {
 
             console.log("✅ Kullanıcı onaylandı:", updatedUser);
 
+            // Ayrıca, eğer kullanıcının bir provider/artist profili varsa, profili herkese aç (otherData.isPublic = true)
+            try {
+                const provUpdate = await prisma.providerProfile.updateMany({
+                    where: { userId: params.id },
+                    data: { otherData: { isPublic: true } }
+                });
+                const artUpdate = await prisma.artistProfile.updateMany({
+                    where: { userId: params.id },
+                    data: { otherData: { isPublic: true } }
+                });
+                console.log('Profile visibility updated:', { provUpdate, artUpdate });
+            } catch (profileErr) {
+                console.warn('Profil görünürlüğü güncellenemedi:', profileErr);
+                // Non-fatal; devam et
+            }
+
+            // Revalidate the profile page so the newly approved profile becomes visible immediately
+            try {
+                if (updatedUser?.user_name) {
+                    revalidatePath(`/profile/${updatedUser.user_name}`);
+                    console.log('Revalidated path for', updatedUser.user_name);
+                }
+            } catch (revalErr) {
+                console.warn('Path revalidation failed:', revalErr?.message || revalErr);
+            }
+
             return NextResponse.json({ 
                 success: true,
-                message: "Kullanıcı başarıyla onaylandı",
+                message: "Kullanıcı başarıyla onaylandı ve profil herkese açıldı (varsa)",
                 user: updatedUser
             });
         } catch (prismaError) {
