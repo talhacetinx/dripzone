@@ -130,7 +130,7 @@ export default function ForgotPasswordComponent() {
                   : "bg-yellow-500 hover:bg-yellow-600"
               }`}
             >
-              {isLoading ? "Giriş Yapılıyor..." : "Şifre Yenileme isteği gönder"}
+              {isLoading ? "Giriş Yapılıyor..." : "Şifre Yenileme İsteği Gönder"}
             </button>
           </form>
         </motion.div>
