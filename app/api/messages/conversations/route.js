@@ -10,7 +10,6 @@ export async function GET(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log('Conversations API - User ID:', session.id);
     const url = new URL(request.url);
     const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')) : 50;
 
