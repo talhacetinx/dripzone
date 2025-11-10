@@ -11,6 +11,8 @@ export async function GET(request) {
     }
 
     console.log('Conversations API - User ID:', session.id);
+    const url = new URL(request.url);
+    const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')) : 50;
 
     const conversations = await prisma.conversation.findMany({
       where: {
@@ -21,6 +23,7 @@ export async function GET(request) {
       orderBy: {
         updatedAt: 'desc'
       },
+      take: limit,
       include: {
         messages: {
           orderBy: { createdAt: 'desc' },
@@ -37,35 +40,31 @@ export async function GET(request) {
     console.log('Found conversations:', conversations.length);
 
     // Konuşmaları frontend için format et
-    const formattedConversations = await Promise.all(
-      conversations.map(async (conv) => {
-        // Diğer kullanıcının ID'sini bul
-        const otherUserId = conv.participants.find(id => id !== session.id);
-        
-        // Diğer kullanıcının bilgilerini getir
-        const otherUser = await prisma.user.findUnique({
-          where: { id: otherUserId },
-          select: {
-            id: true,
-            name: true,
-            user_name: true,
-            user_photo: true,
-            role: true
-          }
-        });
+    // Batch fetch all other user profiles to avoid N+1 DB calls
+    const otherUserIds = conversations.map(conv => conv.participants.find(id => id !== session.id)).filter(Boolean);
+    const uniqueOtherUserIds = Array.from(new Set(otherUserIds));
 
-        const lastMessage = conv.messages[0]?.content || null;
-        const lastMessageAt = conv.messages[0]?.createdAt || conv.createdAt;
-        
-        return {
-          id: conv.id,
-          otherUser,
-          lastMessage,
-          lastMessageAt,
-          unreadCount: 0 
-        };
-      })
-    );
+    const otherUsers = uniqueOtherUserIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: uniqueOtherUserIds } },
+      select: { id: true, name: true, user_name: true, user_photo: true, role: true }
+    }) : [];
+
+    const otherUserById = otherUsers.reduce((acc, u) => { acc[u.id] = u; return acc; }, {});
+
+    const formattedConversations = conversations.map((conv) => {
+      const otherUserId = conv.participants.find(id => id !== session.id);
+      const otherUser = otherUserById[otherUserId] || null;
+      const lastMessage = conv.messages[0]?.content || null;
+      const lastMessageAt = conv.messages[0]?.createdAt || conv.createdAt;
+
+      return {
+        id: conv.id,
+        otherUser,
+        lastMessage,
+        lastMessageAt,
+        unreadCount: 0
+      };
+    });
 
     console.log('Formatted conversations:', formattedConversations.length);
 

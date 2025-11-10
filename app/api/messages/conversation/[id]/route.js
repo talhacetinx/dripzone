@@ -25,8 +25,12 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
     }
 
-    // Mesajları getir
-    const messages = await prisma.message.findMany({
+    // Mesajları getir — performans için default olarak son N mesajı döndürelim
+    const url = new URL(request.url);
+    const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')) : 200;
+
+    // Prisma ile son N mesajı almak için önce createdAt desc ile al ve sonra tersine çevir
+    let messages = await prisma.message.findMany({
       where: { conversationId },
       include: {
         sender: {
@@ -37,8 +41,11 @@ export async function GET(request, { params }) {
           }
         }
       },
-      orderBy: { createdAt: 'asc' }
+      orderBy: { createdAt: 'desc' },
+      take: limit
     });
+
+    messages = messages.reverse(); // kronolojik sıraya getir
 
     // Package data'yı parse et
     const parsedMessages = messages.map(message => {

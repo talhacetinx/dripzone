@@ -50,7 +50,6 @@ export default function MessagesPageContent() {
   };
 
   const handleNewMessage = useCallback((message) => {
-    // Konuşmalar listesini güncelle
     setConversations(prev => 
       prev.map(conv => {
         if (conv.id === message.conversationId) {
