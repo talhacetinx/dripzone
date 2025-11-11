@@ -285,7 +285,6 @@ export async function POST(req) {
                       url: photoUrl,
                       name: photoName
                     });
-                    console.log(`✅ Photo ${i + 1} processed successfully:`, photoUrl);
                   }
                 } catch (err) {
                   console.error(`❌ Stüdyo fotoğrafı ${i + 1} kaydetme hatası:`, err);
@@ -299,7 +298,6 @@ export async function POST(req) {
           processedServiceData.studioPhotos = processedPhotos;
           
         } else if (mappedServiceType === "music_producer") {
-          // Müzik projelerini işle
           const processedProjects = [];
           if (musicProjects && Array.isArray(musicProjects)) {
             for (let i = 0; i < musicProjects.length; i++) {
@@ -344,7 +342,6 @@ export async function POST(req) {
           console.log('Final processedServiceData.musicProjects:', JSON.stringify(processedProjects, null, 2));
           
         } else if (mappedServiceType === "album_cover_artist") {
-          // Albüm kapaklarını işle
           const processedCovers = [];
           if (albumCovers && Array.isArray(albumCovers)) {
             for (let i = 0; i < albumCovers.length; i++) {
@@ -382,7 +379,6 @@ export async function POST(req) {
           processedServiceData.musicVideos = processedVideos;
         }
         
-        console.log(`✅ ${mappedServiceType} verileri başarıyla işlendi`);
       } catch (serviceError) {
         console.error("Hizmet tipi verileri işleme hatası:", serviceError);
         return NextResponse.json({ 

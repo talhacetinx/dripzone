@@ -131,6 +131,7 @@ export const ProfileTab = ({ userInfo, profileCache, clearProfileCache }) => {
       const res = await fetch("/api/profile/get", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
       });
       
       console.log("🎨 Artist - API Response status:", res.status);
@@ -297,9 +298,10 @@ export const ProfileTab = ({ userInfo, profileCache, clearProfileCache }) => {
         setSelectedGenres([]);
         
         const res = await fetch("/api/profile/get", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+      });
         
         if (res.ok) {
           const data = await res.json();

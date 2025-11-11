@@ -38,13 +38,20 @@ export const ServicesProviderTab = ({ userInfo }) => {
         const res = await fetch("/api/profile/get", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
+          credentials: 'include',
         });
         
         if (res.ok) {
           const data = await res.json();
-          
-          if (data.profile && data.profile.packages && Array.isArray(data.profile.packages)) {
-            setPackages(data.profile.packages);
+
+          // server may return packages inside profile.serviceData or directly as profile.packages
+          const packagesFromProfile = data.profile?.packages;
+          const packagesFromServiceData = data.profile?.serviceData?.packages;
+
+          if (Array.isArray(packagesFromProfile) && packagesFromProfile.length > 0) {
+            setPackages(packagesFromProfile);
+          } else if (Array.isArray(packagesFromServiceData) && packagesFromServiceData.length > 0) {
+            setPackages(packagesFromServiceData);
           }
         }
       } catch (error) {

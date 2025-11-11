@@ -163,6 +163,7 @@ export const ProviderDashboard = ({AuthUser}) => {
       const profileResponse = await fetch('/api/profile/get', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
 
       if (profileResponse.ok) {

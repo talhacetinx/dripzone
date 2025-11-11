@@ -203,15 +203,14 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
 
                     {/* Action Buttons */}
                     <div className="w-full flex-1 lg:flex lg:justify-end">
-                    <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                        <button onClick={handleContactClick}
-                                                    disabled={AuthUser?.user_name === user.user_name}
-                                                    className={`flex items-center justify-center space-x-2 px-6 py-3 ${AuthUser?.user_name === user.user_name ? 'opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black'} font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg`}
-                                                >
-                        <MessageCircle className="w-4 h-4" />
-                        <span>İletişim</span>
-                        </button>
-                    </div>
+                        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                            <button onClick={handleContactClick}
+                                className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-black font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg`}
+                            >
+                                <MessageCircle className="w-4 h-4" />
+                                <span>İletişim</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1279,6 +1278,7 @@ export default function ProfileClientPage({ params, initialData, isAdmin = false
                     </div>
                     </div>
                 </div>
+
                 </div>
             </div>
             </div>

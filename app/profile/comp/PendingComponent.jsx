@@ -9,7 +9,7 @@ export default function PendingComponent(){
                   alt="Dripzone Logo"
                   className="h-12 w-auto object-contain filter drop-shadow-lg"
                 />
-                <h1 className="text-xl">Profiliniz Daha Onaylanmamıştır, onaylandığında sizlere e-posta yoluyla mesaj atılacaktır.</h1>
+                <h1 className="text-xl text-center">Profiliniz Daha Onaylanmamıştır, onaylandığında sizlere e-posta yoluyla mesaj atılacaktır.</h1>
             </div>
         </div>
     )

@@ -392,15 +392,14 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
       try {
         let data;
         
-        // Önce cache'i kontrol et
         if (profileCache && profileCache.profile) {
           data = profileCache;
         } else {
-          // Cache yoksa API'den çek
           const res = await fetch("/api/profile/get", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             signal: controller.signal,
+            credentials: 'include',
           });
 
           if (!res.ok) {
@@ -420,7 +419,6 @@ export const ProfileProviderTab = ({ userInfo, profileCache }) => {
 
         const profile = data.profile;
 
-        // Form verilerini set et
         setFormData2({
           provider_about: profile.about || "",
           provider_experience: profile.experience || "",

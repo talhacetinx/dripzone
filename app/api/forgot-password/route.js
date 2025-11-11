@@ -108,8 +108,8 @@ export async function POST(req) {
               <p class="small">Eğer bu isteği siz yapmadıysanız, bu e-postayı görmezden gelebilirsiniz. Hesabınız güvende kalacaktır.</p>
             </div>
             <div class="footer">
-              <div>Dripzone Music • Profesyonel müzik hizmetleri</div>
-              <div class="muted">Adresiniz • İletişim • © ${new Date().getFullYear()} Dripzone</div>
+              <div>Dripzone Music • Müzik Dünyasının Yeni Nesil Pazar Yeri</div>
+              <div class="muted">© 2025 Dripzone Music</div>
             </div>
           </div>
         </body>
