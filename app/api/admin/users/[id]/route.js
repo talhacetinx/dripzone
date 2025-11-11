@@ -8,9 +8,11 @@ if (process.env.NODE_ENV !== "production") {
     globalThis.prisma = prisma;
 }
 
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
     try {
-        console.log("🔍 Kullanıcı silme API çağrıldı, ID:", params.id);
+        const params = await context.params;
+        const id = params?.id;
+        console.log("🔍 Kullanıcı silme API çağrıldı, ID:", id);
         
         // Admin token kontrolü
         const token = req.cookies.get("token")?.value;
@@ -37,7 +39,7 @@ export async function DELETE(req, { params }) {
         }
 
         // Kendi kendini silmeye izin verme
-        if (decoded.id === params.id) {
+        if (decoded.id === id) {
             console.log("❌ Admin kendi kendini silmeye çalışıyor");
             return NextResponse.json({ error: "Kendi hesabınızı silemezsiniz" }, { status: 400 });
         }
@@ -49,25 +51,28 @@ export async function DELETE(req, { params }) {
             await prisma.$transaction(async (tx) => {
                 // İlk önce ilişkili profilleri sil
                 await tx.artistProfile.deleteMany({
-                    where: { userId: params.id }
+                    where: { userId: id }
                 });
 
                 await tx.providerProfile.deleteMany({
-                    where: { userId: params.id }
+                    where: { userId: id }
                 });
 
                 // Artist ve Provider kayıtlarını sil
                 await tx.artist.deleteMany({
-                    where: { userId: params.id }
+                    where: { userId: id }
                 });
 
                 await tx.provider.deleteMany({
-                    where: { userId: params.id }
+                    where: { userId: id }
                 });
+
+                // Önce kullanıcının attığı mesajları sil (senderId foreign key nedeniyle)
+                await tx.message.deleteMany({ where: { senderId: id } });
 
                 // Son olarak kullanıcıyı sil
                 const deletedUser = await tx.user.delete({
-                    where: { id: params.id },
+                    where: { id: id },
                     select: {
                         id: true,
                         name: true,

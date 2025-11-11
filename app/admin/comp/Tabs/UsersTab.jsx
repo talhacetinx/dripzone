@@ -36,7 +36,11 @@ const UsersTab = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch("/api/admin/users");
+            const response = await fetch("/api/admin/users", {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            });
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -65,6 +69,7 @@ const UsersTab = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
             });
 
             if (response.ok) {
@@ -88,6 +93,7 @@ const UsersTab = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
             });
 
             if (response.ok) {
